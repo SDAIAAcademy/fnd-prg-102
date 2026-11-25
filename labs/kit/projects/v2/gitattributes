@@ -1,0 +1,4 @@
+# Scripts and checksums keep LF line endings on every machine, so bash and sha256sum read
+# them the same way in a clone made on Windows (where Git converts to CR LF by default).
+*.sh text eol=lf
+*.sha256 text eol=lf

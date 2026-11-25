@@ -1,0 +1,99 @@
+{
+  "threshold_pm10": 150,
+  "stations_per_client": {
+    "Client A": 3,
+    "Client B": 3,
+    "Client C": 3,
+    "Client D": 3
+  },
+  "october": {
+    "reading_lines": 8892,
+    "status": {
+      "ERR": 61,
+      "OK": 8728,
+      "WARN": 103
+    },
+    "top3_err_stations": [
+      [
+        "ST05",
+        26
+      ],
+      [
+        "ST09",
+        17
+      ],
+      [
+        "ST12",
+        8
+      ]
+    ],
+    "error_codes": {
+      "ERR-E11": 8,
+      "ERR-E21": 26,
+      "ERR-E34": 11,
+      "ERR-E40": 16
+    },
+    "duplicate_lines": 12,
+    "stations_per_client": {
+      "Client A": 3,
+      "Client B": 3,
+      "Client C": 3,
+      "Client D": 3
+    },
+    "report_sha256": "e04d69272f78be46dfea1b5fed1eaa9c58532162371ebd6b0fb1671f2925af06",
+    "report_first_rows": [
+      "station,client,valid_hours,mean_pm10,max_pm10,alert_hours,error_hours",
+      "ST01,Client A,744,58.9,256,14,0",
+      "ST02,Client A,739,68.5,245,15,5",
+      "ST03,Client A,744,55.5,240,15,0"
+    ]
+  },
+  "november": {
+    "reading_lines": 8646,
+    "status": {
+      "ERR": 45,
+      "OK": 8523,
+      "WARN": 78
+    },
+    "top3_err_stations": [
+      [
+        "ST05",
+        18
+      ],
+      [
+        "ST09",
+        14
+      ],
+      [
+        "ST12",
+        8
+      ]
+    ],
+    "error_codes": {
+      "ERR-E11": 6,
+      "ERR-E21": 20,
+      "ERR-E34": 10,
+      "ERR-E40": 9
+    },
+    "duplicate_lines": 6,
+    "stations_per_client": {
+      "Client A": 3,
+      "Client B": 3,
+      "Client C": 3,
+      "Client D": 3
+    },
+    "report_sha256": "d59a57435050a1b65f1d0d0c1800f8dab9e4e9055b0b84cbbc943bbd8c0beeed",
+    "report_first_rows": [
+      "station,client,valid_hours,mean_pm10,max_pm10,alert_hours,error_hours",
+      "ST01,Client A,720,58.5,235,9,0",
+      "ST02,Client A,717,66.7,223,11,3",
+      "ST03,Client A,720,53.7,213,9,0"
+    ]
+  },
+  "listing": {
+    "world_writable": "notes.txt",
+    "not_executable_script": "make_report.sh",
+    "owner_only": "portal.env",
+    "group_can_enter": "logs"
+  }
+}

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 3.1 · One command, and data kept out of the code · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D3_1_one_command.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day3.html#lab-3-1">Back to the slides</a></nav></div>
+<span class="tag">Lab 3.1</span>
+<h1>One command, and data kept out of the code</h1>
+<p>Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone</p>
+<div class="meta"><span>35 minutes</span><span>Day 3</span><span>Session 1: One command to rebuild and run</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="3.1">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>The locked report project still carries its data and its last output in the repository, and its README says too little. Take data and output out, write one documented command that rebuilds and checks the result, and test the README by following it in a clean clone.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.1</code>: <code>air-report/</code> (the project as lab 2.4 left it, plus a committed <code>data/</code> and <code>output/</code>) and <code>data/</code> beside it, where the logs belong</li>
+    <li>The expected October checksum: <code>october.sha256</code>, in the workspace's kit under <code>_kit/projects/v3/expected/</code>, or from the trainer</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
+  </ul>
+
+  <div class="step">
+    <h3>List what the repository carries <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 3.1
+cd 3.1/air-report
+git ls-files | sed 's|/.*|/|' | sort | uniq -c</code></pre>
+    <p>Which of these are code, which are data, which are results? Which could the next month's run change?</p>
+  </div>
+
+  <div class="step">
+    <h3>Stop tracking data and output <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git rm -r --cached data output      # out of git; the files stay on disk
+rm -rf data output                  # the logs live in ../data now
+printf 'output/\ndata/\n__pycache__/\n.venv/\n.env\n' &gt; .gitignore
+git status --short</code></pre>
+    <p><code>.gitignore</code> stops new files being added; it does nothing for files already tracked, which is why <code>git rm --cached</code> comes first.</p>
+  </div>
+
+  <div class="step">
+    <h3>Write rebuild.sh <span class="min">9 min</span></h3>
+    <p>One command that a newcomer runs: it stops with a clear message when <code>AIR_LOGS</code> is not set, rebuilds the environment from the lock, runs the report into <code>output/</code>, and compares the result with a committed checksum.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">mkdir -p expected
+cp ../../_kit/projects/v3/expected/october.sha256 expected/
+# then write rebuild.sh: set -euo pipefail; uv sync --locked;
+# uv run python report.py --data "$AIR_LOGS" --out output; sha256sum -c expected/october.sha256</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Write the README's Reproduce section <span class="min">6 min</span></h3>
+    <p>Under <code>## Reproduce</code>: the tools needed, where the data comes from, the one command, and what success looks like. Nothing that only you know.</p>
+  </div>
+
+  <div class="step">
+    <h3>Follow the README in a clean clone; check <span class="min">9 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git add -A
+git commit -m "Keep data and outputs out of the repository; rebuild with one command"
+git clone . ../clean &amp;&amp; cd ../clean
+AIR_LOGS=../data bash rebuild.sh     # ends with: output/report.csv: OK
+bash rebuild.sh                      # must stop with a message, not guess
+cd .. &amp;&amp; rm -rf clean
+cd .. &amp;&amp; uv run lab.py check 3.1</code></pre>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Make <code>rebuild.sh</code> print the versions it ran with (<code>uv --version</code>, the Python version, <code>uv tree</code>) so a reproduction log can quote them.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why does adding <code>data/</code> to <code>.gitignore</code> not remove the logs already committed?</li>
+    <li>What does a committed checksum prove that "it ran without errors" does not?</li>
+    <li>Your clean clone works on your laptop. What could still fail on a peer's?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>The reference files are in <code>labs/kit/projects/v3/</code>: <code>rebuild.sh</code>, <code>expected/october.sha256</code> and the README's Reproduce section. The check clones the repository, runs <code>bash rebuild.sh</code> with <code>AIR_LOGS</code> set, compares the checksum, and runs it again without <code>AIR_LOGS</code> expecting a failure.</p>
+    <p>Common errors: <code>.gitignore</code> without <code>git rm --cached</code>; an apostrophe inside <code>${AIR_LOGS:?...}</code>, which breaks the quoting (it did in the course's own first draft); a README that names a folder on the author's laptop. Answer to question 3: anything the laptop holds that the README does not state, such as uv itself, Git Bash, the network, or a cached package. Solution: <code>labs/solutions/S3_1.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D2_4_second_machine.html" rel="prev">← Previous lab</a><a href="D3_2_container.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"3.1","title":"One command, and data kept out of the code","summary":"Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone","minutes":35,"day":3,"unit":"Day 3","session":1,"deck":"../slides/day3.html#lab-3-1","prev":"D2_4_second_machine.html","next":"D3_2_container.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

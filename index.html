@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="page" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command Line, Git and Reproducible Environments · SDAIA Academy</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<meta name="description" content="Set up work that another person can rebuild from a clean machine: shell scripts, a reviewed Git history, locked environments, a container and no secrets in history">
+<link rel="icon" href="_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="index.md">
+<link rel="describedby" href="llms.txt">
+<link rel="stylesheet" href="_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo" id="logo"></div><nav><a href="slides/day1.html">Slides</a><a href="practice.html">Practice</a><a href="index.md" type="text/markdown">Markdown</a></nav></div>
+<div class="kicker">Data &amp; AI Foundations Track · SDAIA Academy · FND-PRG-102</div>
+<h1>Command Line, Git and Reproducible Environments<span class="sub ar" lang="ar" dir="rtl">سطر الأوامر وGit والبيئات القابلة لإعادة الإنتاج</span></h1>
+<p>Set up work that another person can rebuild from a clean machine: shell scripts, a reviewed Git history, locked environments, a container and no secrets in history</p>
+<div class="meta"><span class="track">Data &amp; AI Foundations Track</span><span>3 teaching days + capstone day</span><span>24 hours</span><span>Level 100</span></div>
+</div>
+</header>
+<main class="wrap">
+<h2>About the course</h2>
+<p>Participants set up work that another person can rebuild from a clean machine. They script the shell, use Git with branches, pull requests and review on a shared repository, resolve a merge conflict, lock dependencies, run a project in a container without administrator rights, and keep secrets out of history.</p>
+<p><b>Who it is for:</b> Beginners. Graduates and career changers heading for analysis, data science, data engineering or AI engineering courses, and computing graduates whose degree did not require testing, version control or reproducible environments.</p>
+<p><b>Format:</b> Intensive: 3 teaching days and a capstone day, with guided pre-work and a tracked follow-up task</p>
+<h2>The case study</h2>
+<div class="note info"><b>The air-quality monitoring company.</b> A private contractor (fictional, unnamed) that runs twelve dust and particle sensor stations, ST01 to ST12, at four clients' sites in one unnamed city; its monthly client report is a Python project that only runs on the analyst's laptop. Every lab works on synthetic hourly logs for October and November 2026 generated with a fixed seed, with planted traps (comment lines, Windows line endings, duplicate lines after a logger restart, a two-day gap), and on a seeded report-portal key whose prefix is the course's own; people appear only as roles.</div>
+<h2>The course</h2>
+<div class="day">
+<div class="day-head c-teal"><div><div class="t">Day 1 · 4 sessions · 4 labs</div><h3>The shell and the commit graph</h3></div><a class="btn" href="slides/day1.html">Open the slides</a></div>
+<div class="scroll"><table>
+<tr><th>Session</th><th>Topic</th><th>Lab</th></tr>
+<tr><td>1</td><td><b>Paths and permissions</b><br>Where you are, how a path is read, and who may read, change or run a file<ul><li>Tell an absolute path from a relative one and predict where each points after a move</li><li>Read a permission string and say who may read, write or run the file</li><li>Make a script independent of the folder it is run from</li></ul></td><td><a href="labs/D1_1_project_folder.html">Lab 1.1 · Find your way round the project folder</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>2</td><td><b>Pipes, redirection and filters</b><br>Small programs joined by pipes answer counting questions over thousands of lines<ul><li>Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question</li><li>Redirect output and errors to files</li><li>Find a hidden character or a repeated line that skews a count</li></ul></td><td><a href="labs/D1_2_counting_pipeline.html">Lab 1.2 · A counting pipeline over synthetic logs</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>3</td><td><b>Variables, exit codes and SSH</b><br>A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere<ul><li>Pass a folder as an argument with an environment variable as the fallback</li><li>Make a script stop with a non-zero exit code and a message on stderr</li><li>Create an SSH key pair, read its fingerprint and write a host entry</li></ul></td><td><a href="labs/D1_3_second_folder_key.html">Lab 1.3 · The counting script on a second folder, and a practice key</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>4</td><td><b>Commits, staging and history</b><br>A commit is a snapshot with a parent; a branch is a name that points at one<ul><li>Draw the commit graph that a sequence of commands produces</li><li>Tell what is changed, what is staged and what is committed</li><li>Read git log --graph and match it to a drawing</li></ul></td><td><a href="labs/D1_4_draw_the_graph.html">Lab 1.4 · Draw the graph, then check it</a> <span class="muted">(35 min)</span></td></tr>
+</table></div>
+</div>
+<div class="day">
+<div class="day-head c-cyan"><div><div class="t">Day 2 · 4 sessions · 4 labs</div><h3>Working together on one history</h3></div><a class="btn" href="slides/day2.html">Open the slides</a></div>
+<div class="scroll"><table>
+<tr><th>Session</th><th>Topic</th><th>Lab</th></tr>
+<tr><td>1</td><td><b>Branches, merges and conflicts</b><br>Two lines of work join in a merge; when both changed the same lines, a person decides<ul><li>Tell a fast-forward from a merge commit on a graph</li><li>Read conflict markers and keep both changes where both are right</li><li>Push, fetch and read origin/main as the hub's last known state</li></ul></td><td><a href="labs/D2_1_merge_alone.html">Lab 2.1 · Merge two branches and resolve a conflict alone</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>2</td><td><b>Pull requests and review etiquette</b><br>Main changes only through small, reviewed requests; a good comment names a line and a reason<ul><li>Open a small pull request from a branch with a title that says what changes</li><li>Write review comments that name a line and a reason, and answer them with commits</li><li>Resolve a conflict on your own branch before the merge</li></ul></td><td><a href="labs/D2_2_team_review.html">Lab 2.2 · Branch, review and resolve a conflict in teams of three</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>3</td><td><b>Undoing mistakes</b><br>Each mistake has its own undo, and a pushed commit is undone with a new one<ul><li>Choose between restore, amend, reset and revert for a given mistake</li><li>Undo a pushed commit without rewriting what others pulled</li><li>Recover a lost commit or branch from the reflog</li></ul></td><td><a href="labs/D2_3_undo_five.html">Lab 2.3 · Undo five mistakes</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>4</td><td><b>Virtual environments and lock files</b><br>Declare what the project needs, lock the exact versions, and rebuild from the lock<ul><li>Explain why a project runs on one machine and fails on another</li><li>Declare dependencies and lock them with an environment manager</li><li>Rebuild a fresh environment from the lock and compare the output</li></ul></td><td><a href="labs/D2_4_second_machine.html">Lab 2.4 · Rescue a project that fails on a second machine</a> <span class="muted">(35 min)</span></td></tr>
+</table></div>
+</div>
+<div class="day">
+<div class="day-head c-coral"><div><div class="t">Day 3 · 4 sessions · 4 labs</div><h3>Rebuild anywhere, leak nothing</h3></div><a class="btn" href="slides/day3.html">Open the slides</a></div>
+<div class="scroll"><table>
+<tr><th>Session</th><th>Topic</th><th>Lab</th></tr>
+<tr><td>1</td><td><b>One command to rebuild and run</b><br>A reader rebuilds the result with one documented command, and the repository holds code, not data or outputs<ul><li>Keep data and outputs out of the repository and say where they come from</li><li>Write one documented command that rebuilds and checks the result</li><li>Test a README by following it in a clean clone</li></ul></td><td><a href="labs/D3_1_one_command.html">Lab 3.1 · One command, and data kept out of the code</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>2</td><td><b>Images, containers and volumes</b><br>An image is built once from a short definition; each run is a container that sees only what you mount<ul><li>Tell an image from a container and a layer from a mount</li><li>Write a short container definition that installs from the lock</li><li>Run a container without administrator rights with data mounted read-only</li></ul></td><td><a href="labs/D3_2_container.html">Lab 3.2 · Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>3</td><td><b>What a container shares</b><br>A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code<ul><li>Name what a container shares with its host</li><li>Read a key from the environment and stop clearly when it is missing</li><li>Keep the key out of the output and the repository, with an example file in its place</li></ul></td><td><a href="labs/D3_3_key_out_of_code.html">Lab 3.3 · The key out of the code</a> <span class="muted">(35 min)</span></td></tr>
+<tr><td>4</td><td><b>Scanning, and after a leak</b><br>Scan before every commit; after a leak, rotate first, then clean the history and report<ul><li>Run a secret scan over files, staged changes and the whole history</li><li>Carry out the leak response in order: rotate, clean, report</li><li>Install a commit hook that refuses a commit holding a key</li></ul></td><td><a href="labs/D3_4_leaked_key.html">Lab 3.4 · Remediate a seeded leaked key with a scanner and a commit hook</a> <span class="muted">(35 min)</span></td></tr>
+</table></div>
+</div>
+<div class="day">
+<div class="day-head c-amber"><div><div class="t">Capstone</div><h3>Capstone: peer reproduction</h3></div><a class="btn" href="slides/capstone.html">Open the slides</a></div>
+<div class="scroll"><table><tr><td>A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step</td></tr></table></div>
+</div>
+<h2>Capstone</h2>
+<div class="two">
+<div><p>A peer reproduces the participant's repository from the README on a clean workspace; the follow-up task fixes each failed step and records a second, successful reproduction</p><p><b>What you submit:</b> Individual. A link to a public GitHub repository of the participant's own small project, on synthetic or public data only: a README with a Reproduce section, a lock file, a container definition, the secret-scan configuration and a clean scan of the whole history. On the capstone day a peer reproduces it on a clean workspace and files the reproduction log as a pull request; within the follow-up task the participant fixes every failed step and the peer records a second, successful reproduction. Then a seven-minute oral: three minutes on one failed step and its fix, four of questions.</p><p><b>Format:</b> 3 min talk and demo · 4 min Q&amp;A</p></div>
+<div><h3>Rubric</h3><div class="bar c-teal"><span>README: prerequisites, where the data comes from, one documented rebuild command and the expected output<i style="--w:67%"></i></span><b>20%</b></div><div class="bar c-cyan"><span>Clean rebuild: on the peer's clean workspace the locked environment rebuilds and reproduces the expected output<i style="--w:100%"></i></span><b>30%</b></div><div class="bar c-coral"><span>Container: the definition installs from the lock, runs without administrator rights and reads mounted data<i style="--w:50%"></i></span><b>15%</b></div><div class="bar c-purple"><span>Hygiene: configuration read from the environment, a clean scan of the whole history, no data or outputs committed<i style="--w:50%"></i></span><b>15%</b></div><div class="bar c-amber"><span>History: small commits merged through reviewed pull requests, with the peer's log merged by pull request<i style="--w:33%"></i></span><b>10%</b></div><div class="bar c-green"><span>Follow-up: every step the peer could not follow fixed, and the second reproduction log successful<i style="--w:33%"></i></span><b>10%</b></div></div>
+</div>
+<h2>Outcomes</h2>
+<p>By the end of the course, participants can:</p>
+<div class="day"><div class="scroll"><table>
+<tr><th></th><th>Outcomes</th><th>Level</th><th>Evidence</th></tr>
+<tr><td><b>LO1</b></td><td>Explain how Git records history as commits, branches and remotes, and what each everyday command changes, given diagrams of a repository and sequences of commands</td><td>Awareness</td><td>commit graphs drawn correctly for four of five sequences in a supervised check</td></tr>
+<tr><td><b>LO2</b></td><td>Use the shell to inspect and transform files, combining commands with pipes and a short script, given a folder of synthetic log and comma-separated files</td><td>Applied</td><td>a script that produces the requested counts and runs unchanged on a second folder</td></tr>
+<tr><td><b>LO3</b></td><td>Apply a branch, pull request and review workflow, including resolving a merge conflict, given a team repository with a protected main branch</td><td>Applied</td><td>a merged pull request with review comments addressed and a resolved conflict in the history</td></tr>
+<tr><td><b>LO4</b></td><td>Configure an isolated environment with locked dependencies and run the project in a container without administrator rights, given an analysis project that fails on a second machine</td><td>Applied</td><td>a lock file, a container definition and a clean rebuild that reproduces the expected output</td></tr>
+<tr><td><b>LO5</b></td><td>Prepare a repository that keeps secrets out of history, and carry out the response when one leaks, given a project needing an API key, with a seeded leaked key in an old commit</td><td>Applied</td><td>configuration read from the environment, a passing secret scan and a rotation note</td></tr>
+<tr><td><b>LO6</b></td><td>Deliver a repository that a peer reproduces on a clean machine using only its README, given the participant's own small project</td><td>Performance</td><td>the peer's reproduction log and fixes for every step the peer could not follow</td></tr>
+</table></div></div>
+<h2>Tools</h2>
+<div class="grid">
+<div class="card c-teal"><h3>Version control and hosting</h3><p>Git with Forgejo or Gitea · Git with GitLab or GitHub</p></div>
+<div class="card c-cyan"><h3>Environment and lock-file manager</h3><p>uv · Poetry · pip-tools</p></div>
+<div class="card c-coral"><h3>Container engine that runs without administrator rights</h3><p>Podman in rootless mode · Docker in rootless mode</p></div>
+<div class="card c-purple"><h3>Secret scanning and hooks</h3><p>gitleaks with pre-commit · the host's built-in secret scanning</p></div>
+</div>
+<h2>Before you start</h2>
+<h3>Prerequisites</h3>
+<ul><li>Writes and runs a short program in Python or another language</li></ul>
+<div class="note tip">The labs are pages in your browser, linked from the table above and from the slides.</div>
+<h2>Sources</h2>
+<h3>Git</h3>
+<ul><li><a href="https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell">Pro Git: Branches in a Nutshell</a></li><li><a href="https://git-scm.com/docs/git-restore">git-restore documentation</a></li><li><a href="https://git-scm.com/docs/git-reset">git-reset documentation</a></li><li><a href="https://git-scm.com/docs/git-revert">git-revert documentation</a></li><li><a href="https://git-scm.com/docs/git-reflog">git-reflog documentation</a></li><li><a href="https://github.com/newren/git-filter-repo/blob/main/Documentation/git-filter-repo.txt">git-filter-repo manual (--replace-text)</a></li></ul>
+<h3>Hosting, review and protected branches</h3>
+<ul><li><a href="https://docs.gitea.com/usage/access-control/protected-branches">Protected branches (Gitea documentation)</a></li><li><a href="https://forgejo.org/docs/latest/user/">Forgejo user guide</a></li><li><a href="https://docs.github.com/en/code-security/secret-scanning/introduction/about-push-protection">Push protection (GitHub documentation)</a></li><li><a href="https://docs.gitlab.com/user/application_security/secret_detection/">Secret detection (GitLab documentation)</a></li></ul>
+<h3>Environments and lock files</h3>
+<ul><li><a href="https://docs.astral.sh/uv/concepts/projects/layout/">uv: structure and files (uv.lock)</a></li><li><a href="https://docs.astral.sh/uv/concepts/projects/sync/">uv: locking and syncing</a></li><li><a href="https://docs.astral.sh/uv/concepts/projects/export/">uv: exporting a lockfile</a></li><li><a href="https://github.com/python-poetry/poetry">Poetry (project repository)</a></li><li><a href="https://github.com/jazzband/pip-tools">pip-tools (project repository)</a></li></ul>
+<h3>Containers without administrator rights</h3>
+<ul><li><a href="https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md">Podman rootless tutorial</a></li><li><a href="https://docs.podman.io/en/latest/markdown/podman-run.1.html">podman-run (--userns=keep-id)</a></li><li><a href="https://docs.docker.com/engine/security/rootless/">Docker rootless mode</a></li><li><a href="https://docs.docker.com/engine/storage/bind-mounts/">Docker: bind mounts</a></li><li><a href="https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/">Docker: what is a container?</a></li><li><a href="https://hub.docker.com/_/python">The official Python images</a></li></ul>
+<h3>Secrets and remote login</h3>
+<ul><li><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository">Removing sensitive data from a repository (GitHub documentation)</a></li><li><a href="https://github.com/gitleaks/gitleaks">gitleaks</a></li><li><a href="https://pre-commit.com/">pre-commit</a></li><li><a href="https://man.openbsd.org/ssh-keygen">ssh-keygen(1)</a></li><li><a href="https://man.openbsd.org/ssh_config">ssh_config(5)</a></li></ul>
+<h2>Files and links</h2>
+<div class="files">
+<a href="practice.html"><b>practice.html</b><span>Practice questions with feedback</span></a>
+<a href="index.md"><b>index.md</b><span>This page as Markdown, for an AI assistant</span></a>
+<a href="llms.txt"><b>llms.txt</b><span>The course for AI assistants (llms.txt)</span></a>
+<a href="https://github.com/SDAIAAcademy/fnd-prg-102"><b>SDAIAAcademy/fnd-prg-102</b><span>The course repository</span></a>
+</div>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"index.html"},"ai":{"context":{"course":"context/course.md","courseJs":"context/course.js","day":null,"llms":"llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="_engine/academy.js"></script>
+</body>
+</html>

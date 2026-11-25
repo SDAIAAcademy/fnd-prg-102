@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 3.4 · Remediate a seeded leaked key with a scanner and a commit hook · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D3_4_leaked_key.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day3.html#lab-3-4">Back to the slides</a></nav></div>
+<span class="tag">Lab 3.4</span>
+<h1>Remediate a seeded leaked key with a scanner and a commit hook</h1>
+<p>A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one</p>
+<div class="meta"><span>35 minutes</span><span>Day 3</span><span>Session 4: Scanning, and after a leak</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="3.4">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>A report-portal key was committed in a settings file, then removed two commits later; the hub still serves it to anyone who clones. Find it with a scan of the whole history, rotate it first, record what happened, clean it out of every commit, and install a hook so the next one never gets committed.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.4</code>: <code>air-report/</code> with its history and hub, <code>portal/</code> (the key portal stand-in) and <code>ROTATION-template.md</code></li>
+    <li>The project ships <code>tools/scan_secrets.py</code> (the course's small scanner), <code>.gitleaks.toml</code> (the same rule for gitleaks) and <code>.pre-commit-config.yaml</code></li>
+    <li>uv's <code>uvx</code> runs git-filter-repo and pre-commit without installing them</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
+  </ul>
+
+  <div class="step">
+    <h3>Scan the whole history and find the key <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 3.4
+cd 3.4/air-report
+uv run --no-project python tools/scan_secrets.py            # today's files: clean
+uv run --no-project python tools/scan_secrets.py --history  # every commit</code></pre>
+    <p>Which commit added it, which removed it, and since when could anyone with a clone read it?</p>
+  </div>
+
+  <div class="step">
+    <h3>Rotate first <span class="min">7 min</span></h3>
+    <p>Until the old key is revoked, every copy of the history can still use it. Revoke it at the portal, issue a new one, and keep the new one only in <code>.env</code>.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">cd ../.. &amp;&amp; uv run lab.py keys list 3.4
+uv run lab.py keys revoke 3.4 K-0002
+uv run lab.py keys issue 3.4          # shown once: copy it into 3.4/air-report/.env
+cd 3.4/air-report &amp;&amp; git check-ignore -v .env</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Write ROTATION.md <span class="min">6 min</span></h3>
+    <p>Copy <code>../ROTATION-template.md</code> to <code>ROTATION.md</code> and fill its four sections: what leaked, rotated, history cleaned, who was told (the operations lead who owns the portal account, the data protection officer). Name keys by their id, never by their value.</p>
+  </div>
+
+  <div class="step">
+    <h3>Clean the history, force-push, scan again <span class="min">10 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">pwd        # must end in 3.4/air-report: filter-repo rewrites the repository you are in
+printf '%s==&gt;REMOVED\n' '&lt;the old key&gt;' &gt; ../replacements.txt   # outside the repository
+uvx git-filter-repo --replace-text ../replacements.txt --force
+rm ../replacements.txt
+git remote add origin ../hub/air-report.git     # filter-repo removes the remote on purpose
+git push --force origin main
+uv run --no-project python tools/scan_secrets.py --history</code></pre>
+    <p>Every commit from the leak onwards has a new id now. Everyone with an old clone must clone again.</p>
+  </div>
+
+  <div class="step">
+    <h3>Install the hook, see it block a key, and check <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uvx pre-commit install
+git add ROTATION.md &amp;&amp; git commit -m "Add the rotation note" &amp;&amp; git push origin main
+printf 'key = "fprg102_demo_%s"\n' cdcdcdcdcdcdcdcdcdcdcdcd &gt; probe.toml
+git add probe.toml &amp;&amp; git commit -m "probe"     # refused
+git reset -q -- probe.toml &amp;&amp; rm probe.toml
+cd ../.. &amp;&amp; uv run lab.py check 3.4</code></pre>
+    <p>If <code>pre-commit install</code> refuses because <code>core.hooksPath</code> is set on your machine, use the plain hook instead, from the workspace folder: <code>cp _kit/files/3.4/pre-commit-hook 3.4/air-report/.git/hooks/pre-commit</code>, then <code>git -C 3.4/air-report config core.hooksPath .git/hooks</code> so that this repository alone uses it. It runs the same scan.</p>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Where gitleaks is allowed: run <code>gitleaks git</code> on a copy of the history from before the clean-up, with the repository's <code>.gitleaks.toml</code>, and compare what it finds with the course scanner. Or push a test key to a class host with push protection switched on and read its refusal.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why is rotating first, before cleaning the history?</li>
+    <li>After the force-push, what must a teammate with an old clone do, and what happens if they push from it?</li>
+    <li>Why does the scanner print only the first characters of a key it finds?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>The leak: <code>settings.toml</code> in "Add the portal settings" (key id K-0002), removed in "Read the portal key from the environment". The first scan reports two findings in that commit (the portal-key rule and the assigned-secret rule). The check: a clean scan of the history in the clone and in the hub, K-0002 revoked, exactly one active key and it is in <code>.env</code>, <code>.env</code> ignored, <code>ROTATION.md</code> committed with four sections and no key value, a hook that refuses a commit holding a key.</p>
+    <p>Verified when the course was built: the course scanner, the portal stand-in, git-filter-repo through <code>uvx</code>, and pre-commit 4.7.0 through <code>uvx</code> with the local hook (the lab unsets <code>core.hooksPath</code> in this one repository; a machine-wide setting still makes pre-commit refuse, hence the plain hook). Not run: gitleaks itself (not installed on the build machine) and a host's push protection. GitHub's guidance on removing sensitive data says to revoke or rotate the secret as the first step. Solution: <code>labs/solutions/S3_4.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D3_3_key_out_of_code.html" rel="prev">← Previous lab</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"3.4","title":"Remediate a seeded leaked key with a scanner and a commit hook","summary":"A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one","minutes":35,"day":3,"unit":"Day 3","session":4,"deck":"../slides/day3.html#lab-3-4","prev":"D3_3_key_out_of_code.html","next":null,"alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

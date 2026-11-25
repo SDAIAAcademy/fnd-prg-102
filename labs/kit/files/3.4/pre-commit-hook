@@ -1,0 +1,4 @@
+#!/bin/sh
+# A plain git hook, for machines where "pre-commit install" refuses (core.hooksPath is set).
+# Copy to .git/hooks/pre-commit. It refuses a commit that adds a secret.
+exec uv run --no-project -q python tools/scan_secrets.py --staged

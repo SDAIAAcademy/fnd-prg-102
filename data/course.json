@@ -1,0 +1,895 @@
+{
+  "v": 1,
+  "engine": "1.0.0",
+  "build": {
+    "at": "2026-11-25T09:41:52Z",
+    "version": "2027.1.0",
+    "commit": "89bccf3"
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "langs": [
+    "en"
+  ],
+  "alt": {},
+  "course": {
+    "id": "fnd-prg-102",
+    "code": "FND-PRG-102",
+    "version": "2027.1.0",
+    "title": "Command Line, Git and Reproducible Environments",
+    "tagline": "Set up work that another person can rebuild from a clean machine: shell scripts, a reviewed Git history, locked environments, a container and no secrets in history",
+    "description": "Participants set up work that another person can rebuild from a clean machine. They script the shell, use Git with branches, pull requests and review on a shared repository, resolve a merge conflict, lock dependencies, run a project in a container without administrator rights, and keep secrets out of history.",
+    "track": "foundations",
+    "track_name": "Data & AI Foundations Track",
+    "level": 100,
+    "badge": null,
+    "audience": "Beginners. Graduates and career changers heading for analysis, data science, data engineering or AI engineering courses, and computing graduates whose degree did not require testing, version control or reproducible environments.",
+    "prerequisites": [
+      "Writes and runs a short program in Python or another language"
+    ],
+    "url": "https://sdaiaacademy.github.io/fnd-prg-102/",
+    "repo": "SDAIAAcademy/fnd-prg-102",
+    "home": "../index.html",
+    "format": "intensive",
+    "format_note": "Intensive: 3 teaching days and a capstone day, with guided pre-work and a tracked follow-up task",
+    "shape": "3 teaching days + capstone day",
+    "hours": {
+      "instruction": 5,
+      "lab": 7,
+      "guided_self_study": 5,
+      "assessment": 1,
+      "capstone": 6,
+      "total": 24
+    },
+    "unit": "day",
+    "outcomes": [
+      {
+        "id": "LO1",
+        "text": "Explain how Git records history as commits, branches and remotes, and what each everyday command changes, given diagrams of a repository and sequences of commands",
+        "level": "Awareness",
+        "evidence": "commit graphs drawn correctly for four of five sequences in a supervised check"
+      },
+      {
+        "id": "LO2",
+        "text": "Use the shell to inspect and transform files, combining commands with pipes and a short script, given a folder of synthetic log and comma-separated files",
+        "level": "Applied",
+        "evidence": "a script that produces the requested counts and runs unchanged on a second folder"
+      },
+      {
+        "id": "LO3",
+        "text": "Apply a branch, pull request and review workflow, including resolving a merge conflict, given a team repository with a protected main branch",
+        "level": "Applied",
+        "evidence": "a merged pull request with review comments addressed and a resolved conflict in the history"
+      },
+      {
+        "id": "LO4",
+        "text": "Configure an isolated environment with locked dependencies and run the project in a container without administrator rights, given an analysis project that fails on a second machine",
+        "level": "Applied",
+        "evidence": "a lock file, a container definition and a clean rebuild that reproduces the expected output"
+      },
+      {
+        "id": "LO5",
+        "text": "Prepare a repository that keeps secrets out of history, and carry out the response when one leaks, given a project needing an API key, with a seeded leaked key in an old commit",
+        "level": "Applied",
+        "evidence": "configuration read from the environment, a passing secret scan and a rotation note"
+      },
+      {
+        "id": "LO6",
+        "text": "Deliver a repository that a peer reproduces on a clean machine using only its README, given the participant's own small project",
+        "level": "Performance",
+        "evidence": "the peer's reproduction log and fixes for every step the peer could not follow"
+      }
+    ],
+    "case_study": {
+      "name": "The air-quality monitoring company",
+      "summary": "A private contractor (fictional, unnamed) that runs twelve dust and particle sensor stations, ST01 to ST12, at four clients' sites in one unnamed city; its monthly client report is a Python project that only runs on the analyst's laptop. Every lab works on synthetic hourly logs for October and November 2026 generated with a fixed seed, with planted traps (comment lines, Windows line endings, duplicate lines after a logger restart, a two-day gap), and on a seeded report-portal key whose prefix is the course's own; people appear only as roles."
+    },
+    "days": [
+      {
+        "id": "day1",
+        "kind": "day",
+        "n": 1,
+        "number": 1,
+        "label": "Day 1",
+        "title": "The shell and the commit graph",
+        "subtitle": "Find, count and script in the shell, then draw what Git records",
+        "shape": "4 sessions · 4 labs",
+        "deck": "../slides/day1.html",
+        "md": "../slides/day1.md",
+        "url": "https://sdaiaacademy.github.io/fnd-prg-102/slides/day1.html",
+        "sessions": [
+          {
+            "n": 1,
+            "label": "Session 1",
+            "title": "Paths and permissions",
+            "summary": "Where you are, how a path is read, and who may read, change or run a file",
+            "outcomes": [
+              "Tell an absolute path from a relative one and predict where each points after a move",
+              "Read a permission string and say who may read, write or run the file",
+              "Make a script independent of the folder it is run from"
+            ],
+            "lo": [
+              "LO2"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "1.1",
+              "title": "Find your way round the project folder",
+              "summary": "Addition: map the report folder, read permission strings, and fix a script that ran on one computer only",
+              "minutes": 35,
+              "href": "../labs/D1_1_project_folder.html",
+              "steps": [
+                {
+                  "text": "Start the lab and see where you are: pwd, ls -a",
+                  "minutes": 4
+                },
+                {
+                  "text": "Map the logs with find, ls -S and du",
+                  "minutes": 8
+                },
+                {
+                  "text": "Read the permission strings of listing.txt and answer in answers.md",
+                  "minutes": 8
+                },
+                {
+                  "text": "Fix run_counts.sh: its own folder, and quotes round a folder name with a space",
+                  "minutes": 10
+                },
+                {
+                  "text": "Run it from the workspace folder and check the lab",
+                  "minutes": 5
+                }
+              ],
+              "stretch": "On a Linux workspace, chmod u+x the script, run it as ./run_counts.sh, and say why bash never needed that"
+            }
+          },
+          {
+            "n": 2,
+            "label": "Session 2",
+            "title": "Pipes, redirection and filters",
+            "summary": "Small programs joined by pipes answer counting questions over thousands of lines",
+            "outcomes": [
+              "Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question",
+              "Redirect output and errors to files",
+              "Find a hidden character or a repeated line that skews a count"
+            ],
+            "lo": [
+              "LO2"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "1.2",
+              "title": "A counting pipeline over synthetic logs",
+              "summary": "Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh",
+              "minutes": 35,
+              "href": "../labs/D1_2_counting_pipeline.html",
+              "steps": [
+                {
+                  "text": "Look at the logs: head, tail, wc -l",
+                  "minutes": 4
+                },
+                {
+                  "text": "Count the reading lines without comments or blank lines (Q1)",
+                  "minutes": 5
+                },
+                {
+                  "text": "Lines per status, and the carriage-return trap (Q2)",
+                  "minutes": 8
+                },
+                {
+                  "text": "The three stations with most errors, and each error code (Q3, Q4)",
+                  "minutes": 8
+                },
+                {
+                  "text": "Duplicate lines after a restart, and stations per client from the CSV (Q5, Q6)",
+                  "minutes": 6
+                },
+                {
+                  "text": "Save the output to counts.txt and check the lab",
+                  "minutes": 4
+                }
+              ],
+              "stretch": "Alert hours (PM10 above 150) per station with awk, each hour counted once"
+            }
+          },
+          {
+            "n": 3,
+            "label": "Session 3",
+            "title": "Variables, exit codes and SSH",
+            "summary": "A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere",
+            "outcomes": [
+              "Pass a folder as an argument with an environment variable as the fallback",
+              "Make a script stop with a non-zero exit code and a message on stderr",
+              "Create an SSH key pair, read its fingerprint and write a host entry"
+            ],
+            "lo": [
+              "LO2"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "1.3",
+              "title": "The counting script on a second folder, and a practice key",
+              "summary": "Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry",
+              "minutes": 35,
+              "href": "../labs/D1_3_second_folder_key.html",
+              "steps": [
+                {
+                  "text": "Take the folder as $1, with AIR_LOGS as the fallback",
+                  "minutes": 8
+                },
+                {
+                  "text": "Stop with exit code 2 and a message on stderr; set -euo pipefail",
+                  "minutes": 7
+                },
+                {
+                  "text": "Run it unchanged on the November folder",
+                  "minutes": 5
+                },
+                {
+                  "text": "Make a practice Ed25519 key pair in keys/ and save its fingerprint",
+                  "minutes": 6
+                },
+                {
+                  "text": "Write the ssh_config entry and check the lab",
+                  "minutes": 9
+                }
+              ],
+              "stretch": "Log in to the provided Linux workspace with the key and run counts.sh there"
+            }
+          },
+          {
+            "n": 4,
+            "label": "Session 4",
+            "title": "Commits, staging and history",
+            "summary": "A commit is a snapshot with a parent; a branch is a name that points at one",
+            "outcomes": [
+              "Draw the commit graph that a sequence of commands produces",
+              "Tell what is changed, what is staged and what is committed",
+              "Read git log --graph and match it to a drawing"
+            ],
+            "lo": [
+              "LO1"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "1.4",
+              "title": "Draw the graph, then check it",
+              "summary": "Addition: predict the graphs of three command sequences on paper, run them, compare with git log --graph",
+              "minutes": 35,
+              "href": "../labs/D1_4_draw_the_graph.html",
+              "steps": [
+                {
+                  "text": "Predict, then run sequence 1",
+                  "minutes": 6
+                },
+                {
+                  "text": "Compare with git log --graph and correct your drawing",
+                  "minutes": 4
+                },
+                {
+                  "text": "Sequence 2: stage one change of two and read both diffs",
+                  "minutes": 9
+                },
+                {
+                  "text": "Sequence 3: a branch that moves while main moves too",
+                  "minutes": 10
+                },
+                {
+                  "text": "Answer the four questions and check the lab",
+                  "minutes": 6
+                }
+              ],
+              "stretch": "Predict what git commit --amend does to your drawing, then try it and compare the ids"
+            }
+          }
+        ]
+      },
+      {
+        "id": "day2",
+        "kind": "day",
+        "n": 2,
+        "number": 2,
+        "label": "Day 2",
+        "title": "Working together on one history",
+        "subtitle": "Branches, reviewed pull requests, conflicts, undoing, and an environment that rebuilds",
+        "shape": "4 sessions · 4 labs",
+        "deck": "../slides/day2.html",
+        "md": "../slides/day2.md",
+        "url": "https://sdaiaacademy.github.io/fnd-prg-102/slides/day2.html",
+        "sessions": [
+          {
+            "n": 1,
+            "label": "Session 1",
+            "title": "Branches, merges and conflicts",
+            "summary": "Two lines of work join in a merge; when both changed the same lines, a person decides",
+            "outcomes": [
+              "Tell a fast-forward from a merge commit on a graph",
+              "Read conflict markers and keep both changes where both are right",
+              "Push, fetch and read origin/main as the hub's last known state"
+            ],
+            "lo": [
+              "LO1",
+              "LO3"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "2.1",
+              "title": "Merge two branches and resolve a conflict alone",
+              "summary": "Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub",
+              "minutes": 35,
+              "href": "../labs/D2_1_merge_alone.html",
+              "steps": [
+                {
+                  "text": "Read the graph and both branches",
+                  "minutes": 5
+                },
+                {
+                  "text": "Merge the first branch: a fast-forward",
+                  "minutes": 5
+                },
+                {
+                  "text": "Merge the second and read the conflict markers",
+                  "minutes": 7
+                },
+                {
+                  "text": "Resolve so both changes survive, and commit",
+                  "minutes": 10
+                },
+                {
+                  "text": "Push to the hub, fetch, read origin/main and check the lab",
+                  "minutes": 8
+                }
+              ],
+              "stretch": "In a copy, rebase the second branch onto main instead and compare the graphs"
+            }
+          },
+          {
+            "n": 2,
+            "label": "Session 2",
+            "title": "Pull requests and review etiquette",
+            "summary": "Main changes only through small, reviewed requests; a good comment names a line and a reason",
+            "outcomes": [
+              "Open a small pull request from a branch with a title that says what changes",
+              "Write review comments that name a line and a reason, and answer them with commits",
+              "Resolve a conflict on your own branch before the merge"
+            ],
+            "lo": [
+              "LO3"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "2.2",
+              "title": "Branch, review and resolve a conflict in teams of three",
+              "summary": "Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged",
+              "minutes": 35,
+              "href": "../labs/D2_2_team_review.html",
+              "steps": [
+                {
+                  "text": "Take roles; try to push to main and read the refusal",
+                  "minutes": 4
+                },
+                {
+                  "text": "Authors: one branch, one commit and one pull request each",
+                  "minutes": 8
+                },
+                {
+                  "text": "Reviewer comments on a line, with a reason; authors answer with a commit",
+                  "minutes": 9
+                },
+                {
+                  "text": "Merge the first; the second author merges main into the branch and resolves",
+                  "minutes": 9
+                },
+                {
+                  "text": "Reviewer approves the new commits; merge and check the lab",
+                  "minutes": 5
+                }
+              ],
+              "stretch": "Write the team's five-line review checklist and add it through a third pull request"
+            }
+          },
+          {
+            "n": 3,
+            "label": "Session 3",
+            "title": "Undoing mistakes",
+            "summary": "Each mistake has its own undo, and a pushed commit is undone with a new one",
+            "outcomes": [
+              "Choose between restore, amend, reset and revert for a given mistake",
+              "Undo a pushed commit without rewriting what others pulled",
+              "Recover a lost commit or branch from the reflog"
+            ],
+            "lo": [
+              "LO1",
+              "LO3"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "2.3",
+              "title": "Undo five mistakes",
+              "summary": "Addition: five mistakes in one repository, each with its own undo, one of them already pushed",
+              "minutes": 35,
+              "href": "../labs/D2_3_undo_five.html",
+              "steps": [
+                {
+                  "text": "Read the state: status, log and what is pushed",
+                  "minutes": 4
+                },
+                {
+                  "text": "Unstage a file and discard a stray change with restore",
+                  "minutes": 6
+                },
+                {
+                  "text": "Drop a local commit with reset and fix the last one with amend",
+                  "minutes": 9
+                },
+                {
+                  "text": "Undo the pushed commit with revert, and push",
+                  "minutes": 8
+                },
+                {
+                  "text": "Bring back the deleted branch from the reflog and check the lab",
+                  "minutes": 8
+                }
+              ],
+              "stretch": "For each of the five, write whether the same undo is safe after a push, and why"
+            }
+          },
+          {
+            "n": 4,
+            "label": "Session 4",
+            "title": "Virtual environments and lock files",
+            "summary": "Declare what the project needs, lock the exact versions, and rebuild from the lock",
+            "outcomes": [
+              "Explain why a project runs on one machine and fails on another",
+              "Declare dependencies and lock them with an environment manager",
+              "Rebuild a fresh environment from the lock and compare the output"
+            ],
+            "lo": [
+              "LO4"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "2.4",
+              "title": "Rescue a project that fails on a second machine",
+              "summary": "Clone the report project as a second machine, read why it fails, then declare, lock and rebuild it to the expected output",
+              "minutes": 35,
+              "href": "../labs/D2_4_second_machine.html",
+              "steps": [
+                {
+                  "text": "Clone to a second machine, run it and read each failure",
+                  "minutes": 7
+                },
+                {
+                  "text": "Name the causes: an undeclared package, a path on one computer, no versions",
+                  "minutes": 5
+                },
+                {
+                  "text": "Declare with uv init and uv add, pin Python, lock",
+                  "minutes": 8
+                },
+                {
+                  "text": "Take the data folder as an argument; rebuild fresh and compare",
+                  "minutes": 10
+                },
+                {
+                  "text": "Commit pyproject.toml and uv.lock; check the lab",
+                  "minutes": 5
+                }
+              ],
+              "stretch": "Lock the same project with pip-tools (pip-compile --generate-hashes) and compare"
+            }
+          }
+        ]
+      },
+      {
+        "id": "day3",
+        "kind": "day",
+        "n": 3,
+        "number": 3,
+        "label": "Day 3",
+        "title": "Rebuild anywhere, leak nothing",
+        "subtitle": "One documented command, a container with mounted data, and keys kept out of history",
+        "shape": "4 sessions · 4 labs",
+        "deck": "../slides/day3.html",
+        "md": "../slides/day3.md",
+        "url": "https://sdaiaacademy.github.io/fnd-prg-102/slides/day3.html",
+        "sessions": [
+          {
+            "n": 1,
+            "label": "Session 1",
+            "title": "One command to rebuild and run",
+            "summary": "A reader rebuilds the result with one documented command, and the repository holds code, not data or outputs",
+            "outcomes": [
+              "Keep data and outputs out of the repository and say where they come from",
+              "Write one documented command that rebuilds and checks the result",
+              "Test a README by following it in a clean clone"
+            ],
+            "lo": [
+              "LO4",
+              "LO6"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "3.1",
+              "title": "One command, and data kept out of the code",
+              "summary": "Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone",
+              "minutes": 35,
+              "href": "../labs/D3_1_one_command.html",
+              "steps": [
+                {
+                  "text": "List what the repository carries with git ls-files",
+                  "minutes": 4
+                },
+                {
+                  "text": "Stop tracking data and output: git rm --cached and .gitignore",
+                  "minutes": 7
+                },
+                {
+                  "text": "Write rebuild.sh: sync the lock, run, compare with the expected checksum",
+                  "minutes": 9
+                },
+                {
+                  "text": "Write the README's Reproduce section",
+                  "minutes": 6
+                },
+                {
+                  "text": "Clone to a clean folder, follow the README only, and check the lab",
+                  "minutes": 9
+                }
+              ],
+              "stretch": "Make rebuild.sh print the versions it ran with, for the reproduction log"
+            }
+          },
+          {
+            "n": 2,
+            "label": "Session 2",
+            "title": "Images, containers and volumes",
+            "summary": "An image is built once from a short definition; each run is a container that sees only what you mount",
+            "outcomes": [
+              "Tell an image from a container and a layer from a mount",
+              "Write a short container definition that installs from the lock",
+              "Run a container without administrator rights with data mounted read-only"
+            ],
+            "lo": [
+              "LO4"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "3.2",
+              "title": "Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace",
+              "summary": "Complete a container definition that installs from the lock, build it rootless, run it on read-only logs",
+              "minutes": 35,
+              "href": "../labs/D3_2_container.html",
+              "steps": [
+                {
+                  "text": "Check the engine runs without administrator rights",
+                  "minutes": 4
+                },
+                {
+                  "text": "Export the lock as hashed requirements",
+                  "minutes": 5
+                },
+                {
+                  "text": "Fill the five numbered gaps of the Containerfile",
+                  "minutes": 10
+                },
+                {
+                  "text": "Build the image",
+                  "minutes": 6
+                },
+                {
+                  "text": "Run it with the logs mounted read-only and the output mounted; compare and check",
+                  "minutes": 10
+                }
+              ],
+              "stretch": "Change report.py, rebuild, and see which layers are rebuilt"
+            }
+          },
+          {
+            "n": 3,
+            "label": "Session 3",
+            "title": "What a container shares",
+            "summary": "A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code",
+            "outcomes": [
+              "Name what a container shares with its host",
+              "Read a key from the environment and stop clearly when it is missing",
+              "Keep the key out of the output and the repository, with an example file in its place"
+            ],
+            "lo": [
+              "LO4",
+              "LO5"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "3.3",
+              "title": "The key out of the code",
+              "summary": "Addition: move the portal key from the code to the environment, with .env.example committed and the key masked",
+              "minutes": 35,
+              "href": "../labs/D3_3_key_out_of_code.html",
+              "steps": [
+                {
+                  "text": "Find the key in the code and in the output of a run",
+                  "minutes": 5
+                },
+                {
+                  "text": "Read it from AIR_PORTAL_KEY; stop with exit 2 when it is missing",
+                  "minutes": 10
+                },
+                {
+                  "text": "Write .env.example, keep .env ignored, run with uv run --env-file",
+                  "minutes": 8
+                },
+                {
+                  "text": "Print only the key's last four characters",
+                  "minutes": 5
+                },
+                {
+                  "text": "Commit, find the key still in history with git log -S, and check the lab",
+                  "minutes": 7
+                }
+              ],
+              "stretch": "Run the container with --env-file .env and list what it can see"
+            }
+          },
+          {
+            "n": 4,
+            "label": "Session 4",
+            "title": "Scanning, and after a leak",
+            "summary": "Scan before every commit; after a leak, rotate first, then clean the history and report",
+            "outcomes": [
+              "Run a secret scan over files, staged changes and the whole history",
+              "Carry out the leak response in order: rotate, clean, report",
+              "Install a commit hook that refuses a commit holding a key"
+            ],
+            "lo": [
+              "LO5"
+            ],
+            "minutes": 60,
+            "lab": {
+              "id": "3.4",
+              "title": "Remediate a seeded leaked key with a scanner and a commit hook",
+              "summary": "A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one",
+              "minutes": 35,
+              "href": "../labs/D3_4_leaked_key.html",
+              "steps": [
+                {
+                  "text": "Scan the whole history and find the key",
+                  "minutes": 5
+                },
+                {
+                  "text": "Rotate first: revoke the old key and issue a new one into .env",
+                  "minutes": 7
+                },
+                {
+                  "text": "Write ROTATION.md",
+                  "minutes": 6
+                },
+                {
+                  "text": "Clean the history with git filter-repo, force-push, scan again",
+                  "minutes": 10
+                },
+                {
+                  "text": "Install the hook, see it block a key, and check the lab",
+                  "minutes": 7
+                }
+              ],
+              "stretch": "Run gitleaks with .gitleaks.toml, or the host's push protection, and compare"
+            }
+          }
+        ]
+      },
+      {
+        "id": "capstone",
+        "kind": "capstone",
+        "n": 4,
+        "number": null,
+        "label": "Capstone",
+        "title": "Capstone: peer reproduction",
+        "subtitle": "A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step",
+        "shape": "",
+        "deck": "../slides/capstone.html",
+        "md": "../slides/capstone.md",
+        "url": "https://sdaiaacademy.github.io/fnd-prg-102/slides/capstone.html",
+        "sessions": []
+      }
+    ],
+    "capstone": {
+      "summary": "A peer reproduces the participant's repository from the README on a clean workspace; the follow-up task fixes each failed step and records a second, successful reproduction",
+      "submission": "Individual. A link to a public GitHub repository of the participant's own small project, on synthetic or public data only: a README with a Reproduce section, a lock file, a container definition, the secret-scan configuration and a clean scan of the whole history. On the capstone day a peer reproduces it on a clean workspace and files the reproduction log as a pull request; within the follow-up task the participant fixes every failed step and the peer records a second, successful reproduction. Then a seven-minute oral: three minutes on one failed step and its fix, four of questions.",
+      "talk_minutes": 3,
+      "qa_minutes": 4,
+      "rubric": [
+        {
+          "criterion": "README: prerequisites, where the data comes from, one documented rebuild command and the expected output",
+          "weight": 20
+        },
+        {
+          "criterion": "Clean rebuild: on the peer's clean workspace the locked environment rebuilds and reproduces the expected output",
+          "weight": 30
+        },
+        {
+          "criterion": "Container: the definition installs from the lock, runs without administrator rights and reads mounted data",
+          "weight": 15
+        },
+        {
+          "criterion": "Hygiene: configuration read from the environment, a clean scan of the whole history, no data or outputs committed",
+          "weight": 15
+        },
+        {
+          "criterion": "History: small commits merged through reviewed pull requests, with the peer's log merged by pull request",
+          "weight": 10
+        },
+        {
+          "criterion": "Follow-up: every step the peer could not follow fixed, and the second reproduction log successful",
+          "weight": 10
+        }
+      ]
+    },
+    "labs": {
+      "kind": "pages",
+      "base": "labs/"
+    },
+    "tools": [
+      {
+        "slot": "Version control and hosting",
+        "examples": [
+          "Git with Forgejo or Gitea",
+          "Git with GitLab or GitHub"
+        ]
+      },
+      {
+        "slot": "Environment and lock-file manager",
+        "examples": [
+          "uv",
+          "Poetry",
+          "pip-tools"
+        ]
+      },
+      {
+        "slot": "Container engine that runs without administrator rights",
+        "examples": [
+          "Podman in rootless mode",
+          "Docker in rootless mode"
+        ]
+      },
+      {
+        "slot": "Secret scanning and hooks",
+        "examples": [
+          "gitleaks with pre-commit",
+          "the host's built-in secret scanning"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "group": "Git",
+        "items": [
+          {
+            "title": "Pro Git: Branches in a Nutshell",
+            "url": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell"
+          },
+          {
+            "title": "git-restore documentation",
+            "url": "https://git-scm.com/docs/git-restore"
+          },
+          {
+            "title": "git-reset documentation",
+            "url": "https://git-scm.com/docs/git-reset"
+          },
+          {
+            "title": "git-revert documentation",
+            "url": "https://git-scm.com/docs/git-revert"
+          },
+          {
+            "title": "git-reflog documentation",
+            "url": "https://git-scm.com/docs/git-reflog"
+          },
+          {
+            "title": "git-filter-repo manual (--replace-text)",
+            "url": "https://github.com/newren/git-filter-repo/blob/main/Documentation/git-filter-repo.txt"
+          }
+        ]
+      },
+      {
+        "group": "Hosting, review and protected branches",
+        "items": [
+          {
+            "title": "Protected branches (Gitea documentation)",
+            "url": "https://docs.gitea.com/usage/access-control/protected-branches"
+          },
+          {
+            "title": "Forgejo user guide",
+            "url": "https://forgejo.org/docs/latest/user/"
+          },
+          {
+            "title": "Push protection (GitHub documentation)",
+            "url": "https://docs.github.com/en/code-security/secret-scanning/introduction/about-push-protection"
+          },
+          {
+            "title": "Secret detection (GitLab documentation)",
+            "url": "https://docs.gitlab.com/user/application_security/secret_detection/"
+          }
+        ]
+      },
+      {
+        "group": "Environments and lock files",
+        "items": [
+          {
+            "title": "uv: structure and files (uv.lock)",
+            "url": "https://docs.astral.sh/uv/concepts/projects/layout/"
+          },
+          {
+            "title": "uv: locking and syncing",
+            "url": "https://docs.astral.sh/uv/concepts/projects/sync/"
+          },
+          {
+            "title": "uv: exporting a lockfile",
+            "url": "https://docs.astral.sh/uv/concepts/projects/export/"
+          },
+          {
+            "title": "Poetry (project repository)",
+            "url": "https://github.com/python-poetry/poetry"
+          },
+          {
+            "title": "pip-tools (project repository)",
+            "url": "https://github.com/jazzband/pip-tools"
+          }
+        ]
+      },
+      {
+        "group": "Containers without administrator rights",
+        "items": [
+          {
+            "title": "Podman rootless tutorial",
+            "url": "https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md"
+          },
+          {
+            "title": "podman-run (--userns=keep-id)",
+            "url": "https://docs.podman.io/en/latest/markdown/podman-run.1.html"
+          },
+          {
+            "title": "Docker rootless mode",
+            "url": "https://docs.docker.com/engine/security/rootless/"
+          },
+          {
+            "title": "Docker: bind mounts",
+            "url": "https://docs.docker.com/engine/storage/bind-mounts/"
+          },
+          {
+            "title": "Docker: what is a container?",
+            "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/"
+          },
+          {
+            "title": "The official Python images",
+            "url": "https://hub.docker.com/_/python"
+          }
+        ]
+      },
+      {
+        "group": "Secrets and remote login",
+        "items": [
+          {
+            "title": "Removing sensitive data from a repository (GitHub documentation)",
+            "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
+          },
+          {
+            "title": "gitleaks",
+            "url": "https://github.com/gitleaks/gitleaks"
+          },
+          {
+            "title": "pre-commit",
+            "url": "https://pre-commit.com/"
+          },
+          {
+            "title": "ssh-keygen(1)",
+            "url": "https://man.openbsd.org/ssh-keygen"
+          },
+          {
+            "title": "ssh_config(5)",
+            "url": "https://man.openbsd.org/ssh_config"
+          }
+        ]
+      }
+    ]
+  }
+}

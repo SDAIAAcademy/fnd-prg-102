@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 2.1 · Merge two branches and resolve a conflict alone · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D2_1_merge_alone.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day2.html#lab-2-1">Back to the slides</a></nav></div>
+<span class="tag">Lab 2.1</span>
+<h1>Merge two branches and resolve a conflict alone</h1>
+<p>Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub</p>
+<div class="meta"><span>35 minutes</span><span>Day 2</span><span>Session 1: Branches, merges and conflicts</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="2.1">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>Two branches changed the report template: the analyst's says the threshold is the company's own rule, the field technician's adds a sector line and says the threshold is an hourly mean. Bring both into <code>main</code> so that every change survives, then push to the hub.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 2.1</code>: <code>report-repo/</code> with <code>main</code> and two branches, and <code>hub/report.git</code>, the stand-in for the class Git host (its <code>origin</code>)</li>
+    <li>AI policy: <b>off</b> for the first attempt. Resolving a conflict by reading it is the skill</li>
+  </ul>
+
+  <div class="step">
+    <h3>Read the graph and both branches <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 2.1
+cd 2.1/report-repo
+git log --oneline --graph --all
+git diff main fix/threshold-wording
+git diff main feature/sector-line</code></pre>
+    <p>Draw the graph on paper. Predict: which of the two merges will be a fast-forward, and which will make a merge commit?</p>
+  </div>
+
+  <div class="step">
+    <h3>Merge the first branch <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git merge fix/threshold-wording
+git log --oneline --graph --all</code></pre>
+    <p>Read the first line of the output. What did Git do to <code>main</code>, and did it make a new commit?</p>
+  </div>
+
+  <div class="step">
+    <h3>Merge the second and read the conflict <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git merge feature/sector-line
+git status --short
+cat client_report.md</code></pre>
+    <p>Between <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> and <code>=======</code> is <code>main</code> as it is now; between <code>=======</code> and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is the branch. Neither side is wrong: each changed the same line for a different reason.</p>
+  </div>
+
+  <div class="step">
+    <h3>Resolve so both changes survive, and commit <span class="min">10 min</span></h3>
+    <p>Edit <code>client_report.md</code>: keep the sector line, and write one threshold line that says both things. Remove every marker line.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">grep -n '^&lt;&lt;&lt;&lt;&lt;&lt;&lt;\|^=======\|^&gt;&gt;&gt;&gt;&gt;&gt;&gt;' client_report.md   # prints nothing when done
+git add client_report.md
+git commit --no-edit</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Push, fetch and check <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git push origin main
+git fetch origin
+git log --oneline --graph --all | head -n 8
+cd ../.. &amp;&amp; uv run lab.py check 2.1</code></pre>
+    <p>Find <code>origin/main</code> in the graph. It is your clone's record of where <code>main</code> was on the hub at the last fetch or push.</p>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>In a copy of the starting state (<code>uv run lab.py start 2.1 --discard</code>, after copying your folder away), put the second branch on top of <code>main</code> with <code>git rebase main</code> instead of merging, and compare the two graphs. Which tells a reviewer more?</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why was the first merge a fast-forward and the second not?</li>
+    <li>What would <code>git checkout --theirs client_report.md</code> have thrown away?</li>
+    <li>What does a merge commit have that an ordinary commit does not?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>The first merge fast-forwards <code>main</code> from <code>598b216</code> to <code>ff1fc6a</code> (the kit's fixed ids). The second conflicts on the threshold line; a good resolution is <code>Alert threshold: hourly mean PM10 above 150 (the company's own rule)</code> with <code>Sector: {sector}</code> kept. The check looks for the sector line, "own rule" and "hourly mean" on the threshold line, no markers, a two-parent merge on <code>main</code>, and <code>main</code> pushed.</p>
+    <p>Common errors: keeping one side; leaving a marker; committing before <code>git add</code>; <code>git merge --abort</code> in panic (fine: start the merge again). Solution: <code>labs/solutions/S2_1.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D1_4_draw_the_graph.html" rel="prev">← Previous lab</a><a href="D2_2_team_review.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"2.1","title":"Merge two branches and resolve a conflict alone","summary":"Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub","minutes":35,"day":2,"unit":"Day 2","session":1,"deck":"../slides/day2.html#lab-2-1","prev":"D1_4_draw_the_graph.html","next":"D2_2_team_review.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

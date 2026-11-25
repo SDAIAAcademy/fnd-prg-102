@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="deck" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 3 · Rebuild anywhere, leak nothing · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="day3.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<div class="deck" data-course="Command Line, Git and Reproducible Environments" data-track="foundations" data-day="Day 3">
+<section class="slide title" id="title" data-auto="title" data-label="Welcome" data-n="1">
+  <div class="kicker">SDAIA Academy · Command Line, Git and Reproducible Environments</div>
+  <h1>Rebuild anywhere, leak nothing</h1>
+  <p class="lead mt">Day 3: One documented command, a container with mounted data, and keys kept out of history</p>
+  <div class="meta"><span class="track">Data &amp; AI Foundations Track</span><span>3 teaching days + capstone day</span><span>4 sessions · 4 labs</span><span>FND-PRG-102</span></div>
+  <aside class="notes"><p>Day 3 finishes the journey: by the end, the report project rebuilds anywhere with one command, runs in a container, and carries no key in its history. The capstone kickoff closes the day.</p></aside>
+</section>
+
+<section class="slide" id="agenda" data-auto="agenda" data-label="Agenda" data-n="2">
+  <div class="kicker">Today</div>
+  <h2>Rebuild anywhere, leak nothing</h2>
+  <div class="agenda"><div class="item"><div><b>Session 1 · One command to rebuild and run</b><small>A reader rebuilds the result with one documented command, and the repository holds code, not data or outputs</small></div></div><div class="item"><div><b>Session 2 · Images, containers and volumes</b><small>An image is built once from a short definition; each run is a container that sees only what you mount</small></div></div><div class="item"><div><b>Session 3 · What a container shares</b><small>A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code</small></div></div><div class="item"><div><b>Session 4 · Scanning, and after a leak</b><small>Scan before every commit; after a leak, rotate first, then clean the history and report</small></div></div></div>
+</section>
+
+<section class="slide" id="review-day2" data-lo="LO1 LO3" data-n="3">
+  <div class="kicker">Review of Day 2</div>
+  <h2>Which command leaves your own main where it was?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1" data-id="review-day2-q1">
+    <p class="lead">A teammate pushed to the hub. You want to see their commits before anything in your clone changes. Which command?</p>
+    <div class="opts">
+      <div class="opt" data-why="pull is fetch followed by merge: it moves your main and changes your files" data-k="A">git pull</div>
+      <div class="opt" data-why="merge needs the commits in your clone first; on its own it cannot see the hub" data-k="B">git merge origin/main</div>
+      <div class="opt" data-why="push sends your commits the other way and changes nothing you can read" data-k="C">git push</div>
+      <div class="opt" data-ok data-k="D">git fetch</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>fetch</code> downloads the commits and moves <code>origin/main</code> only; your <code>main</code> and your files stay until you merge.</div>
+  </div>
+  <aside class="notes"><p>Answer: D. Then one minute on lab 2.4 (next slide).</p></aside>
+</section>
+
+<section class="slide" id="debrief-2-4" data-lo="LO4" data-n="4">
+  <div class="kicker">Lab 2.4 debrief</div>
+  <h2>The second machine failed four times before the lock fixed it</h2>
+  <table class="t">
+    <tr><th>Attempt</th><th>Last line of the error</th></tr>
+    <tr><td>Nothing installed</td><td><code>ModuleNotFoundError: No module named 'dateutil'</code></td></tr>
+    <tr><td>With requirements.txt</td><td>the same: the file listed tabulate only</td></tr>
+    <tr><td>With both packages</td><td><code>FileNotFoundError</code> on the analyst's absolute path</td></tr>
+    <tr><td>With the path fixed</td><td><code>FileNotFoundError</code> on <code>output/report.csv</code></td></tr>
+    <tr class="hl"><td>From the lock, fresh</td><td>12 stations written; checksum as expected</td></tr>
+  </table>
+  <aside class="notes"><p>All five rows were run when the course was built (labs/solutions/S2_4.sh, and a check of the original script with its path fixed). The lock resolved python-dateutil 4.0.0, which itself needs tzdata, and tabulate 0.10.0: an indirect package nobody declared is exactly what a lock records.</p></aside>
+</section>
+
+<!-- Session 1 -->
+
+<section class="slide section" id="s1" data-auto="section" data-session="1" data-n="5">
+  <div class="kicker">Session 1</div>
+  <h1>One command to rebuild and run</h1>
+  <ul class="bullets outcomes"><li>Keep data and outputs out of the repository and say where they come from</li><li>Write one documented command that rebuilds and checks the result</li><li>Test a README by following it in a clean clone</li></ul>
+  <div class="sess-no">01</div>
+</section>
+
+<section class="slide" id="what-belongs" data-lo="LO4 LO6" data-n="6" data-session="1">
+  <div class="kicker">What a repository holds</div>
+  <h2>Code and the recipe go in; data, outputs and environments stay out</h2>
+  <div class="cols cols-2">
+    <div class="card c-teal"><h4>In the repository</h4><p class="small mb0">Source, <code>pyproject.toml</code> and the lock, the container definition, the rebuild command, the README, small expected checksums, a <code>.env.example</code>.</p></div>
+    <div class="card c-coral"><h4>Out of it</h4><p class="small mb0">Raw data (it has its own home and its own rules), outputs (rebuilt), <code>.venv/</code> (rebuilt), <code>.env</code> (secret), caches.</p></div>
+  </div>
+  <div class="callout warn mt"><b>.gitignore does not untrack.</b> A file already committed stays tracked until <code>git rm --cached</code> removes it from the index.</div>
+  <aside class="notes"><p>Data out of the repository is also a data-protection point: personal or classified data has rules on where it may be stored, and a repository is copied to every laptop that clones it. The course's data is synthetic, but the habit is the point.</p></aside>
+</section>
+
+<section class="slide" id="data-path-outside" data-lo="LO4 LO6" data-n="7" data-session="1">
+  <div class="kicker">Where the data comes from</div>
+  <h2>The code asks where the data is; the README says where to get it</h2>
+  <pre class="code" data-file="planner.py"><code class="language-python">ap.add_argument(<span class="hljs-string">&quot;--data&quot;</span>, default=os.environ.get(<span class="hljs-string">&quot;VISITS_DIR&quot;</span>))
+...
+<span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> args.data:
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;error: give --data &lt;folder&gt; or set VISITS_DIR&quot;</span>, file=sys.stderr)
+    <span class="hljs-keyword">return</span> <span class="hljs-number">2</span></code></pre>
+  <ul class="bullets mt">
+    <li>No default path that exists on one computer only</li>
+    <li>A clear stop beats a silent empty result</li>
+  </ul>
+  <aside class="notes"><p>The same pattern as counts.sh on Day 1, now in Python. In the report project the variable is AIR_LOGS.</p></aside>
+</section>
+
+<section class="slide" id="one-command" data-lo="LO4 LO6" data-n="8" data-session="1">
+  <div class="kicker">One command</div>
+  <h2>One documented command rebuilds, runs and checks</h2>
+  <pre class="code" data-file="rebuild.sh (a field-visit planner)"><code class="language-bash"><span class="hljs-meta">#!/usr/bin/env bash</span>
+<span class="hljs-built_in">set</span> -euo pipefail
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>&quot;</span>
+: <span class="hljs-string">&quot;<span class="hljs-variable">${VISITS_DIR:?set VISITS_DIR to the folder of visit logs}</span>&quot;</span>
+uv <span class="hljs-built_in">sync</span> --locked --quiet
+uv run --quiet python planner.py --data <span class="hljs-string">&quot;<span class="hljs-variable">$VISITS_DIR</span>&quot;</span> --out output
+<span class="hljs-built_in">sha256sum</span> -c expected/march.sha256</code></pre>
+  <div class="callout tip mt"><b>The last line is the test.</b> <code>sha256sum -c</code> prints <code>OK</code> or <code>FAILED</code> and sets the exit code.</div>
+  <aside class="notes"><p>Each line is something from the last two days: the script's own folder, a required variable, the lock, the run, the check. A make target or a task runner does the same job; one shell script is the smallest version.</p><p>Watch out: an apostrophe inside <code>${VAR:?message}</code> breaks the quoting in Bash. It happened in this course's first draft.</p></aside>
+</section>
+
+<section class="slide" id="checksum" data-lo="LO6" data-n="9" data-session="1">
+  <div class="kicker">Did it reproduce?</div>
+  <h2>A checksum turns "it ran" into "it gave the same bytes"</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Running without an error proves little: an empty input also runs</li>
+      <li>A checksum of the expected output, committed, is a precise answer</li>
+      <li>When it fails, compare the first rows to see where the difference starts</li>
+      <li>Outputs that hold a date or a random number need those fixed first</li>
+    </ul>
+    <div class="stat center"><div class="big">64</div><div class="lbl">hexadecimal characters in a SHA-256 checksum: one changed byte changes them all</div></div>
+  </div>
+  <aside class="notes"><p>The report project writes the same bytes on every run because its rows are sorted, numbers are formatted to one decimal, and line endings are fixed. Ask what would break that (a timestamp in the output, an unsorted dictionary from an old Python).</p></aside>
+</section>
+
+<section class="slide" id="readme-reproduce" data-lo="LO6" data-n="10" data-session="1">
+  <div class="kicker">The README</div>
+  <h2>A Reproduce section answers four questions and assumes nothing</h2>
+  <div class="cols cols-2">
+    <div class="card c-teal"><h4>The four answers</h4><ul class="bullets small mb0"><li>Which tools, and which versions at least</li><li>Where the data comes from</li><li>The one command</li><li>What success looks like</li></ul></div>
+    <div class="card c-coral"><h4>What a peer cannot know</h4><ul class="bullets small mb0"><li>A folder on your laptop</li><li>A package you installed once</li><li>A variable in your shell profile</li><li>A step you always do without thinking</li></ul></div>
+  </div>
+  <aside class="notes"><p>The capstone rubric gives 20 of 100 to the README and 30 to the peer's clean rebuild. The only honest test of a README is someone else following it on a clean machine: that is the capstone day.</p></aside>
+</section>
+
+<section class="slide" id="check-data-path" data-lo="LO4 LO6" data-n="11" data-session="1">
+  <div class="kicker">Checkpoint</div>
+  <h2>Where does the data path belong?</h2>
+  <div class="quiz" data-type="single" data-lo="LO6" data-id="check-data-path-q1">
+    <p class="lead">A planner project reads its visit logs from a folder. A peer will rebuild it on a clean workspace. Where should the folder's location come from?</p>
+    <div class="opts">
+      <div class="opt" data-why="A default that exists on one disk works for its author only and fails silently elsewhere" data-k="A">A default path in the code, the author's own folder</div>
+      <div class="opt" data-ok data-k="B">An argument or a variable, with the README saying where to get the data</div>
+      <div class="opt" data-why="Data in the repository is copied to every clone and mixes results with code" data-k="C">The repository itself, in a data/ folder</div>
+      <div class="opt" data-why="A message reaches one person once; the next reader is stuck again" data-k="D">A chat message to the peer before the rebuild</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The code takes the location from outside, and the README records where the data comes from for every reader.</div>
+  </div>
+  <aside class="notes"><p>Answer: B.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-3-1" data-auto="lab" data-lab="3.1" data-label="Lab 3.1" data-n="12" data-session="1">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 3.1 · 35 min</div><h2>One command, and data kept out of the code</h2><p class="lead small">Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone</p><a class="nb" href="../labs/D3_1_one_command.html">D3_1_one_command.html</a></div><ul class="checklist"><li>List what the repository carries with git ls-files <span class="min">4 min</span></li><li>Stop tracking data and output: git rm --cached and .gitignore <span class="min">7 min</span></li><li>Write rebuild.sh: sync the lock, run, compare with the expected checksum <span class="min">9 min</span></li><li>Write the README's Reproduce section <span class="min">6 min</span></li><li>Clone to a clean folder, follow the README only, and check the lab <span class="min">9 min</span></li><li class="stretch">✱ Stretch: Make rebuild.sh print the versions it ran with, for the reproduction log</li></ul></div>
+  <aside class="notes"><p>The clean clone is the point of the lab: insist on it. Watch for <code>.gitignore</code> without <code>git rm --cached</code>, and for a README that still names a folder on the laptop. Anyone who did not finish 2.4 is fine: this lab starts from a locked project.</p></aside>
+</section>
+
+<!-- Session 2 -->
+
+<section class="slide section" id="s2" data-auto="section" data-session="2" data-n="13">
+  <div class="kicker">Session 2</div>
+  <h1>Images, containers and volumes</h1>
+  <ul class="bullets outcomes"><li>Tell an image from a container and a layer from a mount</li><li>Write a short container definition that installs from the lock</li><li>Run a container without administrator rights with data mounted read-only</li></ul>
+  <div class="sess-no">02</div>
+</section>
+
+<section class="slide" id="image-container" data-lo="LO4" data-n="14" data-session="2">
+  <div class="kicker">Two words</div>
+  <h2>An image is a packed file system; a container is one run of it</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Image</h4><p class="small mb0">Built once from a definition: a base system, your packages, your code, in layers. Read-only.</p></div>
+    <div class="card c-cyan"><h4>Container</h4><p class="small mb0">A process started from an image, with a thin writable layer that disappears with <code>--rm</code>.</p></div>
+    <div class="card c-purple"><h4>Volume or bind mount</h4><p class="small mb0">A folder from outside, mounted in: where data comes in and results go out.</p></div>
+  </div>
+  <div class="callout note mt"><b>It is still a process.</b> Docker's own explanation: "every container on a machine shares that machine's kernel".</div>
+  <aside class="notes"><p>Sources: Docker, What is a container; Docker, Bind mounts. Keep the kernel point for session 3: it is what a container does not isolate.</p></aside>
+</section>
+
+<section class="slide" id="containerfile" data-lo="LO4" data-n="15" data-session="2">
+  <div class="kicker">A short definition</div>
+  <h2>Six instructions describe the whole image</h2>
+  <pre class="code" data-file="Containerfile (a field-visit planner)"><code class="language-dockerfile">FROM docker.io/library/python:3.13-alpine
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+COPY planner.py .
+ENTRYPOINT ["python", "planner.py", "--data", "/data"]</code></pre>
+  <ul class="bullets mt">
+    <li><code>requirements.txt</code> is exported from the lock, with hashes: <code>uv export --frozen --format requirements.txt</code></li>
+    <li>Packages before code: a code change reuses the cached package layer</li>
+  </ul>
+  <aside class="notes"><p>The lab's definition adds a user that is not root and an output folder. The python:3.13-alpine image is about 17 MB compressed for amd64 on Docker Hub (read on its tags page in November 2026); pull it on the provided workspace before the session. uv's documentation recommends against keeping both uv.lock and a requirements.txt in step by hand: the export is generated from the lock, never edited.</p></aside>
+</section>
+
+<section class="slide" id="layers" data-lo="LO4" data-n="16" data-session="2">
+  <div class="kicker">Layers and the cache</div>
+  <h2>Each instruction is a layer, rebuilt only when it or one above it changes</h2>
+  <div class="flow v">
+    <div class="step c-navy"><b>FROM</b>the base image, pulled once</div>
+    <div class="arrow">↓</div>
+    <div class="step c-teal"><b>COPY requirements.txt, RUN pip install</b>changes when the lock changes</div>
+    <div class="arrow">↓</div>
+    <div class="step c-cyan"><b>COPY planner.py</b>changes with every code edit</div>
+  </div>
+  <aside class="notes"><p>Ask what happens if the definition copied the whole folder before installing: every code change would reinstall every package. The stretch of lab 3.2 shows it.</p></aside>
+</section>
+
+<section class="slide" id="mounts" data-lo="LO4" data-n="17" data-session="2">
+  <div class="kicker">Data in, results out</div>
+  <h2>Mount the input read-only and the output writable</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">podman run --<span class="hljs-built_in">rm</span> \
+  -v <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>/visits:/data:ro&quot;</span> \
+  -v <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>/output:/out&quot;</span> \
+  visit-planner</code></pre>
+  <ul class="bullets mt">
+    <li>The image never holds the data, so one image serves every month</li>
+    <li><code>:ro</code> means a bug cannot change the raw logs (Docker: "prevent the container from writing to the mount")</li>
+    <li>Results appear on your disk because <code>/out</code> is your folder</li>
+  </ul>
+  <aside class="notes"><p>On Git Bash for Windows, path conversion rewrites <code>/data</code>; put <code>MSYS_NO_PATHCONV=1</code> before the command. Source: Docker, Bind mounts.</p></aside>
+</section>
+
+<section class="slide" id="rootless" data-lo="LO4" data-n="18" data-session="2">
+  <div class="kicker">No administrator rights</div>
+  <h2>A rootless engine runs containers as you, inside a range of user ids lent to you</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li><b>Podman</b> is rootless by design; it needs a range of user ids for you in <code>/etc/subuid</code> and <code>/etc/subgid</code></li>
+      <li><b>Docker rootless mode</b> runs the daemon and containers as a non-root user</li>
+      <li>"root" inside the container is your own user outside, not the machine's root</li>
+      <li><code>podman run --userns=keep-id</code> maps your user id to the same id inside</li>
+    </ul>
+    <div class="card c-purple"><h4>On the provided workspace</h4><p class="small mb0">The trainer has set up the user id ranges and pulled the base image. On a laptop without administrator rights, this is the place to do lab 3.2.</p></div>
+  </div>
+  <aside class="notes"><p>Sources: Podman rootless tutorial ("requires the user running it to have a range of UIDs listed" in subuid and subgid); podman-run, --userns=keep-id; Docker, Rootless mode. Setting up the ranges needs an administrator once, which is why the course provides the workspace.</p></aside>
+</section>
+
+<section class="slide" id="check-mount" data-lo="LO4" data-n="19" data-session="2">
+  <div class="kicker">Checkpoint</div>
+  <h2>Why does the report appear on your disk?</h2>
+  <div class="quiz" data-type="single" data-lo="LO4" data-id="check-mount-q1">
+    <p class="lead">You run the planner image with <code>-v "$PWD/output:/out"</code> and <code>--rm</code>. The container is gone afterwards, yet <code>output/plan.csv</code> is on your disk. Why?</p>
+    <div class="opts">
+      <div class="opt" data-why="--rm deletes the container's own writable layer; it copies nothing out" data-k="A">--rm copies the container's files out before deleting it</div>
+      <div class="opt" data-why="An image is read-only and built before the run; a run never writes into it" data-k="B">The file was written into the image</div>
+      <div class="opt" data-ok data-k="C">/out inside the container is your own output/ folder, mounted</div>
+      <div class="opt" data-why="Engines do not sync files back by themselves; only mounts share a folder" data-k="D">The engine syncs every container folder back to the host</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> A bind mount puts a host folder at a path inside the container, so writes there land on the host and outlive the container.</div>
+  </div>
+  <aside class="notes"><p>Answer: C.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-3-2" data-auto="lab" data-lab="3.2" data-label="Lab 3.2" data-n="20" data-session="2">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 3.2 · 35 min</div><h2>Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace</h2><p class="lead small">Complete a container definition that installs from the lock, build it rootless, run it on read-only logs</p><a class="nb" href="../labs/D3_2_container.html">D3_2_container.html</a></div><ul class="checklist"><li>Check the engine runs without administrator rights <span class="min">4 min</span></li><li>Export the lock as hashed requirements <span class="min">5 min</span></li><li>Fill the five numbered gaps of the Containerfile <span class="min">10 min</span></li><li>Build the image <span class="min">6 min</span></li><li>Run it with the logs mounted read-only and the output mounted; compare and check <span class="min">10 min</span></li><li class="stretch">✱ Stretch: Change report.py, rebuild, and see which layers are rebuilt</li></ul></div>
+  <aside class="notes"><p>Participants without an engine on their laptop work on the provided workspace. This lab's build and run were not executed when the course was built (no engine was running on the build machine): rehearse it on the workspace before the first cohort. Common problems: path conversion on Git Bash (MSYS_NO_PATHCONV=1); the output folder not writable with Docker rootless (user ids differ, the subject of session 3); an image pulled from a mistyped name.</p></aside>
+</section>
+
+<!-- Session 3 -->
+
+<section class="slide section" id="s3" data-auto="section" data-session="3" data-n="21">
+  <div class="kicker">Session 3</div>
+  <h1>What a container shares</h1>
+  <ul class="bullets outcomes"><li>Name what a container shares with its host</li><li>Read a key from the environment and stop clearly when it is missing</li><li>Keep the key out of the output and the repository, with an example file in its place</li></ul>
+  <div class="sess-no">03</div>
+</section>
+
+<section class="slide" id="not-isolated" data-lo="LO4 LO5" data-n="22" data-session="3">
+  <div class="kicker">What a container shares</div>
+  <h2>A container isolates a process, not everything around it</h2>
+  <table class="t">
+    <tr><th>Shared with the host</th><th>What it means</th></tr>
+    <tr><td>The kernel</td><td>A kernel flaw reaches every container; it is not a virtual machine</td></tr>
+    <tr><td>Every mounted folder</td><td>The container can read, and without <code>:ro</code> change, what you mount</td></tr>
+    <tr><td>Every variable you pass</td><td><code>--env-file .env</code> hands the key to whatever runs in the image</td></tr>
+    <tr><td>The network, by default</td><td>The program can reach what your machine can reach</td></tr>
+    <tr><td>The image's contents</td><td>Anyone with the image can read a key that was copied into it</td></tr>
+  </table>
+  <aside class="notes"><p>The rule that follows: pass in only what the program needs, mount read-only where you can, and never build a key into an image. Source: Docker, What is a container.</p></aside>
+</section>
+
+<section class="slide" id="key-in-code" data-lo="LO5" data-n="23" data-session="3">
+  <div class="kicker">The key in the code</div>
+  <h2>A key in the code travels with every copy of the code</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Where it goes</h4><ul class="bullets small mb0"><li>Every clone and every fork</li><li>Every backup and every image built from it</li><li>A screenshot of the editor in a chat</li><li>An assistant you pasted the file into</li></ul></div>
+    <div class="card c-teal"><h4>Where it belongs</h4><ul class="bullets small mb0"><li>The environment of the process that needs it</li><li>A <code>.env</code> file that git ignores, on one machine</li><li>The host's or the workplace's secret store</li></ul></div>
+  </div>
+  <aside class="notes"><p>The same goes for an SSH private key from Day 1. The responsible-use rule of the course: nothing secret, personal or classified in a repository, ever.</p></aside>
+</section>
+
+<section class="slide" id="read-from-env" data-lo="LO5" data-n="24" data-session="3">
+  <div class="kicker">Reading it from the environment</div>
+  <h2>Read the key from a variable, stop clearly without it, and never print it whole</h2>
+  <pre class="code" data-file="planner.py"><code class="language-python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">booking_key</span>() -&gt; <span class="hljs-built_in">str</span>:
+    key = os.environ.get(<span class="hljs-string">&quot;VISITS_BOOKING_KEY&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> key:
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;error: set VISITS_BOOKING_KEY (see .env.example)&quot;</span>, file=sys.stderr)
+        <span class="hljs-keyword">raise</span> SystemExit(<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">return</span> key
+
+key = booking_key()
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;booking with the key ending ...<span class="hljs-subst">{key[-<span class="hljs-number">4</span>:]}</span>&quot;</span>)</code></pre>
+  <aside class="notes"><p>A booking-service key for the field-visit planner, not the portal key of the lab. Ask why the default is an empty string and not a placeholder key: a placeholder that looks real gets committed and copied.</p></aside>
+</section>
+
+<section class="slide" id="env-example" data-lo="LO5" data-n="25" data-session="3">
+  <div class="kicker">Two files</div>
+  <h2>.env holds the value and stays home; .env.example holds the name and is committed</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file=".env.example (committed)"><code>VISITS_BOOKING_KEY=</code></pre>
+    <pre class="code" data-file=".gitignore (committed)"><code>.env
+.env.*
+!.env.example</code></pre>
+  </div>
+  <pre class="code mt" data-file="terminal"><code class="language-bash">git check-ignore -v .<span class="hljs-built_in">env</span>                   <span class="hljs-comment"># proves the rule matches</span>
+uv run --env-file .<span class="hljs-built_in">env</span> python planner.py   <span class="hljs-comment"># loads .env for this run only</span></code></pre>
+  <aside class="notes"><p>The course's repository template ignores .env and .env.* and keeps .env.example: the same three lines. <code>uv run --env-file</code> reads the file for one command; nothing is exported to your shell.</p></aside>
+</section>
+
+<section class="slide" id="check-env-file" data-lo="LO5" data-n="26" data-session="3">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does --env-file still expose?</h2>
+  <div class="quiz" data-type="single" data-lo="LO5" data-id="check-env-file-q1">
+    <p class="lead">You run a planner image with <code>--env-file .env</code>; the key is no longer in the code or the image. Who can still read the key?</p>
+    <div class="opts">
+      <div class="opt" data-ok data-k="A">Any program running in that container, and anyone who can inspect it</div>
+      <div class="opt" data-why="Variables are set for the container's processes; they are not hidden from them" data-k="B">Nobody: variables passed at run time are encrypted</div>
+      <div class="opt" data-why="The image was built without the key; passing it at run time adds nothing to the image" data-k="C">Anyone who pulls the image from the registry</div>
+      <div class="opt" data-why="A read-only data mount limits the data folder, not the variables" data-k="D">Nobody, because /data is mounted read-only</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The variable is part of the running container's environment: its processes read it, and so can anyone allowed to inspect that container.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. The point: the environment is the right place, and it still needs only trusted code and only the key that program needs.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-3-3" data-auto="lab" data-lab="3.3" data-label="Lab 3.3" data-n="27" data-session="3">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 3.3 · 35 min</div><h2>The key out of the code</h2><p class="lead small">Addition: move the portal key from the code to the environment, with .env.example committed and the key masked</p><a class="nb" href="../labs/D3_3_key_out_of_code.html">D3_3_key_out_of_code.html</a></div><ul class="checklist"><li>Find the key in the code and in the output of a run <span class="min">5 min</span></li><li>Read it from AIR_PORTAL_KEY; stop with exit 2 when it is missing <span class="min">10 min</span></li><li>Write .env.example, keep .env ignored, run with uv run --env-file <span class="min">8 min</span></li><li>Print only the key's last four characters <span class="min">5 min</span></li><li>Commit, find the key still in history with git log -S, and check the lab <span class="min">7 min</span></li><li class="stretch">✱ Stretch: Run the container with --env-file .env and list what it can see</li></ul></div>
+  <aside class="notes"><p>Remind the room: the practice key opens nothing but the course's stand-in, and still never goes into an assistant. Watch for a default that is the old key, and for <code>git add -A</code> before checking the ignore rule. The last step shows the key still in history: do not let anyone fix that yet, it is lab 3.4.</p></aside>
+</section>
+
+<!-- Session 4 -->
+
+<section class="slide section" id="s4" data-auto="section" data-session="4" data-n="28">
+  <div class="kicker">Session 4</div>
+  <h1>Scanning, and after a leak</h1>
+  <ul class="bullets outcomes"><li>Run a secret scan over files, staged changes and the whole history</li><li>Carry out the leak response in order: rotate, clean, report</li><li>Install a commit hook that refuses a commit holding a key</li></ul>
+  <div class="sess-no">04</div>
+</section>
+
+<section class="slide" id="three-scans" data-lo="LO5" data-n="29" data-session="4">
+  <div class="kicker">Scanning</div>
+  <h2>Scan three places: the files, the next commit, and the whole history</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Files</h4><p class="small mb0">What is in the folder now. Clean files can still have a dirty history.</p></div>
+    <div class="card c-amber"><h4>The next commit</h4><p class="small mb0">A hook runs the scan on staged changes and refuses the commit.</p></div>
+    <div class="card c-coral"><h4>The history</h4><p class="small mb0">Every commit on every branch: what anyone who clones can read.</p></div>
+  </div>
+  <p class="small mt">Tools: gitleaks (<code>gitleaks git</code> scans a repository's history), run from pre-commit; hosts add their own: GitHub push protection "blocks pushes that contain secrets", GitLab has secret push protection.</p>
+  <aside class="notes"><p>The course's lab uses a small scanner of its own (tools/scan_secrets.py) because it runs on every laptop without a download; gitleaks is the tool to use at work. The gitleaks README says the project is feature complete and its author's attention has moved to a successor: check the state of the tool before adopting it. Sources: gitleaks; GitHub, Push protection; GitLab, Secret detection.</p></aside>
+</section>
+
+<section class="slide" id="custom-rule" data-lo="LO5" data-n="30" data-session="4">
+  <div class="kicker">Rules</div>
+  <h2>Default rules know public key formats; your own keys need your own rule</h2>
+  <pre class="code" data-file=".gitleaks.toml"><code class="language-toml"><span class="hljs-section">[extend]</span>
+<span class="hljs-attr">useDefault</span> = <span class="hljs-literal">true</span>
+
+<span class="hljs-section">[[rules]]</span>
+<span class="hljs-attr">id</span> = <span class="hljs-string">&quot;booking-service-key&quot;</span>
+<span class="hljs-attr">description</span> = <span class="hljs-string">&quot;Key of the visit booking service&quot;</span>
+<span class="hljs-attr">regex</span> = <span class="hljs-string">&#x27;&#x27;&#x27;vbk_[a-z]+_[0-9a-f]{24}&#x27;&#x27;&#x27;</span>
+<span class="hljs-attr">keywords</span> = [<span class="hljs-string">&quot;vbk_&quot;</span>]</code></pre>
+  <aside class="notes"><p>The shape follows the gitleaks README: extend the default rules, then add one rule per key format your organisation issues. The keyword is a cheap filter before the regular expression runs. The lab's repository ships the same kind of rule for the portal keys.</p></aside>
+</section>
+
+<section class="slide" id="hook" data-lo="LO5" data-n="31" data-session="4">
+  <div class="kicker">Before each commit</div>
+  <h2>A pre-commit hook stops the key before it enters history</h2>
+  <pre class="code" data-file=".pre-commit-config.yaml"><code class="language-yaml"><span class="hljs-attr">repos:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">repo:</span> <span class="hljs-string">local</span>
+    <span class="hljs-attr">hooks:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">secret-scan</span>
+        <span class="hljs-attr">name:</span> <span class="hljs-string">secret</span> <span class="hljs-string">scan</span>
+        <span class="hljs-attr">entry:</span> <span class="hljs-string">uv</span> <span class="hljs-string">run</span> <span class="hljs-string">--no-project</span> <span class="hljs-string">python</span> <span class="hljs-string">tools/scan_secrets.py</span> <span class="hljs-string">--staged</span>
+        <span class="hljs-attr">language:</span> <span class="hljs-string">system</span>
+        <span class="hljs-attr">pass_filenames:</span> <span class="hljs-literal">false</span></code></pre>
+  <ul class="bullets mt">
+    <li><code>uvx pre-commit install</code> once per clone; every <code>git commit</code> then runs the scan</li>
+    <li>A hook lives in your clone only: the host's push protection is the second net</li>
+  </ul>
+  <aside class="notes"><p>pre-commit's page: after <code>pre-commit install</code>, "pre-commit will run automatically on git commit". It refuses to install when <code>core.hooksPath</code> is set (some company laptops set it); the lab gives a plain hook as the fallback. Verified when the course was built with pre-commit 4.7.0.</p></aside>
+</section>
+
+<section class="slide" id="leak-order" data-lo="LO5" data-n="32" data-session="4">
+  <div class="kicker">After a leak</div>
+  <h2>Rotate first, then clean the history, then report</h2>
+  <div class="flow">
+    <div class="step c-coral"><b>1 · Rotate</b>revoke the key where it was issued; issue a new one</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>2 · Clean</b>rewrite every commit that holds it; force-push</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Tell</b>the key's owner and the data protection officer; check the access log</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>4 · Prevent</b>the hook, the rule, push protection</div>
+  </div>
+  <div class="callout warn mt"><b>Why rotation comes first.</b> GitHub's guidance: "as a first step you need to revoke and/or rotate that secret". Cleaning cannot reach the copies already made.</div>
+  <aside class="notes"><p>Source: GitHub, Removing sensitive data from a repository. The duty to rotate and report is part of the course's responsible-use statement; the rotation note of the lab records it.</p></aside>
+</section>
+
+<section class="slide" id="filter-repo" data-lo="LO5" data-n="33" data-session="4">
+  <div class="kicker">Cleaning the history</div>
+  <h2>git filter-repo replaces the value in every commit, and every id after it changes</h2>
+  <pre class="code" data-file="terminal (a field-visit planner)"><code class="language-bash"><span class="hljs-built_in">printf</span> <span class="hljs-string">&#x27;%s==&gt;REMOVED\n&#x27;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$OLD_KEY</span>&quot;</span> &gt; ../replacements.txt    <span class="hljs-comment"># outside the repository</span>
+uvx git-filter-repo --replace-text ../replacements.txt --force
+git remote add origin &lt;the hub&gt;          <span class="hljs-comment"># filter-repo removes it on purpose</span>
+git push --force origin main</code></pre>
+  <ul class="bullets mt">
+    <li>"Rewriting history will change the hashes of the commits" (GitHub): every teammate clones again</li>
+    <li>The scan of the whole history must come back clean, on your clone and on the hub</li>
+  </ul>
+  <aside class="notes"><p>The replacements file holds the old key, so it lives outside the repository and is deleted afterwards. <code>--replace-text</code> takes literal text by default, with <code>==&gt;</code> and a replacement (filter-repo's manual). Hosts may keep cached views or pull request references of old commits: their documentation says how to ask for those to be removed.</p></aside>
+</section>
+
+<section class="slide" id="check-leak" data-lo="LO5" data-n="34" data-session="4">
+  <div class="kicker">Checkpoint</div>
+  <h2>What do you do first?</h2>
+  <div class="quiz" data-type="single" data-lo="LO5" data-id="check-leak-q1">
+    <p class="lead">A scan of the planner's history finds a booking-service key in a commit from three weeks ago. The repository has been public since. What is the first action?</p>
+    <div class="opts">
+      <div class="opt" data-why="Cleaning removes it from the hub, not from the clones and caches made in three weeks" data-k="A">Rewrite the history with git filter-repo</div>
+      <div class="opt" data-why="Removing the file in a new commit leaves every old commit holding the key" data-k="B">Delete the file in a new commit</div>
+      <div class="opt" data-why="Hiding the repository stops new readers, not those who already copied it" data-k="C">Make the repository private</div>
+      <div class="opt" data-ok data-k="D">Revoke the key at the booking service and issue a new one</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Only revoking makes every copy of the old key useless; cleaning and reporting follow.</div>
+  </div>
+  <aside class="notes"><p>Answer: D.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-3-4" data-auto="lab" data-lab="3.4" data-label="Lab 3.4" data-n="35" data-session="4">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 3.4 · 35 min</div><h2>Remediate a seeded leaked key with a scanner and a commit hook</h2><p class="lead small">A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one</p><a class="nb" href="../labs/D3_4_leaked_key.html">D3_4_leaked_key.html</a></div><ul class="checklist"><li>Scan the whole history and find the key <span class="min">5 min</span></li><li>Rotate first: revoke the old key and issue a new one into .env <span class="min">7 min</span></li><li>Write ROTATION.md <span class="min">6 min</span></li><li>Clean the history with git filter-repo, force-push, scan again <span class="min">10 min</span></li><li>Install the hook, see it block a key, and check the lab <span class="min">7 min</span></li><li class="stretch">✱ Stretch: Run gitleaks with .gitleaks.toml, or the host's push protection, and compare</li></ul></div>
+  <aside class="notes"><p>Insist on the order: rotate before cleaning. The new key is shown once: it goes into .env, never into the rotation note. On machines where <code>core.hooksPath</code> is set, <code>pre-commit install</code> refuses: use the plain hook the lab page gives. gitleaks itself was not run when the course was built.</p></aside>
+</section>
+
+<section class="slide" id="capstone-kickoff" data-lo="LO6" data-n="36" data-session="4">
+  <div class="kicker">Capstone kickoff</div>
+  <h2>Tomorrow a peer rebuilds your project from its README alone</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Your own small project, on synthetic or public data</li>
+      <li>A README with a Reproduce section, a lock file, a container definition, a clean scan of the history</li>
+      <li>Your peer follows only the README, on a clean workspace, and logs every step</li>
+      <li>Then you fix every step they could not follow; they reproduce it again</li>
+    </ul>
+    <div class="card c-teal"><h4>Tonight, 60 minutes</h4><p class="small mb0">Run your own rebuild in a fresh clone, then read your README as a stranger would. The brief and the checklist: <code>labs/capstone/</code>.</p></div>
+  </div>
+  <aside class="notes"><p>Ten minutes, counted in the capstone hours. Pair participants now so each knows whose repository they reproduce. Remind them that the capstone is AI-full, defended in the oral: they may use an assistant, and must explain every step themselves.</p></aside>
+</section>
+
+<section class="slide" id="wrap-up" data-n="37" data-session="4">
+  <div class="kicker">Day 3 · wrap-up</div>
+  <h2>Three things to keep</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>One command</h4><p class="small mb0">A reader rebuilds and checks the result with one documented command; data and outputs live elsewhere.</p></div>
+    <div class="card c-coral"><h4>A container is a process</h4><p class="small mb0">It shares the kernel, the mounts and the variables you give it.</p></div>
+    <div class="card c-purple"><h4>Rotate, clean, tell</h4><p class="small mb0">A leaked key is revoked first; then history, then the people who need to know.</p></div>
+  </div>
+</section>
+
+<section class="slide dark" id="next" data-label="Next" data-n="38" data-session="4">
+  <div class="kicker">Next</div>
+  <h2>The capstone day: peer reproduction</h2>
+  <p class="lead">Bring your repository link and its README. The supervised check on shell commands and commit graphs opens the day, AI off.</p>
+  <aside class="notes"><p>Capstone preparation 2 of 2 tonight. Confirm the clean workspaces for the peers (the provided Linux workspace, or a fresh user account on a laptop).</p></aside>
+</section>
+</div>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"deck":{"id":"day3","kind":"day","day":3,"label":"Day 3","title":"Rebuild anywhere, leak nothing","prev":"day2.html","next":"capstone.html","md":"day3.md","alt":{}},"sessions":[{"n":1,"label":"Session 1","title":"One command to rebuild and run","slide":"s1","outcomes":["Keep data and outputs out of the repository and say where they come from","Write one documented command that rebuilds and checks the result","Test a README by following it in a clean clone"],"minutes":60,"lab":{"id":"3.1","title":"One command, and data kept out of the code","minutes":35,"href":"../labs/D3_1_one_command.html"}},{"n":2,"label":"Session 2","title":"Images, containers and volumes","slide":"s2","outcomes":["Tell an image from a container and a layer from a mount","Write a short container definition that installs from the lock","Run a container without administrator rights with data mounted read-only"],"minutes":60,"lab":{"id":"3.2","title":"Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace","minutes":35,"href":"../labs/D3_2_container.html"}},{"n":3,"label":"Session 3","title":"What a container shares","slide":"s3","outcomes":["Name what a container shares with its host","Read a key from the environment and stop clearly when it is missing","Keep the key out of the output and the repository, with an example file in its place"],"minutes":60,"lab":{"id":"3.3","title":"The key out of the code","minutes":35,"href":"../labs/D3_3_key_out_of_code.html"}},{"n":4,"label":"Session 4","title":"Scanning, and after a leak","slide":"s4","outcomes":["Run a secret scan over files, staged changes and the whole history","Carry out the leak response in order: rotate, clean, report","Install a commit hook that refuses a commit holding a key"],"minutes":60,"lab":{"id":"3.4","title":"Remediate a seeded leaked key with a scanner and a commit hook","minutes":35,"href":"../labs/D3_4_leaked_key.html"}}],"slides":[{"id":"title","n":1,"title":"Rebuild anywhere, leak nothing","kind":"title","session":0,"hash":"1048c10a","md":"#### [day3#title] Rebuild anywhere, leak nothing\n\n*SDAIA Academy · Command Line, Git and Reproducible Environments*\n\nDay 3: One documented command, a container with mounted data, and keys kept out of history\n\nData & AI Foundations Track · 3 teaching days + capstone day · 4 sessions · 4 labs · FND-PRG-102","notes":"Day 3 finishes the journey: by the end, the report project rebuilds anywhere with one command, runs in a container, and carries no key in its history. The capstone kickoff closes the day.","minutes":null,"lo":[]},{"id":"agenda","n":2,"title":"Rebuild anywhere, leak nothing","kind":"content","session":0,"hash":"3c390009","md":"#### [day3#agenda] Rebuild anywhere, leak nothing\n\n*Today*\n\n- **Session 1 · One command to rebuild and run**: A reader rebuilds the result with one documented command, and the repository holds code, not data or outputs\n- **Session 2 · Images, containers and volumes**: An image is built once from a short definition; each run is a container that sees only what you mount\n- **Session 3 · What a container shares**: A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code\n- **Session 4 · Scanning, and after a leak**: Scan before every commit; after a leak, rotate first, then clean the history and report","notes":"","minutes":null,"lo":[]},{"id":"review-day2","n":3,"title":"Which command leaves your own main where it was?","kind":"quiz","session":0,"hash":"bce0671a","md":"#### [day3#review-day2] Which command leaves your own main where it was?\n\n*Review of Day 2*\n\n**Question:** A teammate pushed to the hub. You want to see their commits before anything in your clone changes. Which command?\n\n- A. git pull\n- B. git merge origin/main\n- C. git push\n- D. git fetch","notes":"Answer: D. Then one minute on lab 2.4 (next slide).","minutes":null,"lo":["LO1","LO3"]},{"id":"debrief-2-4","n":4,"title":"The second machine failed four times before the lock fixed it","kind":"content","session":0,"hash":"4caf475c","md":"#### [day3#debrief-2-4] The second machine failed four times before the lock fixed it\n\n*Lab 2.4 debrief*\n\n| Attempt | Last line of the error |\n| --- | --- |\n| Nothing installed | `ModuleNotFoundError: No module named 'dateutil'` |\n| With requirements.txt | the same: the file listed tabulate only |\n| With both packages | `FileNotFoundError` on the analyst's absolute path |\n| With the path fixed | `FileNotFoundError` on `output/report.csv` |\n| From the lock, fresh | 12 stations written; checksum as expected |","notes":"All five rows were run when the course was built (labs/solutions/S2_4.sh, and a check of the original script with its path fixed). The lock resolved python-dateutil 4.0.0, which itself needs tzdata, and tabulate 0.10.0: an indirect package nobody declared is exactly what a lock records.","minutes":null,"lo":["LO4"]},{"id":"s1","n":5,"title":"One command to rebuild and run","kind":"section","session":1,"hash":"ec50b53e","md":"#### [day3#s1] One command to rebuild and run\n\n*Session 1*\n\n- Keep data and outputs out of the repository and say where they come from\n- Write one documented command that rebuilds and checks the result\n- Test a README by following it in a clean clone","notes":"","minutes":null,"lo":["LO4","LO6"]},{"id":"what-belongs","n":6,"title":"Code and the recipe go in; data, outputs and environments stay out","kind":"content","session":1,"hash":"b739ee98","md":"#### [day3#what-belongs] Code and the recipe go in; data, outputs and environments stay out\n\n*What a repository holds*\n\n- **In the repository.** Source, `pyproject.toml` and the lock, the container definition, the rebuild command, the README, small expected checksums, a `.env.example`.\n- **Out of it.** Raw data (it has its own home and its own rules), outputs (rebuilt), `.venv/` (rebuilt), `.env` (secret), caches.\n\n> **.gitignore does not untrack.** A file already committed stays tracked until `git rm --cached` removes it from the index.","notes":"Data out of the repository is also a data-protection point: personal or classified data has rules on where it may be stored, and a repository is copied to every laptop that clones it. The course's data is synthetic, but the habit is the point.","minutes":null,"lo":["LO4","LO6"]},{"id":"data-path-outside","n":7,"title":"The code asks where the data is; the README says where to get it","kind":"content","session":1,"hash":"62e960f2","md":"#### [day3#data-path-outside] The code asks where the data is; the README says where to get it\n\n*Where the data comes from*\n\n```python\n# file: planner.py\nap.add_argument(\"--data\", default=os.environ.get(\"VISITS_DIR\"))\n...\nif not args.data:\n    print(\"error: give --data \u003cfolder> or set VISITS_DIR\", file=sys.stderr)\n    return 2\n```\n\n- No default path that exists on one computer only\n- A clear stop beats a silent empty result","notes":"The same pattern as counts.sh on Day 1, now in Python. In the report project the variable is AIR_LOGS.","minutes":null,"lo":["LO4","LO6"]},{"id":"one-command","n":8,"title":"One documented command rebuilds, runs and checks","kind":"content","session":1,"hash":"468ee9b5","md":"#### [day3#one-command] One documented command rebuilds, runs and checks\n\n*One command*\n\n```bash\n# file: rebuild.sh (a field-visit planner)\n#!/usr/bin/env bash\nset -euo pipefail\ncd \"$(dirname \"$0\")\"\n: \"${VISITS_DIR:?set VISITS_DIR to the folder of visit logs}\"\nuv sync --locked --quiet\nuv run --quiet python planner.py --data \"$VISITS_DIR\" --out output\nsha256sum -c expected/march.sha256\n```\n\n> **The last line is the test.** `sha256sum -c` prints `OK` or `FAILED` and sets the exit code.","notes":"Each line is something from the last two days: the script's own folder, a required variable, the lock, the run, the check. A make target or a task runner does the same job; one shell script is the smallest version.\n\nWatch out: an apostrophe inside `${VAR:?message}` breaks the quoting in Bash. It happened in this course's first draft.","minutes":null,"lo":["LO4","LO6"]},{"id":"checksum","n":9,"title":"A checksum turns \"it ran\" into \"it gave the same bytes\"","kind":"content","session":1,"hash":"9b8d9591","md":"#### [day3#checksum] A checksum turns \"it ran\" into \"it gave the same bytes\"\n\n*Did it reproduce?*\n\n- Running without an error proves little: an empty input also runs\n- A checksum of the expected output, committed, is a precise answer\n- When it fails, compare the first rows to see where the difference starts\n- Outputs that hold a date or a random number need those fixed first\n\n**64** hexadecimal characters in a SHA-256 checksum: one changed byte changes them all","notes":"The report project writes the same bytes on every run because its rows are sorted, numbers are formatted to one decimal, and line endings are fixed. Ask what would break that (a timestamp in the output, an unsorted dictionary from an old Python).","minutes":null,"lo":["LO6"]},{"id":"readme-reproduce","n":10,"title":"A Reproduce section answers four questions and assumes nothing","kind":"content","session":1,"hash":"4d94aa7b","md":"#### [day3#readme-reproduce] A Reproduce section answers four questions and assumes nothing\n\n*The README*\n\n- **The four answers.**\n  - Which tools, and which versions at least\n  - Where the data comes from\n  - The one command\n  - What success looks like\n- **What a peer cannot know.**\n  - A folder on your laptop\n  - A package you installed once\n  - A variable in your shell profile\n  - A step you always do without thinking","notes":"The capstone rubric gives 20 of 100 to the README and 30 to the peer's clean rebuild. The only honest test of a README is someone else following it on a clean machine: that is the capstone day.","minutes":null,"lo":["LO6"]},{"id":"check-data-path","n":11,"title":"Where does the data path belong?","kind":"quiz","session":1,"hash":"c96a5e45","md":"#### [day3#check-data-path] Where does the data path belong?\n\n*Checkpoint*\n\n**Question:** A planner project reads its visit logs from a folder. A peer will rebuild it on a clean workspace. Where should the folder's location come from?\n\n- A. A default path in the code, the author's own folder\n- B. An argument or a variable, with the README saying where to get the data\n- C. The repository itself, in a data/ folder\n- D. A chat message to the peer before the rebuild","notes":"Answer: B.","minutes":null,"lo":["LO4","LO6"]},{"id":"lab-3-1","n":12,"title":"One command, and data kept out of the code","kind":"lab","session":1,"hash":"e6f26556","md":"#### [day3#lab-3-1] One command, and data kept out of the code\n\nLab 3.1 · 35 min\n\nAddition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone\n\n[D3_1_one_command.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_1_one_command.html)\n\n- [ ] List what the repository carries with git ls-files (4 min)\n- [ ] Stop tracking data and output: git rm --cached and .gitignore (7 min)\n- [ ] Write rebuild.sh: sync the lock, run, compare with the expected checksum (9 min)\n- [ ] Write the README's Reproduce section (6 min)\n- [ ] Clone to a clean folder, follow the README only, and check the lab (9 min)\n- [ ] ✱ Stretch: Make rebuild.sh print the versions it ran with, for the reproduction log","notes":"The clean clone is the point of the lab: insist on it. Watch for `.gitignore` without `git rm --cached`, and for a README that still names a folder on the laptop. Anyone who did not finish 2.4 is fine: this lab starts from a locked project.","minutes":null,"lo":[]},{"id":"s2","n":13,"title":"Images, containers and volumes","kind":"section","session":2,"hash":"1c3c49ae","md":"#### [day3#s2] Images, containers and volumes\n\n*Session 2*\n\n- Tell an image from a container and a layer from a mount\n- Write a short container definition that installs from the lock\n- Run a container without administrator rights with data mounted read-only","notes":"","minutes":null,"lo":["LO4"]},{"id":"image-container","n":14,"title":"An image is a packed file system; a container is one run of it","kind":"content","session":2,"hash":"641c1096","md":"#### [day3#image-container] An image is a packed file system; a container is one run of it\n\n*Two words*\n\n- **Image.** Built once from a definition: a base system, your packages, your code, in layers. Read-only.\n- **Container.** A process started from an image, with a thin writable layer that disappears with `--rm`.\n- **Volume or bind mount.** A folder from outside, mounted in: where data comes in and results go out.\n\n> **It is still a process.** Docker's own explanation: \"every container on a machine shares that machine's kernel\".","notes":"Sources: Docker, What is a container; Docker, Bind mounts. Keep the kernel point for session 3: it is what a container does not isolate.","minutes":null,"lo":["LO4"]},{"id":"containerfile","n":15,"title":"Six instructions describe the whole image","kind":"content","session":2,"hash":"29d4c208","md":"#### [day3#containerfile] Six instructions describe the whole image\n\n*A short definition*\n\n```dockerfile\n# file: Containerfile (a field-visit planner)\nFROM docker.io/library/python:3.13-alpine\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir --require-hashes -r requirements.txt\nCOPY planner.py .\nENTRYPOINT [\"python\", \"planner.py\", \"--data\", \"/data\"]\n```\n\n- `requirements.txt` is exported from the lock, with hashes: `uv export --frozen --format requirements.txt`\n- Packages before code: a code change reuses the cached package layer","notes":"The lab's definition adds a user that is not root and an output folder. The python:3.13-alpine image is about 17 MB compressed for amd64 on Docker Hub (read on its tags page in November 2026); pull it on the provided workspace before the session. uv's documentation recommends against keeping both uv.lock and a requirements.txt in step by hand: the export is generated from the lock, never edited.","minutes":null,"lo":["LO4"]},{"id":"layers","n":16,"title":"Each instruction is a layer, rebuilt only when it or one above it changes","kind":"content","session":2,"hash":"e1b59b45","md":"#### [day3#layers] Each instruction is a layer, rebuilt only when it or one above it changes\n\n*Layers and the cache*\n\n1. **FROM** the base image, pulled once\n2. **COPY requirements.txt, RUN pip install** changes when the lock changes\n3. **COPY planner.py** changes with every code edit","notes":"Ask what happens if the definition copied the whole folder before installing: every code change would reinstall every package. The stretch of lab 3.2 shows it.","minutes":null,"lo":["LO4"]},{"id":"mounts","n":17,"title":"Mount the input read-only and the output writable","kind":"content","session":2,"hash":"43ec03eb","md":"#### [day3#mounts] Mount the input read-only and the output writable\n\n*Data in, results out*\n\n```bash\n# file: terminal\npodman run --rm \\\n  -v \"$PWD/visits:/data:ro\" \\\n  -v \"$PWD/output:/out\" \\\n  visit-planner\n```\n\n- The image never holds the data, so one image serves every month\n- `:ro` means a bug cannot change the raw logs (Docker: \"prevent the container from writing to the mount\")\n- Results appear on your disk because `/out` is your folder","notes":"On Git Bash for Windows, path conversion rewrites `/data`; put `MSYS_NO_PATHCONV=1` before the command. Source: Docker, Bind mounts.","minutes":null,"lo":["LO4"]},{"id":"rootless","n":18,"title":"A rootless engine runs containers as you, inside a range of user ids lent to you","kind":"content","session":2,"hash":"9ff1a3c1","md":"#### [day3#rootless] A rootless engine runs containers as you, inside a range of user ids lent to you\n\n*No administrator rights*\n\n- **Podman** is rootless by design; it needs a range of user ids for you in `/etc/subuid` and `/etc/subgid`\n- **Docker rootless mode** runs the daemon and containers as a non-root user\n- \"root\" inside the container is your own user outside, not the machine's root\n- `podman run --userns=keep-id` maps your user id to the same id inside\n\n- **On the provided workspace.** The trainer has set up the user id ranges and pulled the base image. On a laptop without administrator rights, this is the place to do lab 3.2.","notes":"Sources: Podman rootless tutorial (\"requires the user running it to have a range of UIDs listed\" in subuid and subgid); podman-run, --userns=keep-id; Docker, Rootless mode. Setting up the ranges needs an administrator once, which is why the course provides the workspace.","minutes":null,"lo":["LO4"]},{"id":"check-mount","n":19,"title":"Why does the report appear on your disk?","kind":"quiz","session":2,"hash":"f8ed1579","md":"#### [day3#check-mount] Why does the report appear on your disk?\n\n*Checkpoint*\n\n**Question:** You run the planner image with `-v \"$PWD/output:/out\"` and `--rm`. The container is gone afterwards, yet `output/plan.csv` is on your disk. Why?\n\n- A. --rm copies the container's files out before deleting it\n- B. The file was written into the image\n- C. /out inside the container is your own output/ folder, mounted\n- D. The engine syncs every container folder back to the host","notes":"Answer: C.","minutes":null,"lo":["LO4"]},{"id":"lab-3-2","n":20,"title":"Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace","kind":"lab","session":2,"hash":"b16bc5ac","md":"#### [day3#lab-3-2] Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace\n\nLab 3.2 · 35 min\n\nComplete a container definition that installs from the lock, build it rootless, run it on read-only logs\n\n[D3_2_container.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_2_container.html)\n\n- [ ] Check the engine runs without administrator rights (4 min)\n- [ ] Export the lock as hashed requirements (5 min)\n- [ ] Fill the five numbered gaps of the Containerfile (10 min)\n- [ ] Build the image (6 min)\n- [ ] Run it with the logs mounted read-only and the output mounted; compare and check (10 min)\n- [ ] ✱ Stretch: Change report.py, rebuild, and see which layers are rebuilt","notes":"Participants without an engine on their laptop work on the provided workspace. This lab's build and run were not executed when the course was built (no engine was running on the build machine): rehearse it on the workspace before the first cohort. Common problems: path conversion on Git Bash (MSYS_NO_PATHCONV=1); the output folder not writable with Docker rootless (user ids differ, the subject of session 3); an image pulled from a mistyped name.","minutes":null,"lo":[]},{"id":"s3","n":21,"title":"What a container shares","kind":"section","session":3,"hash":"612ade65","md":"#### [day3#s3] What a container shares\n\n*Session 3*\n\n- Name what a container shares with its host\n- Read a key from the environment and stop clearly when it is missing\n- Keep the key out of the output and the repository, with an example file in its place","notes":"","minutes":null,"lo":["LO4","LO5"]},{"id":"not-isolated","n":22,"title":"A container isolates a process, not everything around it","kind":"content","session":3,"hash":"223b749b","md":"#### [day3#not-isolated] A container isolates a process, not everything around it\n\n*What a container shares*\n\n| Shared with the host | What it means |\n| --- | --- |\n| The kernel | A kernel flaw reaches every container; it is not a virtual machine |\n| Every mounted folder | The container can read, and without `:ro` change, what you mount |\n| Every variable you pass | `--env-file .env` hands the key to whatever runs in the image |\n| The network, by default | The program can reach what your machine can reach |\n| The image's contents | Anyone with the image can read a key that was copied into it |","notes":"The rule that follows: pass in only what the program needs, mount read-only where you can, and never build a key into an image. Source: Docker, What is a container.","minutes":null,"lo":["LO4","LO5"]},{"id":"key-in-code","n":23,"title":"A key in the code travels with every copy of the code","kind":"content","session":3,"hash":"65c0862c","md":"#### [day3#key-in-code] A key in the code travels with every copy of the code\n\n*The key in the code*\n\n- **Where it goes.**\n  - Every clone and every fork\n  - Every backup and every image built from it\n  - A screenshot of the editor in a chat\n  - An assistant you pasted the file into\n- **Where it belongs.**\n  - The environment of the process that needs it\n  - A `.env` file that git ignores, on one machine\n  - The host's or the workplace's secret store","notes":"The same goes for an SSH private key from Day 1. The responsible-use rule of the course: nothing secret, personal or classified in a repository, ever.","minutes":null,"lo":["LO5"]},{"id":"read-from-env","n":24,"title":"Read the key from a variable, stop clearly without it, and never print it whole","kind":"content","session":3,"hash":"b7eb8e3c","md":"#### [day3#read-from-env] Read the key from a variable, stop clearly without it, and never print it whole\n\n*Reading it from the environment*\n\n```python\n# file: planner.py\ndef booking_key() -> str:\n    key = os.environ.get(\"VISITS_BOOKING_KEY\", \"\")\n    if not key:\n        print(\"error: set VISITS_BOOKING_KEY (see .env.example)\", file=sys.stderr)\n        raise SystemExit(2)\n    return key\n\nkey = booking_key()\nprint(f\"booking with the key ending ...{key[-4:]}\")\n```","notes":"A booking-service key for the field-visit planner, not the portal key of the lab. Ask why the default is an empty string and not a placeholder key: a placeholder that looks real gets committed and copied.","minutes":null,"lo":["LO5"]},{"id":"env-example","n":25,"title":".env holds the value and stays home; .env.example holds the name and is committed","kind":"content","session":3,"hash":"63311487","md":"#### [day3#env-example] .env holds the value and stays home; .env.example holds the name and is committed\n\n*Two files*\n\n```\n# file: .env.example (committed)\nVISITS_BOOKING_KEY=\n```\n\n```\n# file: .gitignore (committed)\n.env\n.env.*\n!.env.example\n```\n\n```bash\n# file: terminal\ngit check-ignore -v .env                   # proves the rule matches\nuv run --env-file .env python planner.py   # loads .env for this run only\n```","notes":"The course's repository template ignores .env and .env.\\* and keeps .env.example: the same three lines. `uv run --env-file` reads the file for one command; nothing is exported to your shell.","minutes":null,"lo":["LO5"]},{"id":"check-env-file","n":26,"title":"What does --env-file still expose?","kind":"quiz","session":3,"hash":"8364caaf","md":"#### [day3#check-env-file] What does --env-file still expose?\n\n*Checkpoint*\n\n**Question:** You run a planner image with `--env-file .env`; the key is no longer in the code or the image. Who can still read the key?\n\n- A. Any program running in that container, and anyone who can inspect it\n- B. Nobody: variables passed at run time are encrypted\n- C. Anyone who pulls the image from the registry\n- D. Nobody, because /data is mounted read-only","notes":"Answer: A. The point: the environment is the right place, and it still needs only trusted code and only the key that program needs.","minutes":null,"lo":["LO5"]},{"id":"lab-3-3","n":27,"title":"The key out of the code","kind":"lab","session":3,"hash":"f4089b0c","md":"#### [day3#lab-3-3] The key out of the code\n\nLab 3.3 · 35 min\n\nAddition: move the portal key from the code to the environment, with .env.example committed and the key masked\n\n[D3_3_key_out_of_code.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_3_key_out_of_code.html)\n\n- [ ] Find the key in the code and in the output of a run (5 min)\n- [ ] Read it from AIR_PORTAL_KEY; stop with exit 2 when it is missing (10 min)\n- [ ] Write .env.example, keep .env ignored, run with uv run --env-file (8 min)\n- [ ] Print only the key's last four characters (5 min)\n- [ ] Commit, find the key still in history with git log -S, and check the lab (7 min)\n- [ ] ✱ Stretch: Run the container with --env-file .env and list what it can see","notes":"Remind the room: the practice key opens nothing but the course's stand-in, and still never goes into an assistant. Watch for a default that is the old key, and for `git add -A` before checking the ignore rule. The last step shows the key still in history: do not let anyone fix that yet, it is lab 3.4.","minutes":null,"lo":[]},{"id":"s4","n":28,"title":"Scanning, and after a leak","kind":"section","session":4,"hash":"011005db","md":"#### [day3#s4] Scanning, and after a leak\n\n*Session 4*\n\n- Run a secret scan over files, staged changes and the whole history\n- Carry out the leak response in order: rotate, clean, report\n- Install a commit hook that refuses a commit holding a key","notes":"","minutes":null,"lo":["LO5"]},{"id":"three-scans","n":29,"title":"Scan three places: the files, the next commit, and the whole history","kind":"content","session":4,"hash":"2378a185","md":"#### [day3#three-scans] Scan three places: the files, the next commit, and the whole history\n\n*Scanning*\n\n- **Files.** What is in the folder now. Clean files can still have a dirty history.\n- **The next commit.** A hook runs the scan on staged changes and refuses the commit.\n- **The history.** Every commit on every branch: what anyone who clones can read.\n\nTools: gitleaks (`gitleaks git` scans a repository's history), run from pre-commit; hosts add their own: GitHub push protection \"blocks pushes that contain secrets\", GitLab has secret push protection.","notes":"The course's lab uses a small scanner of its own (tools/scan_secrets.py) because it runs on every laptop without a download; gitleaks is the tool to use at work. The gitleaks README says the project is feature complete and its author's attention has moved to a successor: check the state of the tool before adopting it. Sources: gitleaks; GitHub, Push protection; GitLab, Secret detection.","minutes":null,"lo":["LO5"]},{"id":"custom-rule","n":30,"title":"Default rules know public key formats; your own keys need your own rule","kind":"content","session":4,"hash":"a489f8ab","md":"#### [day3#custom-rule] Default rules know public key formats; your own keys need your own rule\n\n*Rules*\n\n```toml\n# file: .gitleaks.toml\n[extend]\nuseDefault = true\n\n[[rules]]\nid = \"booking-service-key\"\ndescription = \"Key of the visit booking service\"\nregex = '''vbk_[a-z]+_[0-9a-f]{24}'''\nkeywords = [\"vbk_\"]\n```","notes":"The shape follows the gitleaks README: extend the default rules, then add one rule per key format your organisation issues. The keyword is a cheap filter before the regular expression runs. The lab's repository ships the same kind of rule for the portal keys.","minutes":null,"lo":["LO5"]},{"id":"hook","n":31,"title":"A pre-commit hook stops the key before it enters history","kind":"content","session":4,"hash":"f3c0ae45","md":"#### [day3#hook] A pre-commit hook stops the key before it enters history\n\n*Before each commit*\n\n```yaml\n# file: .pre-commit-config.yaml\nrepos:\n  - repo: local\n    hooks:\n      - id: secret-scan\n        name: secret scan\n        entry: uv run --no-project python tools/scan_secrets.py --staged\n        language: system\n        pass_filenames: false\n```\n\n- `uvx pre-commit install` once per clone; every `git commit` then runs the scan\n- A hook lives in your clone only: the host's push protection is the second net","notes":"pre-commit's page: after `pre-commit install`, \"pre-commit will run automatically on git commit\". It refuses to install when `core.hooksPath` is set (some company laptops set it); the lab gives a plain hook as the fallback. Verified when the course was built with pre-commit 4.7.0.","minutes":null,"lo":["LO5"]},{"id":"leak-order","n":32,"title":"Rotate first, then clean the history, then report","kind":"content","session":4,"hash":"60fa68fd","md":"#### [day3#leak-order] Rotate first, then clean the history, then report\n\n*After a leak*\n\n1. **1 · Rotate** revoke the key where it was issued; issue a new one\n2. **2 · Clean** rewrite every commit that holds it; force-push\n3. **3 · Tell** the key's owner and the data protection officer; check the access log\n4. **4 · Prevent** the hook, the rule, push protection\n\n> **Why rotation comes first.** GitHub's guidance: \"as a first step you need to revoke and/or rotate that secret\". Cleaning cannot reach the copies already made.","notes":"Source: GitHub, Removing sensitive data from a repository. The duty to rotate and report is part of the course's responsible-use statement; the rotation note of the lab records it.","minutes":null,"lo":["LO5"]},{"id":"filter-repo","n":33,"title":"git filter-repo replaces the value in every commit, and every id after it changes","kind":"content","session":4,"hash":"5e08b6f6","md":"#### [day3#filter-repo] git filter-repo replaces the value in every commit, and every id after it changes\n\n*Cleaning the history*\n\n```bash\n# file: terminal (a field-visit planner)\nprintf '%s==>REMOVED\\n' \"$OLD_KEY\" > ../replacements.txt    # outside the repository\nuvx git-filter-repo --replace-text ../replacements.txt --force\ngit remote add origin \u003cthe hub>          # filter-repo removes it on purpose\ngit push --force origin main\n```\n\n- \"Rewriting history will change the hashes of the commits\" (GitHub): every teammate clones again\n- The scan of the whole history must come back clean, on your clone and on the hub","notes":"The replacements file holds the old key, so it lives outside the repository and is deleted afterwards. `--replace-text` takes literal text by default, with `==>` and a replacement (filter-repo's manual). Hosts may keep cached views or pull request references of old commits: their documentation says how to ask for those to be removed.","minutes":null,"lo":["LO5"]},{"id":"check-leak","n":34,"title":"What do you do first?","kind":"quiz","session":4,"hash":"fb5b5a5d","md":"#### [day3#check-leak] What do you do first?\n\n*Checkpoint*\n\n**Question:** A scan of the planner's history finds a booking-service key in a commit from three weeks ago. The repository has been public since. What is the first action?\n\n- A. Rewrite the history with git filter-repo\n- B. Delete the file in a new commit\n- C. Make the repository private\n- D. Revoke the key at the booking service and issue a new one","notes":"Answer: D.","minutes":null,"lo":["LO5"]},{"id":"lab-3-4","n":35,"title":"Remediate a seeded leaked key with a scanner and a commit hook","kind":"lab","session":4,"hash":"c25260f4","md":"#### [day3#lab-3-4] Remediate a seeded leaked key with a scanner and a commit hook\n\nLab 3.4 · 35 min\n\nA key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one\n\n[D3_4_leaked_key.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_4_leaked_key.html)\n\n- [ ] Scan the whole history and find the key (5 min)\n- [ ] Rotate first: revoke the old key and issue a new one into .env (7 min)\n- [ ] Write ROTATION.md (6 min)\n- [ ] Clean the history with git filter-repo, force-push, scan again (10 min)\n- [ ] Install the hook, see it block a key, and check the lab (7 min)\n- [ ] ✱ Stretch: Run gitleaks with .gitleaks.toml, or the host's push protection, and compare","notes":"Insist on the order: rotate before cleaning. The new key is shown once: it goes into .env, never into the rotation note. On machines where `core.hooksPath` is set, `pre-commit install` refuses: use the plain hook the lab page gives. gitleaks itself was not run when the course was built.","minutes":null,"lo":[]},{"id":"capstone-kickoff","n":36,"title":"Tomorrow a peer rebuilds your project from its README alone","kind":"content","session":4,"hash":"6759e31a","md":"#### [day3#capstone-kickoff] Tomorrow a peer rebuilds your project from its README alone\n\n*Capstone kickoff*\n\n- Your own small project, on synthetic or public data\n- A README with a Reproduce section, a lock file, a container definition, a clean scan of the history\n- Your peer follows only the README, on a clean workspace, and logs every step\n- Then you fix every step they could not follow; they reproduce it again\n\n- **Tonight, 60 minutes.** Run your own rebuild in a fresh clone, then read your README as a stranger would. The brief and the checklist: `labs/capstone/`.","notes":"Ten minutes, counted in the capstone hours. Pair participants now so each knows whose repository they reproduce. Remind them that the capstone is AI-full, defended in the oral: they may use an assistant, and must explain every step themselves.","minutes":null,"lo":["LO6"]},{"id":"wrap-up","n":37,"title":"Three things to keep","kind":"content","session":4,"hash":"625f277a","md":"#### [day3#wrap-up] Three things to keep\n\n*Day 3 · wrap-up*\n\n- **One command.** A reader rebuilds and checks the result with one documented command; data and outputs live elsewhere.\n- **A container is a process.** It shares the kernel, the mounts and the variables you give it.\n- **Rotate, clean, tell.** A leaked key is revoked first; then history, then the people who need to know.","notes":"","minutes":null,"lo":[]},{"id":"next","n":38,"title":"The capstone day: peer reproduction","kind":"content","session":4,"hash":"f2358f68","md":"#### [day3#next] The capstone day: peer reproduction\n\n*Next*\n\nBring your repository link and its README. The supervised check on shell commands and commit graphs opens the day, AI off.","notes":"Capstone preparation 2 of 2 tonight. Confirm the clean workspaces for the peers (the provided Linux workspace, or a fresh user account on a laptop).","minutes":null,"lo":[]}],"activities":[{"id":"review-day2-q1","slide":"review-day2","type":"single","prompt":"A teammate pushed to the hub. You want to see their commits before anything in your clone changes. Which command?","options":[{"key":"A","text":"git pull"},{"key":"B","text":"git merge origin/main"},{"key":"C","text":"git push"},{"key":"D","text":"git fetch"}],"correct":[3],"explanation":"fetch downloads the commits and moves origin/main only; your main and your files stay until you merge.","misconceptions":["pull is fetch followed by merge: it moves your main and changes your files","merge needs the commits in your clone first; on its own it cannot see the hub","push sends your commits the other way and changes nothing you can read",""],"lo":["LO1"]},{"id":"check-data-path-q1","slide":"check-data-path","type":"single","prompt":"A planner project reads its visit logs from a folder. A peer will rebuild it on a clean workspace. Where should the folder's location come from?","options":[{"key":"A","text":"A default path in the code, the author's own folder"},{"key":"B","text":"An argument or a variable, with the README saying where to get the data"},{"key":"C","text":"The repository itself, in a data/ folder"},{"key":"D","text":"A chat message to the peer before the rebuild"}],"correct":[1],"explanation":"The code takes the location from outside, and the README records where the data comes from for every reader.","misconceptions":["A default that exists on one disk works for its author only and fails silently elsewhere","","Data in the repository is copied to every clone and mixes results with code","A message reaches one person once; the next reader is stuck again"],"lo":["LO6"]},{"id":"check-mount-q1","slide":"check-mount","type":"single","prompt":"You run the planner image with -v \"$PWD/output:/out\" and --rm. The container is gone afterwards, yet output/plan.csv is on your disk. Why?","options":[{"key":"A","text":"--rm copies the container's files out before deleting it"},{"key":"B","text":"The file was written into the image"},{"key":"C","text":"/out inside the container is your own output/ folder, mounted"},{"key":"D","text":"The engine syncs every container folder back to the host"}],"correct":[2],"explanation":"A bind mount puts a host folder at a path inside the container, so writes there land on the host and outlive the container.","misconceptions":["--rm deletes the container's own writable layer; it copies nothing out","An image is read-only and built before the run; a run never writes into it","","Engines do not sync files back by themselves; only mounts share a folder"],"lo":["LO4"]},{"id":"check-env-file-q1","slide":"check-env-file","type":"single","prompt":"You run a planner image with --env-file .env; the key is no longer in the code or the image. Who can still read the key?","options":[{"key":"A","text":"Any program running in that container, and anyone who can inspect it"},{"key":"B","text":"Nobody: variables passed at run time are encrypted"},{"key":"C","text":"Anyone who pulls the image from the registry"},{"key":"D","text":"Nobody, because /data is mounted read-only"}],"correct":[0],"explanation":"The variable is part of the running container's environment: its processes read it, and so can anyone allowed to inspect that container.","misconceptions":["","Variables are set for the container's processes; they are not hidden from them","The image was built without the key; passing it at run time adds nothing to the image","A read-only data mount limits the data folder, not the variables"],"lo":["LO5"]},{"id":"check-leak-q1","slide":"check-leak","type":"single","prompt":"A scan of the planner's history finds a booking-service key in a commit from three weeks ago. The repository has been public since. What is the first action?","options":[{"key":"A","text":"Rewrite the history with git filter-repo"},{"key":"B","text":"Delete the file in a new commit"},{"key":"C","text":"Make the repository private"},{"key":"D","text":"Revoke the key at the booking service and issue a new one"}],"correct":[3],"explanation":"Only revoking makes every copy of the old key useless; cleaning and reporting follow.","misconceptions":["Cleaning removes it from the hub, not from the clones and caches made in three weeks","Removing the file in a new commit leaves every old commit holding the key","Hiding the repository stops new readers, not those who already copied it",""],"lo":["LO5"]}],"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":"day3.md","llms":"../llms.txt"},"tasks":[],"tools":[]},"bridge":{"allowedOrigins":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

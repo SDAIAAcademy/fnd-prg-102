@@ -1,0 +1,13 @@
+station,client,valid_hours,mean_pm10,max_pm10,alert_hours,error_hours
+ST01,Client A,744,58.9,256,14,0
+ST02,Client A,739,68.5,245,15,5
+ST03,Client A,744,55.5,240,15,0
+ST04,Client B,744,83.8,251,17,0
+ST05,Client B,718,74.6,260,17,26
+ST06,Client B,744,65.6,229,15,0
+ST07,Client C,744,92.5,306,18,0
+ST08,Client C,739,62.5,250,16,5
+ST09,Client C,727,77.8,245,16,17
+ST10,Client D,744,51.4,208,12,0
+ST11,Client D,696,70.4,247,16,0
+ST12,Client D,736,75.6,236,18,8

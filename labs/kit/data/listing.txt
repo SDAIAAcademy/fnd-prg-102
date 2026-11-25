@@ -1,0 +1,9 @@
+# A long listing of the report folder on the provided Linux workspace.
+# Synthetic: written for lab 1.1, in the shape that ls -l prints on Linux.
+# Owner and group are role accounts, not people.
+drwxr-x---  2 analyst field  4096 logs
+-rw-r--r--  1 analyst field   612 stations.csv
+-rw-------  1 analyst field    58 portal.env
+-rwxr-xr-x  1 analyst field  1180 run_counts.sh
+-rw-r--r--  1 analyst field   934 make_report.sh
+-rw-rw-rw-  1 analyst field   201 notes.txt

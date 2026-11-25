@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 1.2 · A counting pipeline over synthetic logs · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D1_2_counting_pipeline.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day1.html#lab-1-2">Back to the slides</a></nav></div>
+<span class="tag">Lab 1.2</span>
+<h1>A counting pipeline over synthetic logs</h1>
+<p>Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh</p>
+<div class="meta"><span>35 minutes</span><span>Day 1</span><span>Session 2: Pipes, redirection and filters</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="1.2">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>Answer six questions about one month of sensor logs from twelve stations, each with one pipeline of small commands, and keep the pipelines in a script that writes its answers to a file.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 1.2</code>: twelve October logs and <code>stations.csv</code> in <code>logs/</code>, and <code>counts.sh</code> with the six questions</li>
+    <li>AI policy: <b>off</b> for the first attempt at every pipeline. After that, the hint-only assistant (<code>AGENTS.md</code> in the workspace) for the stretch only</li>
+  </ul>
+
+  <div class="step">
+    <h3>Look at the logs <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 1.2
+cd 1.2
+head -n 3 logs/ST01.log
+tail -n 2 logs/ST03.log
+wc -l logs/*.log | tail -n 1
+head -n 3 logs/stations.csv</code></pre>
+    <p>Each reading line has six fields separated by single spaces: the hour, the station, PM10, PM2.5, temperature and a status (<code>OK</code>, <code>WARN</code>, or <code>ERR-</code> and a code). Some lines are not readings.</p>
+  </div>
+
+  <div class="step">
+    <h3>Count the reading lines (Q1) <span class="min">5 min</span></h3>
+    <p>Leave out the comment lines (they start with <code>#</code>) and the blank lines. Write the pipeline under the Q1 line of <code>counts.sh</code>, then run <code>bash counts.sh</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Lines per status, and the hidden character (Q2) <span class="min">8 min</span></h3>
+    <p>Cut out the sixth field, keep only the part before the hyphen, then <code>sort | uniq -c</code>. Pipe the result into <code>cat -A</code> (<code>cat -e</code> on macOS) to see every character. If a status appears twice, one of the logs ends its lines differently: find which with <code>file logs/*.log</code>, and remove the extra character with <code>tr</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Errors by station and by code (Q3, Q4) <span class="min">8 min</span></h3>
+    <p>Q3: the three stations with the most <code>ERR</code> lines, most first. Q4: each error code with its count (<code>grep -o</code> prints only the part that matched).</p>
+  </div>
+
+  <div class="step">
+    <h3>Repeated lines and the CSV (Q5, Q6) <span class="min">6 min</span></h3>
+    <p>Q5: a logger that restarts sends its last hours again. Count the reading lines whose station and hour already appeared (<code>uniq -d</code> prints each repeated line once). Q6: stations per client from <code>logs/stations.csv</code>; skip the header line with <code>tail -n +2</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Save the answers and check <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">bash counts.sh &gt; counts.txt
+cat counts.txt
+cd .. &amp;&amp; uv run lab.py check 1.2</code></pre>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Count the alert hours (PM10 above 150, the company's own rule) per station with <code>awk</code>, counting each station and hour once.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why must <code>sort</code> come before <code>uniq -c</code>?</li>
+    <li>Your Q2 output is right on your laptop and wrong on a colleague's Linux machine. What is the likely reason?</li>
+    <li>What is the difference between <code>&gt;</code> and <code>&gt;&gt;</code> when you run <code>counts.sh</code> twice?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>Reference values (October): Q1 8,892 reading lines (8,899 lines in all, less 4 calibration comments in ST09, 2 restart notes in ST03 and 1 blank line in ST04); Q2 OK 8,728, WARN 103, ERR 61; Q3 ST05 26, ST09 17, ST12 8; Q4 E11 8, E21 26, E34 11, E40 16; Q5 12 (two restarts of ST03, six hours each); Q6 three stations per client.</p>
+    <p>The carriage-return trap: ST07's lines end in CR LF. Without <code>tr -d '\r'</code>, <code>uniq -c</code> lists <code>OK</code> 7,993 and <code>OK^M</code> 735 (and WARN 94 and 9) wherever <code>grep</code> keeps the CR, as on Linux. Git Bash's <code>grep</code> on Windows drops the CR from its output, so there the counts look right without the fix: run the pipeline with <code>grep -U</code> to show the room the Linux result. <code>awk</code> on Windows also drops it; <code>cut</code> keeps it. The portable pipeline strips the CR. Solution: <code>labs/solutions/S1_2.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D1_1_project_folder.html" rel="prev">← Previous lab</a><a href="D1_3_second_folder_key.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"1.2","title":"A counting pipeline over synthetic logs","summary":"Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh","minutes":35,"day":1,"unit":"Day 1","session":2,"deck":"../slides/day1.html#lab-1-2","prev":"D1_1_project_folder.html","next":"D1_3_second_folder_key.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

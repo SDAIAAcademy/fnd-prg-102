@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="deck" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 2 · Working together on one history · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="day2.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<div class="deck" data-course="Command Line, Git and Reproducible Environments" data-track="foundations" data-day="Day 2">
+<section class="slide title" id="title" data-auto="title" data-label="Welcome" data-n="1">
+  <div class="kicker">SDAIA Academy · Command Line, Git and Reproducible Environments</div>
+  <h1>Working together on one history</h1>
+  <p class="lead mt">Day 2: Branches, reviewed pull requests, conflicts, undoing, and an environment that rebuilds</p>
+  <div class="meta"><span class="track">Data &amp; AI Foundations Track</span><span>3 teaching days + capstone day</span><span>4 sessions · 4 labs</span><span>FND-PRG-102</span></div>
+  <aside class="notes"><p>Day 2 moves from one person's history to a team's. Ask who did the commit-graph practice last night and which sequence surprised them; most say sequence 6 (a reset).</p></aside>
+</section>
+
+<section class="slide" id="agenda" data-auto="agenda" data-label="Agenda" data-n="2">
+  <div class="kicker">Today</div>
+  <h2>Working together on one history</h2>
+  <div class="agenda"><div class="item"><div><b>Session 1 · Branches, merges and conflicts</b><small>Two lines of work join in a merge; when both changed the same lines, a person decides</small></div></div><div class="item"><div><b>Session 2 · Pull requests and review etiquette</b><small>Main changes only through small, reviewed requests; a good comment names a line and a reason</small></div></div><div class="item"><div><b>Session 3 · Undoing mistakes</b><small>Each mistake has its own undo, and a pushed commit is undone with a new one</small></div></div><div class="item"><div><b>Session 4 · Virtual environments and lock files</b><small>Declare what the project needs, lock the exact versions, and rebuild from the lock</small></div></div></div>
+</section>
+
+<section class="slide" id="review-day1" data-lo="LO1" data-n="3">
+  <div class="kicker">Review of Day 1</div>
+  <h2>Where does HEAD point, and what does the next commit move?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1" data-id="review-day1-q1">
+    <p class="lead">On <code>main</code>, someone runs <code>git branch notes</code> and then commits once. Which name moved?</p>
+    <div class="opts">
+      <div class="opt" data-why="Creating a branch adds a name; it does not switch to it, so HEAD stays on main" data-k="A">notes, because it is the newest branch</div>
+      <div class="opt" data-why="A commit moves exactly one branch, the one HEAD points at; it never moves both" data-k="B">Both main and notes</div>
+      <div class="opt" data-ok data-k="C">main, because HEAD still points at it</div>
+      <div class="opt" data-why="Commits always move a branch when HEAD is on one; nothing stays behind" data-k="D">Neither: the commit has no branch</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>git branch</code> creates a name without switching; the commit moves the branch HEAD points at, which is still <code>main</code>.</div>
+  </div>
+  <aside class="notes"><p>Answer: C. Two minutes. If the room splits, draw it: main and notes on the same commit, then main moves.</p></aside>
+</section>
+
+<!-- Session 1 -->
+
+<section class="slide section" id="s1" data-auto="section" data-session="1" data-n="4">
+  <div class="kicker">Session 1</div>
+  <h1>Branches, merges and conflicts</h1>
+  <ul class="bullets outcomes"><li>Tell a fast-forward from a merge commit on a graph</li><li>Read conflict markers and keep both changes where both are right</li><li>Push, fetch and read origin/main as the hub's last known state</li></ul>
+  <div class="sess-no">01</div>
+</section>
+
+<section class="slide" id="two-kinds-of-merge" data-lo="LO1 LO3" data-n="5" data-session="1">
+  <div class="kicker">Two kinds of merge</div>
+  <h2>If main has not moved, Git just slides it forward; if it has, Git makes a merge commit</h2>
+  <div class="cols cols-2">
+    <div class="card c-teal"><h4>Fast-forward</h4><pre class="code s"><code>before:  o--o  main
+              \
+               a--b  topic
+after:   o--o--a--b  main, topic</code></pre><p class="small mb0">No new commit; main points where topic does.</p></div>
+    <div class="card c-purple"><h4>Merge commit</h4><pre class="code s"><code>before:  o--o--m  main
+              \
+               a--b  topic
+after:   o--o--m---M  main
+              \   /
+               a-b   topic</code></pre><p class="small mb0">M has two parents: m and b.</p></div>
+  </div>
+  <aside class="notes"><p>Ask the room which kind each merge of lab 2.1 will be before they run it: they can tell from the graph alone. <code>--no-ff</code> forces a merge commit even when a fast-forward is possible; hosts often do that for pull requests so the request stays visible in history.</p></aside>
+</section>
+
+<section class="slide" id="remotes" data-lo="LO1" data-n="6" data-session="1">
+  <div class="kicker">Remotes</div>
+  <h2>origin/main is your clone's memory of the hub, updated only when you talk to it</h2>
+  <table class="t">
+    <tr><th>Command</th><th>Your <code>main</code></th><th><code>origin/main</code></th><th>Working files</th></tr>
+    <tr><td><code>git fetch</code></td><td>stays</td><td>moves to the hub's</td><td>stay</td></tr>
+    <tr><td><code>git merge origin/main</code></td><td>moves</td><td>stays</td><td>change</td></tr>
+    <tr class="hl"><td><code>git pull</code></td><td>moves</td><td>moves</td><td>change</td></tr>
+    <tr><td><code>git push</code></td><td>stays</td><td>moves to yours</td><td>stay</td></tr>
+  </table>
+  <p class="small mt"><code>git pull</code> is <code>fetch</code> followed by <code>merge</code> (or rebase, if configured). Fetch first when you want to look before anything changes.</p>
+  <aside class="notes"><p>The hub in the labs is a bare repository on your own disk; a class host such as Forgejo, Gitea, GitLab or GitHub is the same thing on a server, with pages and permissions around it.</p></aside>
+</section>
+
+<section class="slide" id="conflict-why" data-lo="LO3" data-n="7" data-session="1">
+  <div class="kicker">When Git stops</div>
+  <h2>A conflict means both sides changed the same lines, and only a person knows the answer</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Git merges changes to different lines by itself</li>
+      <li>When both sides changed the <b>same or touching lines</b>, it writes both and stops</li>
+      <li>The merge waits, half done, until you resolve, <code>git add</code> and <code>git commit</code></li>
+      <li><code>git merge --abort</code> puts everything back as it was</li>
+    </ul>
+    <div class="card c-coral"><h4>Not an error</h4><p class="small mb0">A conflict is a question: "both of you changed this, which text is right?" The answer is often a third text that keeps both intentions.</p></div>
+  </div>
+  <aside class="notes"><p>Say that "touching" matters: changes on two adjacent lines also conflict, because Git cannot tell whether they depend on each other.</p></aside>
+</section>
+
+<section class="slide" id="read-markers" data-lo="LO3" data-n="8" data-session="1">
+  <div class="kicker">Reading the markers</div>
+  <h2>Between the markers, the top is your branch, the bottom is the one coming in</h2>
+  <pre class="code" data-file="visit_plan.md (during a merge)"><code>Visits: every two weeks
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Inlet cleaned at every visit, photo before and after
+=======
+Inlet cleaned at every visit; fan checked
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; field-checks</code></pre>
+  <div class="cols cols-2 mt">
+    <div class="card c-teal"><h4>A resolution that keeps both</h4><p class="small mb0"><code>Inlet cleaned at every visit; fan checked; photo before and after</code></p></div>
+    <div class="card c-coral"><h4>A resolution that loses one</h4><p class="small mb0">Taking one side whole (<code>--ours</code> or <code>--theirs</code>) when both changes were wanted.</p></div>
+  </div>
+  <aside class="notes"><p>The example is a field-visit plan, not the report template of the lab. After editing: <code>grep -n '^&lt;&lt;&lt;&lt;&lt;&lt;&lt;' file</code> prints nothing, then <code>git add</code> and <code>git commit</code>.</p></aside>
+</section>
+
+<section class="slide" id="conflict-steps" data-lo="LO3" data-n="9" data-session="1">
+  <div class="kicker">Step by step</div>
+  <h2>Five steps resolve any conflict</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · See</b><code>git status</code> lists the files</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Read</b>both sides and why each changed</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Write</b>the text that keeps both intentions</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>4 · Test</b>no markers left; it still runs</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>5 · Record</b><code>git add</code>, <code>git commit</code></div>
+  </div>
+  <aside class="notes"><p>Step 2 is where people skip: read the commit messages of both sides (<code>git log --merge</code>) to learn why each changed the line.</p></aside>
+</section>
+
+<section class="slide" id="check-fast-forward" data-lo="LO1 LO3" data-n="10" data-session="1">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does this merge leave behind?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1" data-id="check-fast-forward-q1">
+    <p class="lead">A branch <code>fix</code> has three commits. Nobody committed to <code>main</code> since <code>fix</code> started. On <code>main</code> you run <code>git merge fix</code>. What is in the history now?</p>
+    <div class="opts">
+      <div class="opt" data-ok data-k="A">The same three commits; main now points at the last one</div>
+      <div class="opt" data-why="Expects a merge commit even when one side did not move; that needs --no-ff" data-k="B">Three commits and a new merge commit with two parents</div>
+      <div class="opt" data-why="Confuses a merge with a squash, which writes one new commit" data-k="C">One new commit holding the three changes together</div>
+      <div class="opt" data-why="Thinks merging copies commits, so they would appear twice" data-k="D">Six commits: the three, and a copy of each on main</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>main</code> is an ancestor of <code>fix</code>, so Git fast-forwards: it moves the pointer and makes no commit.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. Ask what <code>git merge --no-ff fix</code> would have added (a merge commit).</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-2-1" data-auto="lab" data-lab="2.1" data-label="Lab 2.1" data-n="11" data-session="1">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 2.1 · 35 min</div><h2>Merge two branches and resolve a conflict alone</h2><p class="lead small">Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub</p><a class="nb" href="../labs/D2_1_merge_alone.html">D2_1_merge_alone.html</a></div><ul class="checklist"><li>Read the graph and both branches <span class="min">5 min</span></li><li>Merge the first branch: a fast-forward <span class="min">5 min</span></li><li>Merge the second and read the conflict markers <span class="min">7 min</span></li><li>Resolve so both changes survive, and commit <span class="min">10 min</span></li><li>Push to the hub, fetch, read origin/main and check the lab <span class="min">8 min</span></li><li class="stretch">✱ Stretch: In a copy, rebase the second branch onto main instead and compare the graphs</li></ul></div>
+  <aside class="notes"><p>Ask everyone to predict the kind of each merge before running it. Watch for people taking one side whole. The check needs "own rule" and "hourly mean" on the same threshold line. If someone finishes early, the stretch (rebase) sets up session 2's question of how teams keep history readable.</p></aside>
+</section>
+
+<!-- Session 2 -->
+
+<section class="slide section" id="s2" data-auto="section" data-session="2" data-n="12">
+  <div class="kicker">Session 2</div>
+  <h1>Pull requests and review etiquette</h1>
+  <ul class="bullets outcomes"><li>Open a small pull request from a branch with a title that says what changes</li><li>Write review comments that name a line and a reason, and answer them with commits</li><li>Resolve a conflict on your own branch before the merge</li></ul>
+  <div class="sess-no">02</div>
+</section>
+
+<section class="slide" id="protected-main" data-lo="LO3" data-n="13" data-session="2">
+  <div class="kicker">A team's main</div>
+  <h2>On a team, main changes only through a reviewed pull request</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Branch</b>one change, one branch</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Push</b>the branch to the host</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Request</b>open a pull request with a clear title</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>4 · Review</b>comments, answers, approval</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>5 · Merge</b>into a protected main</div>
+  </div>
+  <div class="callout note mt"><b>Protected branch.</b> The host refuses direct pushes and merges without the required approvals (Gitea and Forgejo call it branch protection; GitLab and GitHub have the same).</div>
+  <aside class="notes"><p>Gitea's documentation: protected branches "prevent unwanted changes by enforcing push and merge policies". Set it on the class host before the session: protect main, one approval required. In the kit, the hub's server-side hook refuses pushes to main, and <code>lab.py pr merge</code> is the only way in. Sources: Gitea, Protected branches; Forgejo user guide.</p></aside>
+</section>
+
+<section class="slide" id="small-requests" data-lo="LO3" data-n="14" data-session="2">
+  <div class="kicker">Size</div>
+  <h2>A small request gets a real review; a large one gets a rubber stamp</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li><b>One purpose</b> per request: "Add the rule on comment lines", not "various fixes"</li>
+      <li>A title that says what changes; a description that says why and how to check it</li>
+      <li>Commits that each make sense on their own</li>
+      <li>Open it early as a draft when you want direction, not approval</li>
+    </ul>
+    <div class="card c-purple"><h4>For the reviewer</h4><p class="small mb0">If you cannot say in one sentence what a request changes, ask the author to split it before you review line by line.</p></div>
+  </div>
+  <aside class="notes"><p>Ask the room for the largest change they ever had to review. The lesson is practical: reviewers stop reading long diffs, and that is how mistakes reach main.</p></aside>
+</section>
+
+<section class="slide" id="good-comment" data-lo="LO3" data-n="15" data-session="2">
+  <div class="kicker">Review etiquette</div>
+  <h2>A useful comment names a line, a reason and a way forward</h2>
+  <table class="t">
+    <tr><th>Comment</th><th>Why it helps or not</th></tr>
+    <tr><td>"Looks good"</td><td>Says nothing the author can act on</td></tr>
+    <tr><td>"This is wrong"</td><td>No line, no reason, no suggestion</td></tr>
+    <tr class="hl"><td>"visit_plan.md line 6: the photo rule repeats line 2; keep one, so they cannot disagree"</td><td>Line, reason and a fix the author can accept or answer</td></tr>
+    <tr><td>"Question: is the fan check every visit or monthly?"</td><td>Marked as a question, not a demand</td></tr>
+  </table>
+  <aside class="notes"><p>Comment on the change, not the person. Mark what blocks the merge and what is a suggestion. The author answers every comment, with a commit or a reason, before resolving it.</p></aside>
+</section>
+
+<section class="slide" id="answer-with-commit" data-lo="LO3" data-n="16" data-session="2">
+  <div class="kicker">Answering a review</div>
+  <h2>Answer a comment with a commit on the branch, then mark it resolved</h2>
+  <pre class="code" data-file="terminal (the author)"><code class="language-bash">git switch field-checks
+<span class="hljs-comment"># edit visit_plan.md as the comment asked</span>
+git commit -am <span class="hljs-string">&quot;Keep one photo rule, as the review asked&quot;</span>
+git push                     <span class="hljs-comment"># the request shows the new commit</span></code></pre>
+  <div class="callout warn mt"><b>An approval belongs to a commit.</b> When the branch changes after an approval, the reviewer reads the new commits and approves again; hosts can be set to dismiss stale approvals.</div>
+  <aside class="notes"><p>In the kit, <code>lab.py pr resolve</code> refuses until the branch has moved since the comment, and <code>pr merge</code> refuses an approval given on an older commit. The class host does the same when "dismiss stale approvals" is set.</p></aside>
+</section>
+
+<section class="slide" id="update-the-branch" data-lo="LO3" data-n="17" data-session="2">
+  <div class="kicker">When the request no longer merges</div>
+  <h2>The author brings main into the branch and resolves the conflict there</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal (the author)"><code class="language-bash">git fetch origin
+git merge origin/main
+<span class="hljs-comment"># resolve, then:</span>
+git add visit_plan.md
+git commit
+git push</code></pre>
+    <ul class="bullets">
+      <li>The author knows the change best, so the author resolves</li>
+      <li>main never holds a half-resolved state</li>
+      <li>The reviewer sees the resolution as a commit and reviews it</li>
+      <li>Some teams rebase the branch instead; never rebase a branch others share</li>
+    </ul>
+  </div>
+  <aside class="notes"><p>In lab 2.2 the second request conflicts after the first is merged. Make sure the second author does this, not the reviewer.</p></aside>
+</section>
+
+<section class="slide" id="check-review" data-lo="LO3" data-n="18" data-session="2">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which comment should the author act on first?</h2>
+  <div class="quiz" data-type="single" data-lo="LO3" data-id="check-review-q1">
+    <p class="lead">A request changes how the field team's visit plan is checked. Four comments arrive. Which is the most useful review comment?</p>
+    <div class="opts">
+      <div class="opt" data-why="Approval without reading adds nothing a reviewer is for" data-k="A">"LGTM, merging"</div>
+      <div class="opt" data-why="A judgement with no line and no reason gives the author nothing to change" data-k="B">"I don't like this approach"</div>
+      <div class="opt" data-why="A request far beyond the change makes the request bigger and the review weaker" data-k="C">"While you are here, please rewrite the whole planner"</div>
+      <div class="opt" data-ok data-k="D">"Line 12: the visit interval is set here and in the README; read it from one place"</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> It names the line, gives the reason (two copies can disagree) and suggests a fix within the request.</div>
+  </div>
+  <aside class="notes"><p>Answer: D.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-2-2" data-auto="lab" data-lab="2.2" data-label="Lab 2.2" data-n="19" data-session="2">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 2.2 · 35 min</div><h2>Branch, review and resolve a conflict in teams of three</h2><p class="lead small">Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged</p><a class="nb" href="../labs/D2_2_team_review.html">D2_2_team_review.html</a></div><ul class="checklist"><li>Take roles; try to push to main and read the refusal <span class="min">4 min</span></li><li>Authors: one branch, one commit and one pull request each <span class="min">8 min</span></li><li>Reviewer comments on a line, with a reason; authors answer with a commit <span class="min">9 min</span></li><li>Merge the first; the second author merges main into the branch and resolves <span class="min">9 min</span></li><li>Reviewer approves the new commits; merge and check the lab <span class="min">5 min</span></li><li class="stretch">✱ Stretch: Write the team's five-line review checklist and add it through a third pull request</li></ul></div>
+  <aside class="notes"><p>Form teams of three before you start the timer. With a class host, each person works on their own laptop in the trainer's team repository; without one, one laptop per team with the kit's three clones and turns at the keyboard. AI off for the first attempt.</p><p>What to watch: comments without a line or a reason; authors resolving comments without a commit (the kit refuses); the second author taking one side of the conflict; the reviewer merging without reading the resolution.</p></aside>
+</section>
+
+<!-- Session 3 -->
+
+<section class="slide section" id="s3" data-auto="section" data-session="3" data-n="20">
+  <div class="kicker">Session 3</div>
+  <h1>Undoing mistakes</h1>
+  <ul class="bullets outcomes"><li>Choose between restore, amend, reset and revert for a given mistake</li><li>Undo a pushed commit without rewriting what others pulled</li><li>Recover a lost commit or branch from the reflog</li></ul>
+  <div class="sess-no">03</div>
+</section>
+
+<section class="slide" id="debrief-2-2" data-lo="LO3" data-n="21" data-session="3">
+  <div class="kicker">Lab 2.2 debrief</div>
+  <h2>The second request had to change after the first was merged</h2>
+  <pre class="code" data-file="git log --oneline --graph (the hub, from the solution run)"><code>*   9cd2132 Merge pull request #2: Add the rule on a station's first day
+|\
+| *   95f7f91 Merge remote-tracking branch 'origin/main' into rules/first-day
+| |\
+| |/
+|/|
+* |   e90c3f8 Merge pull request #1: Add the rule on comment lines</code></pre>
+  <p class="small mt">The merge of main into the branch (95f7f91) holds the resolution the reviewer approved.</p>
+  <aside class="notes"><p>From one run of labs/solutions/S2_2.sh. The participants' commits carry the time they were made, so the ids differ on every run and for every team. Ask one team to show their resolution and one comment they thought was useful.</p></aside>
+</section>
+
+<section class="slide" id="which-undo" data-lo="LO1 LO3" data-n="22" data-session="3">
+  <div class="kicker">Undoing</div>
+  <h2>Pick the undo by where the mistake is</h2>
+  <table class="t">
+    <tr><th>The mistake is</th><th>Undo with</th><th>Changes history?</th></tr>
+    <tr><td>in a file, not staged</td><td><code>git restore file</code></td><td>no</td></tr>
+    <tr><td>staged by mistake</td><td><code>git restore --staged file</code></td><td>no</td></tr>
+    <tr><td>in the last commit, not pushed</td><td><code>git commit --amend</code></td><td>yes, one commit</td></tr>
+    <tr><td>in commits not pushed</td><td><code>git reset</code> to an earlier commit</td><td>yes</td></tr>
+    <tr class="hl"><td>in a commit already pushed</td><td><code>git revert</code> its id</td><td>no: adds a commit</td></tr>
+  </table>
+  <aside class="notes"><p>The column on the right is the safety rule: rewrite only what nobody else has. git-revert's documentation: it records "new commits to reverse the effect of some earlier commits". Sources: git-restore, git-reset, git-revert documentation.</p></aside>
+</section>
+
+<section class="slide" id="reset-modes" data-lo="LO1" data-n="23" data-session="3">
+  <div class="kicker">reset, three ways</div>
+  <h2>reset moves the branch; the flag decides what happens to your files</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>--soft</h4><p class="small mb0">The branch moves back; the undone changes stay staged.</p></div>
+    <div class="card c-amber"><h4>--mixed (default)</h4><p class="small mb0">The branch moves back; the changes stay in your files, unstaged.</p></div>
+    <div class="card c-coral"><h4>--hard</h4><p class="small mb0">The branch moves back; your files are made to match. Uncommitted work is lost.</p></div>
+  </div>
+  <div class="callout warn mt"><b>Before --hard,</b> run <code>git status</code>. A file you never committed cannot come back from the reflog.</div>
+  <aside class="notes"><p>git-reset's documentation: it sets "the current branch head (HEAD) to point at" the commit you give. Demonstrate with HEAD~1 on a scratch repository.</p></aside>
+</section>
+
+<section class="slide" id="reflog" data-lo="LO1" data-n="24" data-session="3">
+  <div class="kicker">The safety net</div>
+  <h2>The reflog remembers where your branches and HEAD have been</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">git branch -D field-checks          <span class="hljs-comment"># deleted by mistake</span>
+git reflog | <span class="hljs-built_in">head</span> -n 5
+<span class="hljs-comment"># 4c2e9a1 HEAD@{2}: commit: Check the fan at every visit</span>
+git branch field-checks 4c2e9a1     <span class="hljs-comment"># back</span></code></pre>
+  <ul class="bullets mt">
+    <li>Local only: each clone has its own reflog, and the hub's is not yours</li>
+    <li>Entries expire after a while (<code>gc.reflogExpire</code>): a net, not a backup</li>
+  </ul>
+  <aside class="notes"><p>git-reflog's documentation: reflogs "record when the tips of branches and other references were updated in the local repository". The id shown is illustrative.</p></aside>
+</section>
+
+<section class="slide" id="check-undo" data-lo="LO1 LO3" data-n="25" data-session="3">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which undo keeps everyone's clone working?</h2>
+  <div class="quiz" data-type="single" data-lo="LO3" data-id="check-undo-q1">
+    <p class="lead">Yesterday you pushed a commit that set the visit interval to 90 days instead of 14. Three teammates have pulled since. How do you undo it?</p>
+    <div class="opts">
+      <div class="opt" data-why="Rewrites a commit others already have; their next pull disagrees with the hub" data-k="A">git reset --hard to the commit before it, then push --force</div>
+      <div class="opt" data-ok data-k="B">git revert the commit, then push</div>
+      <div class="opt" data-why="Amend rewrites the last local commit only, and still changes its id" data-k="C">git commit --amend, then push</div>
+      <div class="opt" data-why="restore changes your working file; history and the hub still hold the mistake" data-k="D">git restore the file, then tell the team</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Revert adds a commit that reverses the change, so the shared history only grows and nobody's clone is broken.</div>
+  </div>
+  <aside class="notes"><p>Answer: B.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-2-3" data-auto="lab" data-lab="2.3" data-label="Lab 2.3" data-n="26" data-session="3">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 2.3 · 35 min</div><h2>Undo five mistakes</h2><p class="lead small">Addition: five mistakes in one repository, each with its own undo, one of them already pushed</p><a class="nb" href="../labs/D2_3_undo_five.html">D2_3_undo_five.html</a></div><ul class="checklist"><li>Read the state: status, log and what is pushed <span class="min">4 min</span></li><li>Unstage a file and discard a stray change with restore <span class="min">6 min</span></li><li>Drop a local commit with reset and fix the last one with amend <span class="min">9 min</span></li><li>Undo the pushed commit with revert, and push <span class="min">8 min</span></li><li>Bring back the deleted branch from the reflog and check the lab <span class="min">8 min</span></li><li class="stretch">✱ Stretch: For each of the five, write whether the same undo is safe after a push, and why</li></ul></div>
+  <aside class="notes"><p>The order matters: restore first, then drop the debug commit, then amend. Ask each participant to mark which commits are pushed before touching anything. Common error: amending first, which rewrites the debug commit instead of the sector one.</p></aside>
+</section>
+
+<!-- Session 4 -->
+
+<section class="slide section" id="s4" data-auto="section" data-session="4" data-n="27">
+  <div class="kicker">Session 4</div>
+  <h1>Virtual environments and lock files</h1>
+  <ul class="bullets outcomes"><li>Explain why a project runs on one machine and fails on another</li><li>Declare dependencies and lock them with an environment manager</li><li>Rebuild a fresh environment from the lock and compare the output</li></ul>
+  <div class="sess-no">04</div>
+</section>
+
+<section class="slide" id="it-runs-here" data-lo="LO4" data-n="28" data-session="4">
+  <div class="kicker">Why it ran here</div>
+  <h2>"It runs on my laptop" means the laptop holds something the repository does not</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>A package installed once, long ago, and never written down</li>
+      <li>A version that happened to be current that month</li>
+      <li>A folder that exists on one disk</li>
+      <li>An output folder created by hand</li>
+      <li>A Python version, a setting, a variable in a profile</li>
+    </ul>
+    <div class="card c-coral"><h4>The test</h4><p class="small mb0">A clean clone in a fresh environment. <code>uv run --isolated</code> builds a fresh environment from the declaration alone on your own laptop; a colleague's machine or a container gives the real thing.</p></div>
+  </div>
+  <aside class="notes"><p>Ask the room for their own "worked on my machine" story. Lab 2.4 has four of these faults planted; do not list which.</p></aside>
+</section>
+
+<section class="slide" id="declare-then-lock" data-lo="LO4" data-n="29" data-session="4">
+  <div class="kicker">Two files, two jobs</div>
+  <h2>The declaration says what is acceptable; the lock says exactly what was installed</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="pyproject.toml"><code class="language-toml"><span class="hljs-section">[project]</span>
+<span class="hljs-attr">name</span> = <span class="hljs-string">&quot;visit-planner&quot;</span>
+<span class="hljs-attr">requires-python</span> = <span class="hljs-string">&quot;&gt;=3.11&quot;</span>
+<span class="hljs-attr">dependencies</span> = [
+    <span class="hljs-string">&quot;tabulate&gt;=0.9&quot;</span>,
+]</code></pre>
+    <ul class="bullets">
+      <li><b>pyproject.toml</b>: the packages and the range of versions you accept</li>
+      <li><b>uv.lock</b>: every package, indirect ones included, at one exact version, with hashes</li>
+      <li>uv's documentation calls the lock universal and says it "should be checked into version control"</li>
+    </ul>
+  </div>
+  <aside class="notes"><p>Sources: uv, Structure and files. Poetry (poetry.lock) and pip-tools (requirements.txt from pip-compile) are the same idea with other files: the course names them as interchangeable examples.</p></aside>
+</section>
+
+<section class="slide" id="environment" data-lo="LO4" data-n="30" data-session="4">
+  <div class="kicker">Environments</div>
+  <h2>A virtual environment keeps one project's packages away from every other project</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>System Python</b>shared by everything; never install into it</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>.venv/ per project</b>its own packages, rebuilt from the lock</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>Ignored by git</b>the folder is rebuilt, never committed</div>
+  </div>
+  <p class="small mt"><code>uv sync</code> makes <code>.venv/</code> match the lock; <code>uv run</code> runs a command inside it.</p>
+  <aside class="notes"><p>The environment is disposable: deleting <code>.venv</code> and running <code>uv sync --locked</code> again must give the same result. That is what lab 2.4 tests.</p></aside>
+</section>
+
+<section class="slide" id="uv-commands" data-lo="LO4" data-n="31" data-session="4">
+  <div class="kicker">The commands</div>
+  <h2>Five commands take a project from undeclared to locked</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">uv init --bare --name visit-planner --python 3.11   <span class="hljs-comment"># a pyproject.toml, nothing else</span>
+uv add tabulate                                    <span class="hljs-comment"># declare it, resolve, write uv.lock</span>
+uv python pin 3.13                                 <span class="hljs-comment"># .python-version</span>
+uv <span class="hljs-built_in">sync</span> --locked                                   <span class="hljs-comment"># build .venv exactly from the lock</span>
+uv run python planner.py                           <span class="hljs-comment"># run inside it</span></code></pre>
+  <div class="callout tip mt"><b>--locked refuses to change the lock.</b> uv's documentation: "If the lockfile is not up-to-date, uv will raise an error instead of updating the lockfile."</div>
+  <aside class="notes"><p>Source: uv, Locking and syncing. When <code>--locked</code> refuses, someone changed pyproject.toml without locking: run <code>uv lock</code>, read the diff, commit both.</p></aside>
+</section>
+
+<section class="slide" id="check-lock" data-lo="LO4" data-n="32" data-session="4">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does the lock add?</h2>
+  <div class="quiz" data-type="single" data-lo="LO4" data-id="check-lock-q1">
+    <p class="lead">A planner project declares <code>tabulate&gt;=0.9</code>. A colleague installs it a year later from the declaration only and gets different output. What would a committed lock file have given them?</p>
+    <div class="opts">
+      <div class="opt" data-ok data-k="A">The exact versions and hashes the author installed, indirect packages included</div>
+      <div class="opt" data-why="The declaration already names the package; naming it again changes nothing" data-k="B">A second list of the same package names</div>
+      <div class="opt" data-why="A lock pins versions; it does not copy source code into the repository" data-k="C">A copy of the packages' code inside the repository</div>
+      <div class="opt" data-why="Locks pin what was resolved; they do not move to the newest release" data-k="D">The newest versions at the time of installing</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>&gt;=0.9</code> allows any later release; the lock records the one resolved, so a rebuild installs that again.</div>
+  </div>
+  <aside class="notes"><p>Answer: A.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-2-4" data-auto="lab" data-lab="2.4" data-label="Lab 2.4" data-n="33" data-session="4">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 2.4 · 35 min</div><h2>Rescue a project that fails on a second machine</h2><p class="lead small">Clone the report project as a second machine, read why it fails, then declare, lock and rebuild it to the expected output</p><a class="nb" href="../labs/D2_4_second_machine.html">D2_4_second_machine.html</a></div><ul class="checklist"><li>Clone to a second machine, run it and read each failure <span class="min">7 min</span></li><li>Name the causes: an undeclared package, a path on one computer, no versions <span class="min">5 min</span></li><li>Declare with uv init and uv add, pin Python, lock <span class="min">8 min</span></li><li>Take the data folder as an argument; rebuild fresh and compare <span class="min">10 min</span></li><li>Commit pyproject.toml and uv.lock; check the lab <span class="min">5 min</span></li><li class="stretch">✱ Stretch: Lock the same project with pip-tools (pip-compile --generate-hashes) and compare</li></ul></div>
+  <aside class="notes"><p>The first download needs the network; on a slow room network, start the lab with <code>uv sync</code> once on the projector so the cache warms. Watch for: committing <code>.venv</code>; leaving the analyst's path as a silent default; forgetting <code>uv.lock</code> in the commit. The trainer's checksum is on the lab page, for the trainer only.</p></aside>
+</section>
+
+<section class="slide" id="wrap-up" data-n="34" data-session="4">
+  <div class="kicker">Day 2 · wrap-up</div>
+  <h2>Three things to keep</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Small and reviewed</h4><p class="small mb0">One purpose per request; comments name a line and a reason; answers are commits.</p></div>
+    <div class="card c-coral"><h4>Rewrite only what is yours</h4><p class="small mb0">Amend and reset before a push; revert after it.</p></div>
+    <div class="card c-purple"><h4>Declare, lock, rebuild</h4><p class="small mb0">If a fresh environment from the lock does not reproduce the result, the repository is missing something.</p></div>
+  </div>
+</section>
+
+<section class="slide dark" id="next" data-label="Next" data-n="35" data-session="4">
+  <div class="kicker">Next</div>
+  <h2>Day 3: Rebuild anywhere, leak nothing</h2>
+  <p class="lead">Tonight, 60 minutes: choose your capstone project (<code>labs/capstone/BRIEF.md</code>), put it under Git and lock its environment. Lab 3.2 needs a container engine without administrator rights, or the provided Linux workspace: check yours.</p>
+  <aside class="notes"><p>Capstone preparation 1 of 2 (guided self-study). Tell participants with no container engine that the provided workspace has one; give its address.</p></aside>
+</section>
+</div>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"deck":{"id":"day2","kind":"day","day":2,"label":"Day 2","title":"Working together on one history","prev":"day1.html","next":"day3.html","md":"day2.md","alt":{}},"sessions":[{"n":1,"label":"Session 1","title":"Branches, merges and conflicts","slide":"s1","outcomes":["Tell a fast-forward from a merge commit on a graph","Read conflict markers and keep both changes where both are right","Push, fetch and read origin/main as the hub's last known state"],"minutes":60,"lab":{"id":"2.1","title":"Merge two branches and resolve a conflict alone","minutes":35,"href":"../labs/D2_1_merge_alone.html"}},{"n":2,"label":"Session 2","title":"Pull requests and review etiquette","slide":"s2","outcomes":["Open a small pull request from a branch with a title that says what changes","Write review comments that name a line and a reason, and answer them with commits","Resolve a conflict on your own branch before the merge"],"minutes":60,"lab":{"id":"2.2","title":"Branch, review and resolve a conflict in teams of three","minutes":35,"href":"../labs/D2_2_team_review.html"}},{"n":3,"label":"Session 3","title":"Undoing mistakes","slide":"s3","outcomes":["Choose between restore, amend, reset and revert for a given mistake","Undo a pushed commit without rewriting what others pulled","Recover a lost commit or branch from the reflog"],"minutes":60,"lab":{"id":"2.3","title":"Undo five mistakes","minutes":35,"href":"../labs/D2_3_undo_five.html"}},{"n":4,"label":"Session 4","title":"Virtual environments and lock files","slide":"s4","outcomes":["Explain why a project runs on one machine and fails on another","Declare dependencies and lock them with an environment manager","Rebuild a fresh environment from the lock and compare the output"],"minutes":60,"lab":{"id":"2.4","title":"Rescue a project that fails on a second machine","minutes":35,"href":"../labs/D2_4_second_machine.html"}}],"slides":[{"id":"title","n":1,"title":"Working together on one history","kind":"title","session":0,"hash":"1de2a3e7","md":"#### [day2#title] Working together on one history\n\n*SDAIA Academy · Command Line, Git and Reproducible Environments*\n\nDay 2: Branches, reviewed pull requests, conflicts, undoing, and an environment that rebuilds\n\nData & AI Foundations Track · 3 teaching days + capstone day · 4 sessions · 4 labs · FND-PRG-102","notes":"Day 2 moves from one person's history to a team's. Ask who did the commit-graph practice last night and which sequence surprised them; most say sequence 6 (a reset).","minutes":null,"lo":[]},{"id":"agenda","n":2,"title":"Working together on one history","kind":"content","session":0,"hash":"e66f431c","md":"#### [day2#agenda] Working together on one history\n\n*Today*\n\n- **Session 1 · Branches, merges and conflicts**: Two lines of work join in a merge; when both changed the same lines, a person decides\n- **Session 2 · Pull requests and review etiquette**: Main changes only through small, reviewed requests; a good comment names a line and a reason\n- **Session 3 · Undoing mistakes**: Each mistake has its own undo, and a pushed commit is undone with a new one\n- **Session 4 · Virtual environments and lock files**: Declare what the project needs, lock the exact versions, and rebuild from the lock","notes":"","minutes":null,"lo":[]},{"id":"review-day1","n":3,"title":"Where does HEAD point, and what does the next commit move?","kind":"quiz","session":0,"hash":"fbf12668","md":"#### [day2#review-day1] Where does HEAD point, and what does the next commit move?\n\n*Review of Day 1*\n\n**Question:** On `main`, someone runs `git branch notes` and then commits once. Which name moved?\n\n- A. notes, because it is the newest branch\n- B. Both main and notes\n- C. main, because HEAD still points at it\n- D. Neither: the commit has no branch","notes":"Answer: C. Two minutes. If the room splits, draw it: main and notes on the same commit, then main moves.","minutes":null,"lo":["LO1"]},{"id":"s1","n":4,"title":"Branches, merges and conflicts","kind":"section","session":1,"hash":"d7443382","md":"#### [day2#s1] Branches, merges and conflicts\n\n*Session 1*\n\n- Tell a fast-forward from a merge commit on a graph\n- Read conflict markers and keep both changes where both are right\n- Push, fetch and read origin/main as the hub's last known state","notes":"","minutes":null,"lo":["LO1","LO3"]},{"id":"two-kinds-of-merge","n":5,"title":"If main has not moved, Git just slides it forward; if it has, Git makes a merge commit","kind":"content","session":1,"hash":"02816be6","md":"#### [day2#two-kinds-of-merge] If main has not moved, Git just slides it forward; if it has, Git makes a merge commit\n\n*Two kinds of merge*\n\n- **Fast-forward.**\n  ```\n  before:  o--o  main\n                \\\n                 a--b  topic\n  after:   o--o--a--b  main, topic\n  ```\n  No new commit; main points where topic does.\n- **Merge commit.**\n  ```\n  before:  o--o--m  main\n                \\\n                 a--b  topic\n  after:   o--o--m---M  main\n                \\   /\n                 a-b   topic\n  ```\n  M has two parents: m and b.","notes":"Ask the room which kind each merge of lab 2.1 will be before they run it: they can tell from the graph alone. `--no-ff` forces a merge commit even when a fast-forward is possible; hosts often do that for pull requests so the request stays visible in history.","minutes":null,"lo":["LO1","LO3"]},{"id":"remotes","n":6,"title":"origin/main is your clone's memory of the hub, updated only when you talk to it","kind":"content","session":1,"hash":"1ecd446e","md":"#### [day2#remotes] origin/main is your clone's memory of the hub, updated only when you talk to it\n\n*Remotes*\n\n| Command | Your `main` | `origin/main` | Working files |\n| --- | --- | --- | --- |\n| `git fetch` | stays | moves to the hub's | stay |\n| `git merge origin/main` | moves | stays | change |\n| `git pull` | moves | moves | change |\n| `git push` | stays | moves to yours | stay |\n\n`git pull` is `fetch` followed by `merge` (or rebase, if configured). Fetch first when you want to look before anything changes.","notes":"The hub in the labs is a bare repository on your own disk; a class host such as Forgejo, Gitea, GitLab or GitHub is the same thing on a server, with pages and permissions around it.","minutes":null,"lo":["LO1"]},{"id":"conflict-why","n":7,"title":"A conflict means both sides changed the same lines, and only a person knows the answer","kind":"content","session":1,"hash":"83109161","md":"#### [day2#conflict-why] A conflict means both sides changed the same lines, and only a person knows the answer\n\n*When Git stops*\n\n- Git merges changes to different lines by itself\n- When both sides changed the **same or touching lines**, it writes both and stops\n- The merge waits, half done, until you resolve, `git add` and `git commit`\n- `git merge --abort` puts everything back as it was\n\n- **Not an error.** A conflict is a question: \"both of you changed this, which text is right?\" The answer is often a third text that keeps both intentions.","notes":"Say that \"touching\" matters: changes on two adjacent lines also conflict, because Git cannot tell whether they depend on each other.","minutes":null,"lo":["LO3"]},{"id":"read-markers","n":8,"title":"Between the markers, the top is your branch, the bottom is the one coming in","kind":"content","session":1,"hash":"a2f39825","md":"#### [day2#read-markers] Between the markers, the top is your branch, the bottom is the one coming in\n\n*Reading the markers*\n\n```\n# file: visit_plan.md (during a merge)\nVisits: every two weeks\n\u003c\u003c\u003c\u003c\u003c\u003c\u003c HEAD\nInlet cleaned at every visit, photo before and after\n=======\nInlet cleaned at every visit; fan checked\n>>>>>>> field-checks\n```\n\n- **A resolution that keeps both.** `Inlet cleaned at every visit; fan checked; photo before and after`\n- **A resolution that loses one.** Taking one side whole (`--ours` or `--theirs`) when both changes were wanted.","notes":"The example is a field-visit plan, not the report template of the lab. After editing: `grep -n '^\u003c\u003c\u003c\u003c\u003c\u003c\u003c' file` prints nothing, then `git add` and `git commit`.","minutes":null,"lo":["LO3"]},{"id":"conflict-steps","n":9,"title":"Five steps resolve any conflict","kind":"content","session":1,"hash":"a7b2a3ea","md":"#### [day2#conflict-steps] Five steps resolve any conflict\n\n*Step by step*\n\n1. **1 · See** `git status` lists the files\n2. **2 · Read** both sides and why each changed\n3. **3 · Write** the text that keeps both intentions\n4. **4 · Test** no markers left; it still runs\n5. **5 · Record** `git add`, `git commit`","notes":"Step 2 is where people skip: read the commit messages of both sides (`git log --merge`) to learn why each changed the line.","minutes":null,"lo":["LO3"]},{"id":"check-fast-forward","n":10,"title":"What does this merge leave behind?","kind":"quiz","session":1,"hash":"78bd9528","md":"#### [day2#check-fast-forward] What does this merge leave behind?\n\n*Checkpoint*\n\n**Question:** A branch `fix` has three commits. Nobody committed to `main` since `fix` started. On `main` you run `git merge fix`. What is in the history now?\n\n- A. The same three commits; main now points at the last one\n- B. Three commits and a new merge commit with two parents\n- C. One new commit holding the three changes together\n- D. Six commits: the three, and a copy of each on main","notes":"Answer: A. Ask what `git merge --no-ff fix` would have added (a merge commit).","minutes":null,"lo":["LO1","LO3"]},{"id":"lab-2-1","n":11,"title":"Merge two branches and resolve a conflict alone","kind":"lab","session":1,"hash":"2bf75d1a","md":"#### [day2#lab-2-1] Merge two branches and resolve a conflict alone\n\nLab 2.1 · 35 min\n\nAddition: merge two branches into main, keep both changes on the conflicting line, push to the hub\n\n[D2_1_merge_alone.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_1_merge_alone.html)\n\n- [ ] Read the graph and both branches (5 min)\n- [ ] Merge the first branch: a fast-forward (5 min)\n- [ ] Merge the second and read the conflict markers (7 min)\n- [ ] Resolve so both changes survive, and commit (10 min)\n- [ ] Push to the hub, fetch, read origin/main and check the lab (8 min)\n- [ ] ✱ Stretch: In a copy, rebase the second branch onto main instead and compare the graphs","notes":"Ask everyone to predict the kind of each merge before running it. Watch for people taking one side whole. The check needs \"own rule\" and \"hourly mean\" on the same threshold line. If someone finishes early, the stretch (rebase) sets up session 2's question of how teams keep history readable.","minutes":null,"lo":[]},{"id":"s2","n":12,"title":"Pull requests and review etiquette","kind":"section","session":2,"hash":"5707a38f","md":"#### [day2#s2] Pull requests and review etiquette\n\n*Session 2*\n\n- Open a small pull request from a branch with a title that says what changes\n- Write review comments that name a line and a reason, and answer them with commits\n- Resolve a conflict on your own branch before the merge","notes":"","minutes":null,"lo":["LO3"]},{"id":"protected-main","n":13,"title":"On a team, main changes only through a reviewed pull request","kind":"content","session":2,"hash":"588e388d","md":"#### [day2#protected-main] On a team, main changes only through a reviewed pull request\n\n*A team's main*\n\n1. **1 · Branch** one change, one branch\n2. **2 · Push** the branch to the host\n3. **3 · Request** open a pull request with a clear title\n4. **4 · Review** comments, answers, approval\n5. **5 · Merge** into a protected main\n\n> **Protected branch.** The host refuses direct pushes and merges without the required approvals (Gitea and Forgejo call it branch protection; GitLab and GitHub have the same).","notes":"Gitea's documentation: protected branches \"prevent unwanted changes by enforcing push and merge policies\". Set it on the class host before the session: protect main, one approval required. In the kit, the hub's server-side hook refuses pushes to main, and `lab.py pr merge` is the only way in. Sources: Gitea, Protected branches; Forgejo user guide.","minutes":null,"lo":["LO3"]},{"id":"small-requests","n":14,"title":"A small request gets a real review; a large one gets a rubber stamp","kind":"content","session":2,"hash":"33b3f8d5","md":"#### [day2#small-requests] A small request gets a real review; a large one gets a rubber stamp\n\n*Size*\n\n- **One purpose** per request: \"Add the rule on comment lines\", not \"various fixes\"\n- A title that says what changes; a description that says why and how to check it\n- Commits that each make sense on their own\n- Open it early as a draft when you want direction, not approval\n\n- **For the reviewer.** If you cannot say in one sentence what a request changes, ask the author to split it before you review line by line.","notes":"Ask the room for the largest change they ever had to review. The lesson is practical: reviewers stop reading long diffs, and that is how mistakes reach main.","minutes":null,"lo":["LO3"]},{"id":"good-comment","n":15,"title":"A useful comment names a line, a reason and a way forward","kind":"content","session":2,"hash":"0832dd29","md":"#### [day2#good-comment] A useful comment names a line, a reason and a way forward\n\n*Review etiquette*\n\n| Comment | Why it helps or not |\n| --- | --- |\n| \"Looks good\" | Says nothing the author can act on |\n| \"This is wrong\" | No line, no reason, no suggestion |\n| \"visit_plan.md line 6: the photo rule repeats line 2; keep one, so they cannot disagree\" | Line, reason and a fix the author can accept or answer |\n| \"Question: is the fan check every visit or monthly?\" | Marked as a question, not a demand |","notes":"Comment on the change, not the person. Mark what blocks the merge and what is a suggestion. The author answers every comment, with a commit or a reason, before resolving it.","minutes":null,"lo":["LO3"]},{"id":"answer-with-commit","n":16,"title":"Answer a comment with a commit on the branch, then mark it resolved","kind":"content","session":2,"hash":"79669b72","md":"#### [day2#answer-with-commit] Answer a comment with a commit on the branch, then mark it resolved\n\n*Answering a review*\n\n```bash\n# file: terminal (the author)\ngit switch field-checks\n# edit visit_plan.md as the comment asked\ngit commit -am \"Keep one photo rule, as the review asked\"\ngit push                     # the request shows the new commit\n```\n\n> **An approval belongs to a commit.** When the branch changes after an approval, the reviewer reads the new commits and approves again; hosts can be set to dismiss stale approvals.","notes":"In the kit, `lab.py pr resolve` refuses until the branch has moved since the comment, and `pr merge` refuses an approval given on an older commit. The class host does the same when \"dismiss stale approvals\" is set.","minutes":null,"lo":["LO3"]},{"id":"update-the-branch","n":17,"title":"The author brings main into the branch and resolves the conflict there","kind":"content","session":2,"hash":"6c52dea8","md":"#### [day2#update-the-branch] The author brings main into the branch and resolves the conflict there\n\n*When the request no longer merges*\n\n```bash\n# file: terminal (the author)\ngit fetch origin\ngit merge origin/main\n# resolve, then:\ngit add visit_plan.md\ngit commit\ngit push\n```\n\n- The author knows the change best, so the author resolves\n- main never holds a half-resolved state\n- The reviewer sees the resolution as a commit and reviews it\n- Some teams rebase the branch instead; never rebase a branch others share","notes":"In lab 2.2 the second request conflicts after the first is merged. Make sure the second author does this, not the reviewer.","minutes":null,"lo":["LO3"]},{"id":"check-review","n":18,"title":"Which comment should the author act on first?","kind":"quiz","session":2,"hash":"69386c83","md":"#### [day2#check-review] Which comment should the author act on first?\n\n*Checkpoint*\n\n**Question:** A request changes how the field team's visit plan is checked. Four comments arrive. Which is the most useful review comment?\n\n- A. \"LGTM, merging\"\n- B. \"I don't like this approach\"\n- C. \"While you are here, please rewrite the whole planner\"\n- D. \"Line 12: the visit interval is set here and in the README; read it from one place\"","notes":"Answer: D.","minutes":null,"lo":["LO3"]},{"id":"lab-2-2","n":19,"title":"Branch, review and resolve a conflict in teams of three","kind":"lab","session":2,"hash":"17823b42","md":"#### [day2#lab-2-2] Branch, review and resolve a conflict in teams of three\n\nLab 2.2 · 35 min\n\nTwo authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged\n\n[D2_2_team_review.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_2_team_review.html)\n\n- [ ] Take roles; try to push to main and read the refusal (4 min)\n- [ ] Authors: one branch, one commit and one pull request each (8 min)\n- [ ] Reviewer comments on a line, with a reason; authors answer with a commit (9 min)\n- [ ] Merge the first; the second author merges main into the branch and resolves (9 min)\n- [ ] Reviewer approves the new commits; merge and check the lab (5 min)\n- [ ] ✱ Stretch: Write the team's five-line review checklist and add it through a third pull request","notes":"Form teams of three before you start the timer. With a class host, each person works on their own laptop in the trainer's team repository; without one, one laptop per team with the kit's three clones and turns at the keyboard. AI off for the first attempt.\n\nWhat to watch: comments without a line or a reason; authors resolving comments without a commit (the kit refuses); the second author taking one side of the conflict; the reviewer merging without reading the resolution.","minutes":null,"lo":[]},{"id":"s3","n":20,"title":"Undoing mistakes","kind":"section","session":3,"hash":"b60f3329","md":"#### [day2#s3] Undoing mistakes\n\n*Session 3*\n\n- Choose between restore, amend, reset and revert for a given mistake\n- Undo a pushed commit without rewriting what others pulled\n- Recover a lost commit or branch from the reflog","notes":"","minutes":null,"lo":["LO1","LO3"]},{"id":"debrief-2-2","n":21,"title":"The second request had to change after the first was merged","kind":"content","session":3,"hash":"be020a57","md":"#### [day2#debrief-2-2] The second request had to change after the first was merged\n\n*Lab 2.2 debrief*\n\n```\n# file: git log --oneline --graph (the hub, from the solution run)\n*   9cd2132 Merge pull request #2: Add the rule on a station's first day\n|\\\n| *   95f7f91 Merge remote-tracking branch 'origin/main' into rules/first-day\n| |\\\n| |/\n|/|\n* |   e90c3f8 Merge pull request #1: Add the rule on comment lines\n```\n\nThe merge of main into the branch (95f7f91) holds the resolution the reviewer approved.","notes":"From one run of labs/solutions/S2_2.sh. The participants' commits carry the time they were made, so the ids differ on every run and for every team. Ask one team to show their resolution and one comment they thought was useful.","minutes":null,"lo":["LO3"]},{"id":"which-undo","n":22,"title":"Pick the undo by where the mistake is","kind":"content","session":3,"hash":"dfa174a6","md":"#### [day2#which-undo] Pick the undo by where the mistake is\n\n*Undoing*\n\n| The mistake is | Undo with | Changes history? |\n| --- | --- | --- |\n| in a file, not staged | `git restore file` | no |\n| staged by mistake | `git restore --staged file` | no |\n| in the last commit, not pushed | `git commit --amend` | yes, one commit |\n| in commits not pushed | `git reset` to an earlier commit | yes |\n| in a commit already pushed | `git revert` its id | no: adds a commit |","notes":"The column on the right is the safety rule: rewrite only what nobody else has. git-revert's documentation: it records \"new commits to reverse the effect of some earlier commits\". Sources: git-restore, git-reset, git-revert documentation.","minutes":null,"lo":["LO1","LO3"]},{"id":"reset-modes","n":23,"title":"reset moves the branch; the flag decides what happens to your files","kind":"content","session":3,"hash":"710a9fcb","md":"#### [day2#reset-modes] reset moves the branch; the flag decides what happens to your files\n\n*reset, three ways*\n\n- **--soft.** The branch moves back; the undone changes stay staged.\n- **--mixed (default).** The branch moves back; the changes stay in your files, unstaged.\n- **--hard.** The branch moves back; your files are made to match. Uncommitted work is lost.\n\n> **Before --hard,** run `git status`. A file you never committed cannot come back from the reflog.","notes":"git-reset's documentation: it sets \"the current branch head (HEAD) to point at\" the commit you give. Demonstrate with HEAD~1 on a scratch repository.","minutes":null,"lo":["LO1"]},{"id":"reflog","n":24,"title":"The reflog remembers where your branches and HEAD have been","kind":"content","session":3,"hash":"246ffad2","md":"#### [day2#reflog] The reflog remembers where your branches and HEAD have been\n\n*The safety net*\n\n```bash\n# file: terminal\ngit branch -D field-checks          # deleted by mistake\ngit reflog | head -n 5\n# 4c2e9a1 HEAD@{2}: commit: Check the fan at every visit\ngit branch field-checks 4c2e9a1     # back\n```\n\n- Local only: each clone has its own reflog, and the hub's is not yours\n- Entries expire after a while (`gc.reflogExpire`): a net, not a backup","notes":"git-reflog's documentation: reflogs \"record when the tips of branches and other references were updated in the local repository\". The id shown is illustrative.","minutes":null,"lo":["LO1"]},{"id":"check-undo","n":25,"title":"Which undo keeps everyone's clone working?","kind":"quiz","session":3,"hash":"0fceed53","md":"#### [day2#check-undo] Which undo keeps everyone's clone working?\n\n*Checkpoint*\n\n**Question:** Yesterday you pushed a commit that set the visit interval to 90 days instead of 14. Three teammates have pulled since. How do you undo it?\n\n- A. git reset --hard to the commit before it, then push --force\n- B. git revert the commit, then push\n- C. git commit --amend, then push\n- D. git restore the file, then tell the team","notes":"Answer: B.","minutes":null,"lo":["LO1","LO3"]},{"id":"lab-2-3","n":26,"title":"Undo five mistakes","kind":"lab","session":3,"hash":"19ed993a","md":"#### [day2#lab-2-3] Undo five mistakes\n\nLab 2.3 · 35 min\n\nAddition: five mistakes in one repository, each with its own undo, one of them already pushed\n\n[D2_3_undo_five.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_3_undo_five.html)\n\n- [ ] Read the state: status, log and what is pushed (4 min)\n- [ ] Unstage a file and discard a stray change with restore (6 min)\n- [ ] Drop a local commit with reset and fix the last one with amend (9 min)\n- [ ] Undo the pushed commit with revert, and push (8 min)\n- [ ] Bring back the deleted branch from the reflog and check the lab (8 min)\n- [ ] ✱ Stretch: For each of the five, write whether the same undo is safe after a push, and why","notes":"The order matters: restore first, then drop the debug commit, then amend. Ask each participant to mark which commits are pushed before touching anything. Common error: amending first, which rewrites the debug commit instead of the sector one.","minutes":null,"lo":[]},{"id":"s4","n":27,"title":"Virtual environments and lock files","kind":"section","session":4,"hash":"32b6815b","md":"#### [day2#s4] Virtual environments and lock files\n\n*Session 4*\n\n- Explain why a project runs on one machine and fails on another\n- Declare dependencies and lock them with an environment manager\n- Rebuild a fresh environment from the lock and compare the output","notes":"","minutes":null,"lo":["LO4"]},{"id":"it-runs-here","n":28,"title":"\"It runs on my laptop\" means the laptop holds something the repository does not","kind":"content","session":4,"hash":"c5ebef7c","md":"#### [day2#it-runs-here] \"It runs on my laptop\" means the laptop holds something the repository does not\n\n*Why it ran here*\n\n- A package installed once, long ago, and never written down\n- A version that happened to be current that month\n- A folder that exists on one disk\n- An output folder created by hand\n- A Python version, a setting, a variable in a profile\n\n- **The test.** A clean clone in a fresh environment. `uv run --isolated` builds a fresh environment from the declaration alone on your own laptop; a colleague's machine or a container gives the real thing.","notes":"Ask the room for their own \"worked on my machine\" story. Lab 2.4 has four of these faults planted; do not list which.","minutes":null,"lo":["LO4"]},{"id":"declare-then-lock","n":29,"title":"The declaration says what is acceptable; the lock says exactly what was installed","kind":"content","session":4,"hash":"30b01ebf","md":"#### [day2#declare-then-lock] The declaration says what is acceptable; the lock says exactly what was installed\n\n*Two files, two jobs*\n\n```toml\n# file: pyproject.toml\n[project]\nname = \"visit-planner\"\nrequires-python = \">=3.11\"\ndependencies = [\n    \"tabulate>=0.9\",\n]\n```\n\n- **pyproject.toml**: the packages and the range of versions you accept\n- **uv.lock**: every package, indirect ones included, at one exact version, with hashes\n- uv's documentation calls the lock universal and says it \"should be checked into version control\"","notes":"Sources: uv, Structure and files. Poetry (poetry.lock) and pip-tools (requirements.txt from pip-compile) are the same idea with other files: the course names them as interchangeable examples.","minutes":null,"lo":["LO4"]},{"id":"environment","n":30,"title":"A virtual environment keeps one project's packages away from every other project","kind":"content","session":4,"hash":"db55b728","md":"#### [day2#environment] A virtual environment keeps one project's packages away from every other project\n\n*Environments*\n\n1. **System Python** shared by everything; never install into it\n2. **.venv/ per project** its own packages, rebuilt from the lock\n3. **Ignored by git** the folder is rebuilt, never committed\n\n`uv sync` makes `.venv/` match the lock; `uv run` runs a command inside it.","notes":"The environment is disposable: deleting `.venv` and running `uv sync --locked` again must give the same result. That is what lab 2.4 tests.","minutes":null,"lo":["LO4"]},{"id":"uv-commands","n":31,"title":"Five commands take a project from undeclared to locked","kind":"content","session":4,"hash":"ca19f4f0","md":"#### [day2#uv-commands] Five commands take a project from undeclared to locked\n\n*The commands*\n\n```bash\n# file: terminal\nuv init --bare --name visit-planner --python 3.11   # a pyproject.toml, nothing else\nuv add tabulate                                    # declare it, resolve, write uv.lock\nuv python pin 3.13                                 # .python-version\nuv sync --locked                                   # build .venv exactly from the lock\nuv run python planner.py                           # run inside it\n```\n\n> **--locked refuses to change the lock.** uv's documentation: \"If the lockfile is not up-to-date, uv will raise an error instead of updating the lockfile.\"","notes":"Source: uv, Locking and syncing. When `--locked` refuses, someone changed pyproject.toml without locking: run `uv lock`, read the diff, commit both.","minutes":null,"lo":["LO4"]},{"id":"check-lock","n":32,"title":"What does the lock add?","kind":"quiz","session":4,"hash":"c75d8b89","md":"#### [day2#check-lock] What does the lock add?\n\n*Checkpoint*\n\n**Question:** A planner project declares `tabulate>=0.9`. A colleague installs it a year later from the declaration only and gets different output. What would a committed lock file have given them?\n\n- A. The exact versions and hashes the author installed, indirect packages included\n- B. A second list of the same package names\n- C. A copy of the packages' code inside the repository\n- D. The newest versions at the time of installing","notes":"Answer: A.","minutes":null,"lo":["LO4"]},{"id":"lab-2-4","n":33,"title":"Rescue a project that fails on a second machine","kind":"lab","session":4,"hash":"f1c1fefc","md":"#### [day2#lab-2-4] Rescue a project that fails on a second machine\n\nLab 2.4 · 35 min\n\nClone the report project as a second machine, read why it fails, then declare, lock and rebuild it to the expected output\n\n[D2_4_second_machine.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_4_second_machine.html)\n\n- [ ] Clone to a second machine, run it and read each failure (7 min)\n- [ ] Name the causes: an undeclared package, a path on one computer, no versions (5 min)\n- [ ] Declare with uv init and uv add, pin Python, lock (8 min)\n- [ ] Take the data folder as an argument; rebuild fresh and compare (10 min)\n- [ ] Commit pyproject.toml and uv.lock; check the lab (5 min)\n- [ ] ✱ Stretch: Lock the same project with pip-tools (pip-compile --generate-hashes) and compare","notes":"The first download needs the network; on a slow room network, start the lab with `uv sync` once on the projector so the cache warms. Watch for: committing `.venv`; leaving the analyst's path as a silent default; forgetting `uv.lock` in the commit. The trainer's checksum is on the lab page, for the trainer only.","minutes":null,"lo":[]},{"id":"wrap-up","n":34,"title":"Three things to keep","kind":"content","session":4,"hash":"8c6889dd","md":"#### [day2#wrap-up] Three things to keep\n\n*Day 2 · wrap-up*\n\n- **Small and reviewed.** One purpose per request; comments name a line and a reason; answers are commits.\n- **Rewrite only what is yours.** Amend and reset before a push; revert after it.\n- **Declare, lock, rebuild.** If a fresh environment from the lock does not reproduce the result, the repository is missing something.","notes":"","minutes":null,"lo":[]},{"id":"next","n":35,"title":"Day 3: Rebuild anywhere, leak nothing","kind":"content","session":4,"hash":"885e4960","md":"#### [day2#next] Day 3: Rebuild anywhere, leak nothing\n\n*Next*\n\nTonight, 60 minutes: choose your capstone project (`labs/capstone/BRIEF.md`), put it under Git and lock its environment. Lab 3.2 needs a container engine without administrator rights, or the provided Linux workspace: check yours.","notes":"Capstone preparation 1 of 2 (guided self-study). Tell participants with no container engine that the provided workspace has one; give its address.","minutes":null,"lo":[]}],"activities":[{"id":"review-day1-q1","slide":"review-day1","type":"single","prompt":"On main, someone runs git branch notes and then commits once. Which name moved?","options":[{"key":"A","text":"notes, because it is the newest branch"},{"key":"B","text":"Both main and notes"},{"key":"C","text":"main, because HEAD still points at it"},{"key":"D","text":"Neither: the commit has no branch"}],"correct":[2],"explanation":"git branch creates a name without switching; the commit moves the branch HEAD points at, which is still main.","misconceptions":["Creating a branch adds a name; it does not switch to it, so HEAD stays on main","A commit moves exactly one branch, the one HEAD points at; it never moves both","","Commits always move a branch when HEAD is on one; nothing stays behind"],"lo":["LO1"]},{"id":"check-fast-forward-q1","slide":"check-fast-forward","type":"single","prompt":"A branch fix has three commits. Nobody committed to main since fix started. On main you run git merge fix. What is in the history now?","options":[{"key":"A","text":"The same three commits; main now points at the last one"},{"key":"B","text":"Three commits and a new merge commit with two parents"},{"key":"C","text":"One new commit holding the three changes together"},{"key":"D","text":"Six commits: the three, and a copy of each on main"}],"correct":[0],"explanation":"main is an ancestor of fix, so Git fast-forwards: it moves the pointer and makes no commit.","misconceptions":["","Expects a merge commit even when one side did not move; that needs --no-ff","Confuses a merge with a squash, which writes one new commit","Thinks merging copies commits, so they would appear twice"],"lo":["LO1"]},{"id":"check-review-q1","slide":"check-review","type":"single","prompt":"A request changes how the field team's visit plan is checked. Four comments arrive. Which is the most useful review comment?","options":[{"key":"A","text":"\"LGTM, merging\""},{"key":"B","text":"\"I don't like this approach\""},{"key":"C","text":"\"While you are here, please rewrite the whole planner\""},{"key":"D","text":"\"Line 12: the visit interval is set here and in the README; read it from one place\""}],"correct":[3],"explanation":"It names the line, gives the reason (two copies can disagree) and suggests a fix within the request.","misconceptions":["Approval without reading adds nothing a reviewer is for","A judgement with no line and no reason gives the author nothing to change","A request far beyond the change makes the request bigger and the review weaker",""],"lo":["LO3"]},{"id":"check-undo-q1","slide":"check-undo","type":"single","prompt":"Yesterday you pushed a commit that set the visit interval to 90 days instead of 14. Three teammates have pulled since. How do you undo it?","options":[{"key":"A","text":"git reset --hard to the commit before it, then push --force"},{"key":"B","text":"git revert the commit, then push"},{"key":"C","text":"git commit --amend, then push"},{"key":"D","text":"git restore the file, then tell the team"}],"correct":[1],"explanation":"Revert adds a commit that reverses the change, so the shared history only grows and nobody's clone is broken.","misconceptions":["Rewrites a commit others already have; their next pull disagrees with the hub","","Amend rewrites the last local commit only, and still changes its id","restore changes your working file; history and the hub still hold the mistake"],"lo":["LO3"]},{"id":"check-lock-q1","slide":"check-lock","type":"single","prompt":"A planner project declares tabulate>=0.9. A colleague installs it a year later from the declaration only and gets different output. What would a committed lock file have given them?","options":[{"key":"A","text":"The exact versions and hashes the author installed, indirect packages included"},{"key":"B","text":"A second list of the same package names"},{"key":"C","text":"A copy of the packages' code inside the repository"},{"key":"D","text":"The newest versions at the time of installing"}],"correct":[0],"explanation":">=0.9 allows any later release; the lock records the one resolved, so a rebuild installs that again.","misconceptions":["","The declaration already names the package; naming it again changes nothing","A lock pins versions; it does not copy source code into the repository","Locks pin what was resolved; they do not move to the newest release"],"lo":["LO4"]}],"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":"day2.md","llms":"../llms.txt"},"tasks":[],"tools":[]},"bridge":{"allowedOrigins":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

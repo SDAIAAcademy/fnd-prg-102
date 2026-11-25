@@ -1,0 +1,17 @@
+# A container definition for the monthly client report. Fill the five numbered gaps.
+# Build:  podman build -t air-report .          (or: docker build -t air-report .)
+# Run:    see the lab page: the logs are mounted at /data, the output folder at /out.
+
+# 1. The base image: a small official Python image of the version in .python-version
+
+WORKDIR /app
+
+# 2. Copy only requirements.txt (exported from uv.lock with hashes) and install from it
+
+# 3. Then copy the program, so a code change does not reinstall the packages
+COPY report.py .
+
+# 4. Create a user that is not root, and switch to it
+RUN adduser -D -u 1000 runner
+
+# 5. Run the report on the mounted folders: /data in, /out out

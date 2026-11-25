@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 3.2 · Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D3_2_container.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day3.html#lab-3-2">Back to the slides</a></nav></div>
+<span class="tag">Lab 3.2</span>
+<h1>Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace</h1>
+<p>Complete a container definition that installs from the lock, build it rootless, run it on read-only logs</p>
+<div class="meta"><span>35 minutes</span><span>Day 3</span><span>Session 2: Images, containers and volumes</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="3.2">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>Run the report project in a container that installs exactly the locked packages, runs as a user that is not root, and reads the month's logs from a folder mounted read-only, with an engine that needs no administrator rights.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>A container engine in rootless mode: Podman, or Docker in rootless mode, on your laptop or on the provided Linux workspace</li>
+    <li>The base image <code>docker.io/library/python:3.13-alpine</code>, about 17 MB compressed for amd64 on Docker Hub (its tags page, November 2026): the trainer pulls it on the provided workspace before the session</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.2</code>: <code>air-report/</code> with a <code>Containerfile</code> to complete, and <code>data/</code> beside it</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
+  </ul>
+
+  <div class="step">
+    <h3>Check the engine runs without administrator rights <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">podman info | grep -i rootless          # rootless: true
+docker info 2&gt;/dev/null | grep -i rootless   # with Docker: "rootless" under Security Options</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Export the lock as hashed requirements <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 3.2
+cd 3.2/air-report
+uv export --frozen --format requirements.txt -o requirements.txt
+grep -c -- '--hash=sha256:' requirements.txt</code></pre>
+    <p>The image installs with plain <code>pip</code> from this file; <code>--require-hashes</code> makes pip refuse any package whose hash is not the locked one.</p>
+  </div>
+
+  <div class="step">
+    <h3>Fill the five numbered gaps of the Containerfile <span class="min">10 min</span></h3>
+    <p>Open <code>Containerfile</code>. Fill the numbered gaps: the base image, copying and installing <code>requirements.txt</code> before the code, a <code>USER</code> that is not root, and an <code>ENTRYPOINT</code> that runs the report on <code>/data</code> into <code>/out</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Build the image <span class="min">6 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git add requirements.txt Containerfile
+git commit -m "Complete the container definition"
+podman build -t air-report .</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Run it with mounted folders, compare and check <span class="min">10 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">mkdir -p output
+podman run --rm --userns=keep-id \
+  -v "$PWD/../data:/data:ro" -v "$PWD/output:/out" air-report
+sha256sum output/report.csv
+cd ../.. &amp;&amp; uv run lab.py check 3.2</code></pre>
+    <p>With Docker in rootless mode, use the same command without <code>--userns=keep-id</code>. On Git Bash for Windows, put <code>MSYS_NO_PATHCONV=1</code> before the command so the paths after <code>:</code> are not rewritten. If the container cannot write to <code>output/</code>, the user inside and the owner outside differ: keep that for session 3.</p>
+    <p><b>No engine at all</b> (neither on your laptop nor on the provided workspace): complete and commit the definition and <code>requirements.txt</code> anyway. <code>uv run lab.py check 3.2</code> then checks the definition and says plainly that the run was not done; the trainer records the lab as checked without a run. This lab's build and run have not yet been executed on any machine (see the trainer's note below).</p>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Change one line of <code>report.py</code>, build again and read which steps the engine reuses from its cache. Why does <code>requirements.txt</code> come before the code?</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>What is the difference between the image and the container?</li>
+    <li>Why is the data mounted rather than copied into the image?</li>
+    <li>What does <code>:ro</code> prevent, and what would happen without it if the program had a bug?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>The reference definition is <code>labs/kit/files/3.2/Containerfile.solution</code>. The check reads the definition (a FROM line, requirements copied and installed with <code>--require-hashes</code>, a non-root USER, an entry point on <code>/data</code>) and the committed <code>requirements.txt</code>; when an engine answers, it also compares <code>output/report.csv</code> with the October checksum (<code>e04d6927...</code>).</p>
+    <p><b>Not run when the course was built:</b> no container engine was running on the build machine, so the build and the run of this lab were not executed; the export of the hashed requirements ran and the definition was checked by the lab tool. At review (25 November 2026, again without an engine), the definition's install line, <code>pip install --require-hashes -r requirements.txt</code>, ran in a plain Python 3.13 environment, and <code>report.py</code> from those packages wrote the expected checksum: the packages are pure Python, so the Alpine image needs no compiler. The image build, the non-root user, the mounts and <code>--userns=keep-id</code> remain unexecuted. Rehearse the lab on the provided workspace before the first cohort, including <code>--userns=keep-id</code> with Podman and writing to the mounted <code>output/</code> with Docker rootless. Solution: <code>labs/solutions/S3_2.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D3_1_one_command.html" rel="prev">← Previous lab</a><a href="D3_3_key_out_of_code.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"3.2","title":"Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace","summary":"Complete a container definition that installs from the lock, build it rootless, run it on read-only logs","minutes":35,"day":3,"unit":"Day 3","session":2,"deck":"../slides/day3.html#lab-3-2","prev":"D3_1_one_command.html","next":"D3_3_key_out_of_code.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

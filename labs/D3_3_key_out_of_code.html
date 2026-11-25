@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 3.3 · The key out of the code · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D3_3_key_out_of_code.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day3.html#lab-3-3">Back to the slides</a></nav></div>
+<span class="tag">Lab 3.3</span>
+<h1>The key out of the code</h1>
+<p>Addition: move the portal key from the code to the environment, with .env.example committed and the key masked</p>
+<div class="meta"><span>35 minutes</span><span>Day 3</span><span>Session 3: What a container shares</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="3.3">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>The report project now uploads each report to the client portal, with the portal key written into the code and printed in full on every run. Move the key into an environment variable, document its name without its value, stop clearly when it is missing, and print only its last four characters.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.3</code>: <code>air-report/</code>, <code>data/</code>, and <code>portal/</code>, the course's local stand-in for the report portal (its <code>keys.json</code> lists the keys it accepts)</li>
+    <li>The key in this lab is a practice key of the course (prefix <code>fprg102_demo_</code>); it opens nothing but the stand-in</li>
+    <li>AI policy: <b>off</b> for the first attempt. Never paste a key into an assistant, even a practice one: treat the habit as real</li>
+  </ul>
+
+  <div class="step">
+    <h3>Find the key in the code and in the output <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 3.3
+cd 3.3/air-report
+grep -rn 'fprg102_' --include='*.py' .
+export AIR_PORTAL_DIR="$PWD/../portal"
+uv run python report.py --data ../data --upload | tail -n 2</code></pre>
+    <p>Where could that printed line end up? (A terminal scrollback, a log file, a screenshot in a chat.)</p>
+  </div>
+
+  <div class="step">
+    <h3>Read it from AIR_PORTAL_KEY; stop when it is missing <span class="min">10 min</span></h3>
+    <p>In <code>report.py</code>, remove the constant. Write a function that reads <code>AIR_PORTAL_KEY</code> from the environment and, when it is empty, prints one line to standard error naming the variable and exits with code 2. Call it in <code>upload()</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Example file in, real file out <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">printf 'AIR_PORTAL_KEY=\n' &gt; .env.example    # the name, never the value
+git check-ignore -v .env                    # .env must be ignored
+# put the key in .env (copy it from the old line of report.py), then:
+uv run --env-file .env python report.py --data ../data --upload</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Print only the key's last four characters <span class="min">5 min</span></h3>
+    <p>Change the upload message so that it names the key by its end (<code>...9d1c</code>), enough to tell which key was used and useless to anyone who reads the log.</p>
+  </div>
+
+  <div class="step">
+    <h3>Commit, and find the key still in history; check <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git add report.py .env.example
+git commit -m "Read the portal key from the environment"
+git grep -c 'fprg102_demo_' || echo "no file holds a key"
+git log --oneline -S 'fprg102_demo_' --all
+cd ../.. &amp;&amp; uv run lab.py check 3.3</code></pre>
+    <p>The key is gone from the files and still in the commit that added it. Lab 3.4 is what to do about that.</p>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>With a container engine: run the image of lab 3.2 with <code>--env-file .env</code> and list, from inside (<code>env</code>, <code>ls /data</code>), what the container can see. Which of those would a different image also see if you passed the same options?</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why is <code>.env.example</code> committed and <code>.env</code> not?</li>
+    <li>Why exit with a non-zero code when the key is missing, instead of skipping the upload?</li>
+    <li>Who can read the key after you pass it to a container with <code>--env-file</code>?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>The reference is <code>labs/kit/files/3.3/report.solution.py</code>. The check scans the tracked files for a key, looks for <code>.env.example</code> with an empty <code>AIR_PORTAL_KEY=</code>, confirms <code>.env</code> is ignored, runs the upload without the variable (expects exit 2 and the variable's name on stderr) and with it (expects an upload and no full key in the output), and confirms the key is still findable with <code>git log -S</code>.</p>
+    <p>Common errors: <code>os.environ["AIR_PORTAL_KEY"]</code> without a message (a traceback instead of a sentence); a default value that is the old key; committing <code>.env</code> by <code>git add -A</code> before checking the ignore rule. Solution: <code>labs/solutions/S3_3.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D3_2_container.html" rel="prev">← Previous lab</a><a href="D3_4_leaked_key.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"3.3","title":"The key out of the code","summary":"Addition: move the portal key from the code to the environment, with .env.example committed and the key masked","minutes":35,"day":3,"unit":"Day 3","session":3,"deck":"../slides/day3.html#lab-3-3","prev":"D3_2_container.html","next":"D3_4_leaked_key.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

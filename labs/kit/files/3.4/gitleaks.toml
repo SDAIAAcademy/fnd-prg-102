@@ -1,0 +1,12 @@
+# Rules for gitleaks (https://github.com/gitleaks/gitleaks): its default rules, plus the
+# report portal's keys, whose prefix fprg102_ is this course's own and no default rule knows.
+# tools/scan_secrets.py applies the same portal-key rule where gitleaks is not installed.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "report-portal-key"
+description = "Key of the client report portal (course stand-in)"
+regex = '''fprg102_[a-z]+_[0-9a-f]{24}'''
+keywords = ["fprg102_"]

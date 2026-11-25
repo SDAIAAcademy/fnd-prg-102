@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 1.3 · The counting script on a second folder, and a practice key · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D1_3_second_folder_key.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day1.html#lab-1-3">Back to the slides</a></nav></div>
+<span class="tag">Lab 1.3</span>
+<h1>The counting script on a second folder, and a practice key</h1>
+<p>Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry</p>
+<div class="meta"><span>35 minutes</span><span>Day 1</span><span>Session 3: Variables, exit codes and SSH</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="1.3">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>Turn the counting script into a tool: it takes the folder to count from outside, runs unchanged on November's logs, and fails with a clear message and exit code. Then make a practice SSH key pair and the host entry you would use to log in to the lab workspace.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 1.3</code>: <code>data/october/</code>, <code>data/november/</code>, an empty <code>keys/</code> and <code>counts.sh</code>, the six counts of lab 1.2 tied to a folder named <code>logs/</code></li>
+    <li><code>ssh-keygen</code> (it comes with Git for Windows, macOS and Linux)</li>
+    <li>AI policy: <b>off</b> for the first attempt; the hint-only assistant after that</li>
+  </ul>
+
+  <div class="step">
+    <h3>Take the folder as $1, with AIR_LOGS as the fallback <span class="min">8 min</span></h3>
+    <p>At the top of <code>counts.sh</code>, set <code>DIR</code> to the first argument, or to <code>$AIR_LOGS</code> when there is no argument, and replace every <code>logs/</code> with <code>"$DIR"/</code>. Quote it: a folder name may hold a space.</p>
+    <pre class="code" data-file="counts.sh"><code class="language-bash">DIR="${1:-${AIR_LOGS:-}}"</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Stop with exit code 2 and a message on stderr <span class="min">7 min</span></h3>
+    <p>Add <code>set -euo pipefail</code> as the first command. When <code>DIR</code> is empty or holds no <code>.log</code> file, print one line to standard error (<code>&gt;&amp;2</code>) and <code>exit 2</code>. Try it and read the code:</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">bash counts.sh data/missing; echo "exit code: $?"</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Run it unchanged on November <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">bash counts.sh data/november
+AIR_LOGS=data/october bash counts.sh | head -n 2</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Make a practice key pair and read its fingerprint <span class="min">6 min</span></h3>
+    <p>The key stays in this lab folder: it is for practice and is never committed or copied to your own <code>.ssh</code> folder.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">ssh-keygen -t ed25519 -C "participant-a practice key" -f keys/practice_key
+ssh-keygen -lf keys/practice_key.pub &gt; keys/fingerprint.txt
+cat keys/practice_key.pub</code></pre>
+    <p>Give the key a passphrase when you will use it for real; for this practice key an empty one is allowed.</p>
+  </div>
+
+  <div class="step">
+    <h3>Write the host entry and check <span class="min">9 min</span></h3>
+    <p>Create <code>ssh_config</code> with a <code>Host lab-workspace</code> entry: <code>HostName</code> (the trainer gives the address; use <code>192.0.2.10</code> otherwise, an address reserved for examples), <code>User</code>, <code>IdentityFile keys/practice_key</code> and <code>IdentitiesOnly yes</code>.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">cd .. &amp;&amp; uv run lab.py check 1.3</code></pre>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Log in to the provided Linux workspace with the key (<code>ssh -F ssh_config lab-workspace</code>, after the trainer adds your public key) and run <code>counts.sh</code> there on its copy of the logs.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>What does <code>$?</code> hold after a pipeline whose first command failed, with and without <code>pipefail</code>?</li>
+    <li>Why does the error message go to standard error and not to standard output?</li>
+    <li>Which of the two key files may you paste into a web form, and which never leaves your machine?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>November reference values: Q1 8,646; OK 8,523, WARN 78, ERR 45; ST05 18, ST09 14, ST12 8; E11 6, E21 20, E34 10, E40 9; Q5 6; three stations per client. A missing folder ends with exit code 2.</p>
+    <p>Common errors: <code>DIR=$1</code> under <code>set -u</code> fails when no argument is given (hence <code>${1:-...}</code>); the CSV of Q6 is now <code>"$DIR"/stations.csv</code>; quoting <code>"$DIR/*.log"</code> stops the glob (quote the folder, not the star). The SSH login itself needs the provided workspace and was not run when the course was built. Solution: <code>labs/solutions/S1_3.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D1_2_counting_pipeline.html" rel="prev">← Previous lab</a><a href="D1_4_draw_the_graph.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"1.3","title":"The counting script on a second folder, and a practice key","summary":"Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry","minutes":35,"day":1,"unit":"Day 1","session":3,"deck":"../slides/day1.html#lab-1-3","prev":"D1_2_counting_pipeline.html","next":"D1_4_draw_the_graph.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

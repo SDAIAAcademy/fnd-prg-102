@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="deck" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 1 · The shell and the commit graph · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="day1.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<div class="deck" data-course="Command Line, Git and Reproducible Environments" data-track="foundations" data-day="Day 1">
+<section class="slide title" id="title" data-auto="title" data-label="Welcome" data-n="1">
+  <div class="kicker">SDAIA Academy · Command Line, Git and Reproducible Environments</div>
+  <h1>The shell and the commit graph</h1>
+  <p class="lead mt">Day 1: Find, count and script in the shell, then draw what Git records</p>
+  <div class="meta"><span class="track">Data &amp; AI Foundations Track</span><span>3 teaching days + capstone day</span><span>4 sessions · 4 labs</span><span>FND-PRG-102</span></div>
+  <aside class="notes"><p>Welcome the room and introduce yourself. Ask one calibrating question: "Who has typed a command into a terminal this month?" and "Who has committed to a shared repository?" The answers set the pace of sessions 1 and 4.</p><p>The rhythm: four sessions of an hour, each about 25 minutes of slides and demonstration, then a 35-minute lab. Breaks are yours: press B.</p></aside>
+</section>
+
+<section class="slide" id="agenda" data-auto="agenda" data-label="Agenda" data-n="2">
+  <div class="kicker">Today</div>
+  <h2>The shell and the commit graph</h2>
+  <div class="agenda"><div class="item"><div><b>Session 1 · Paths and permissions</b><small>Where you are, how a path is read, and who may read, change or run a file</small></div></div><div class="item"><div><b>Session 2 · Pipes, redirection and filters</b><small>Small programs joined by pipes answer counting questions over thousands of lines</small></div></div><div class="item"><div><b>Session 3 · Variables, exit codes and SSH</b><small>A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere</small></div></div><div class="item"><div><b>Session 4 · Commits, staging and history</b><small>A commit is a snapshot with a parent; a branch is a name that points at one</small></div></div></div>
+</section>
+
+<section class="slide" id="the-case" data-lo="LO6" data-n="3">
+  <div class="kicker">The case for three days</div>
+  <h2>The monthly client report runs on one laptop only</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>An <b>air-quality monitoring company</b> runs twelve dust and particle stations, <b>ST01 to ST12</b>, at four clients' sites</li>
+      <li>Each station writes <b>one line an hour</b> to a log</li>
+      <li>The analyst turns a month of logs into each client's report, by a Python project on their laptop</li>
+      <li>Nobody else can rebuild it: no history, no declared packages, a key in the code</li>
+    </ul>
+    <div class="card c-teal"><h4>By the capstone day</h4><p class="small mb0">A peer rebuilds your own small project on a clean workspace, using only your README. Every lab practises one step of that.</p></div>
+  </div>
+  <div class="callout note mt"><b>Synthetic.</b> Company, clients and logs are invented; people appear as roles only.</div>
+  <aside class="notes"><p>Tell the story in one minute. The company is fictional and has no name on purpose: it is one of many contractors that run sensors at industrial and building sites. The alert threshold the report uses (PM10 above 150 for an hour) is the company's own rule, not a national standard.</p><p>Say what the capstone is now, so every lab has a reason: a peer will try to rebuild your repository from its README alone.</p></aside>
+</section>
+
+<section class="slide" id="setup-check" data-n="4">
+  <div class="kicker">Setup check</div>
+  <h2>Three tools and one command prove the laptop is ready</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal"><code class="language-bash">git --version
+bash --version | <span class="hljs-built_in">head</span> -n 1
+uv --version
+git config user.name
+uv run labs/kit/setup.py --to ../air-labs
+<span class="hljs-built_in">cd</span> ../air-labs &amp;&amp; uv run lab.py list</code></pre>
+    <ul class="bullets">
+      <li><b>Git</b> with a name and an email set (yours, or a neutral one such as <code>Participant A</code>)</li>
+      <li><b>Bash</b>: Git Bash on Windows, the terminal on macOS or Linux</li>
+      <li><b>uv</b>, from the pre-work</li>
+      <li>The last command lists the twelve labs</li>
+    </ul>
+  </div>
+  <div class="callout tip mt"><b>No admin rights on your laptop?</b> Every lab except 3.2 runs without them; lab 3.2 also runs on the provided Linux workspace.</div>
+  <aside class="notes"><p>Run this before session 1 starts, while people arrive. The workspace goes beside the course folder by default; on Windows keep its path short. A participant whose laptop blocks installs works on the provided Linux workspace for the whole course.</p><p>If <code>git config user.name</code> prints nothing: <code>git config --global user.name "Participant A"</code> and the same for the email with an address ending in <code>example.invalid</code> when they prefer not to use their own.</p></aside>
+</section>
+
+<!-- Session 1 -->
+
+<section class="slide section" id="s1" data-auto="section" data-session="1" data-n="5">
+  <div class="kicker">Session 1</div>
+  <h1>Paths and permissions</h1>
+  <ul class="bullets outcomes"><li>Tell an absolute path from a relative one and predict where each points after a move</li><li>Read a permission string and say who may read, write or run the file</li><li>Make a script independent of the folder it is run from</li></ul>
+  <div class="sess-no">01</div>
+</section>
+
+<section class="slide" id="shell-reads-a-line" data-lo="LO2" data-n="6" data-session="1">
+  <div class="kicker">What the shell does</div>
+  <h2>The shell reads a line, splits it into words and runs the first one</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Read</b><code>ls -l logs</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Split</b>on spaces: <code>ls</code>, <code>-l</code>, <code>logs</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Expand</b><code>*</code>, <code>$VAR</code>, <code>~</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>4 · Run</b>the program <code>ls</code> with two words</div>
+  </div>
+  <div class="callout warn mt"><b>What goes wrong.</b> A space splits words: <code>cat field notes.txt</code> asks for two files. Quotes keep one word: <code>cat "field notes.txt"</code>.</div>
+  <aside class="notes"><p>Type <code>echo one two   three</code> and <code>echo "one two   three"</code> and let the room see the spaces collapse in the first. That single demonstration explains most quoting errors of the day.</p></aside>
+</section>
+
+<section class="slide" id="where-you-are" data-lo="LO2" data-n="7" data-session="1">
+  <div class="kicker">Paths</div>
+  <h2>A relative path starts where you are; an absolute one starts at the root</h2>
+  <table class="t">
+    <tr><th>You are in</th><th>You type</th><th>It means</th></tr>
+    <tr><td><code>/srv/air</code></td><td><code>logs/ST01.log</code></td><td><code>/srv/air/logs/ST01.log</code></td></tr>
+    <tr><td><code>/srv/air/logs</code></td><td><code>../stations.csv</code></td><td><code>/srv/air/stations.csv</code></td></tr>
+    <tr><td>anywhere</td><td><code>/srv/air/logs</code></td><td>the same folder, always</td></tr>
+    <tr class="hl"><td>anywhere</td><td><code>~/notes.md</code></td><td>your home folder, then <code>notes.md</code></td></tr>
+  </table>
+  <p class="small mt">Commands to know: <code>pwd</code> (where am I), <code>ls -a</code> (what is here), <code>cd</code> (go), <code>.</code> (here), <code>..</code> (one up).</p>
+  <aside class="notes"><p>Ask: "If I move the whole folder to another disk, which of these lines still work?" The relative ones inside the folder do; an absolute path written into a script breaks. That is the fault in lab 1.1.</p><p>Windows note: Git Bash shows <code>C:</code> as <code>/c/</code>. Paths in scripts use forward slashes everywhere.</p></aside>
+</section>
+
+<section class="slide" id="find-and-du" data-lo="LO2" data-n="8" data-session="1">
+  <div class="kicker">Looking round without a file browser</div>
+  <h2>find lists what matches, ls -S orders by size, du adds sizes up</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">find visits -name <span class="hljs-string">&#x27;*.csv&#x27;</span>            <span class="hljs-comment"># every CSV under visits/, at any depth</span>
+find visits -name <span class="hljs-string">&#x27;*.csv&#x27;</span> | <span class="hljs-built_in">wc</span> -l    <span class="hljs-comment"># how many</span>
+<span class="hljs-built_in">ls</span> -S visits/*.csv | <span class="hljs-built_in">head</span> -n 3       <span class="hljs-comment"># the three largest</span>
+<span class="hljs-built_in">du</span> -h visits                          <span class="hljs-comment"># the size of the folder, human-readable</span></code></pre>
+  <div class="callout tip mt"><b>Quote the pattern.</b> <code>'*.csv'</code> in quotes reaches <code>find</code> as a pattern; without quotes the shell may expand it first, in the current folder.</div>
+  <aside class="notes"><p>Demonstrate on any folder of your own, not on the lab's logs: the lab asks for the November count and the largest October log. Ask why two files with the same number of lines could differ in size (line endings, longer numbers). Leave the answer to the lab.</p></aside>
+</section>
+
+<section class="slide" id="permission-string" data-lo="LO2" data-n="9" data-session="1">
+  <div class="kicker">Permissions</div>
+  <h2>Ten characters say who may read, write or run a file</h2>
+  <div class="cols cols-2">
+    <div>
+      <pre class="code" data-file="ls -l on Linux"><code>-rw-r-----  1 analyst field  612 visits.csv
+drwxr-xr-x  2 analyst field 4096 archive</code></pre>
+      <table class="t small mt">
+        <tr><th>Part</th><th>In <code>-rw-r-----</code></th></tr>
+        <tr><td>Type</td><td><code>-</code> a file (<code>d</code> a folder)</td></tr>
+        <tr><td>Owner</td><td><code>rw-</code> read, write</td></tr>
+        <tr><td>Group</td><td><code>r--</code> read</td></tr>
+        <tr><td>Everyone else</td><td><code>---</code> nothing</td></tr>
+      </table>
+    </div>
+    <ul class="bullets">
+      <li><b>r</b> read, <b>w</b> change, <b>x</b> run a file or enter a folder</li>
+      <li><code>chmod u+x run.sh</code> lets the owner run it as <code>./run.sh</code></li>
+      <li><code>chmod go-r secret.env</code> takes reading away from group and others</li>
+      <li>A key file is readable by its owner only</li>
+    </ul>
+  </div>
+  <aside class="notes"><p>The example is a pattern, not output from the lab. On Git Bash for Windows, <code>ls -l</code> shows approximate bits because Windows files do not have these permissions; that is why lab 1.1 supplies a listing taken in the shape Linux prints. On the provided Linux workspace the real thing works.</p></aside>
+</section>
+
+<section class="slide" id="script-tied-to-a-folder" data-lo="LO2 LO6" data-n="10" data-session="1">
+  <div class="kicker">A script that works here only</div>
+  <h2>A script that names your folder works on your computer only</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Tied to one computer</h4><pre class="code s" data-example><code class="language-bash"><span class="hljs-built_in">cd</span> /mnt/share/visits
+<span class="hljs-built_in">wc</span> -l *.csv</code></pre><p class="small mb0">Runs only where that folder exists.</p></div>
+    <div class="card c-teal"><h4>Tied to itself</h4><pre class="code s"><code class="language-bash"><span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>/visits&quot;</span>
+<span class="hljs-built_in">wc</span> -l *.csv</code></pre><p class="small mb0"><code>$0</code> is the script's own path; <code>dirname</code> keeps its folder.</p></div>
+  </div>
+  <div class="callout warn mt"><b>Single quotes stop the substitution.</b> <code>'$(dirname "$0")'</code> is printed as it is; double quotes let <code>$( )</code> run and still keep spaces in one word.</div>
+  <aside class="notes"><p>This is the pattern the lab asks for, on a different folder. Run both versions from another folder to show the first failing with "No such file or directory".</p></aside>
+</section>
+
+<section class="slide" id="check-paths" data-lo="LO2" data-n="11" data-session="1">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which line still works after the folder moves?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2" data-id="check-paths-q1">
+    <p class="lead">A script <code>tally.sh</code> sits in <code>reports/</code> beside a folder <code>visits/</code>. The whole <code>reports/</code> folder is copied to a colleague's laptop. Which first line lets the script find <code>visits/</code> there, from whatever folder it is started?</p>
+    <div class="opts">
+      <div class="opt" data-why="Relative to where the script is started, not to where it lives: it fails when run from any other folder" data-k="A">cd visits</div>
+      <div class="opt" data-ok data-k="B">cd "$(dirname "$0")/visits"</div>
+      <div class="opt" data-example data-why="An absolute path names the folder on the first laptop; it does not exist on the colleague's" data-k="C">cd /mnt/share/reports/visits</div>
+      <div class="opt" data-why="Single quotes print the text as it is, so the command substitution never runs" data-k="D">cd '$(dirname "$0")/visits'</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>$0</code> is the script's own path wherever it is copied, so <code>dirname</code> gives its folder on any computer.</div>
+  </div>
+  <aside class="notes"><p>Answer: B. If many pick A, run it from the home folder and show the error. If they pick D, echo it to show the literal text.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-1-1" data-auto="lab" data-lab="1.1" data-label="Lab 1.1" data-n="12" data-session="1">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 1.1 · 35 min</div><h2>Find your way round the project folder</h2><p class="lead small">Addition: map the report folder, read permission strings, and fix a script that ran on one computer only</p><a class="nb" href="../labs/D1_1_project_folder.html">D1_1_project_folder.html</a></div><ul class="checklist"><li>Start the lab and see where you are: pwd, ls -a <span class="min">4 min</span></li><li>Map the logs with find, ls -S and du <span class="min">8 min</span></li><li>Read the permission strings of listing.txt and answer in answers.md <span class="min">8 min</span></li><li>Fix run_counts.sh: its own folder, and quotes round a folder name with a space <span class="min">10 min</span></li><li>Run it from the workspace folder and check the lab <span class="min">5 min</span></li><li class="stretch">✱ Stretch: On a Linux workspace, chmod u+x the script, run it as ./run_counts.sh, and say why bash never needed that</li></ul></div>
+  <aside class="notes"><p>Walk the room at minute 10: most will be stuck on the permission strings or on quoting. Common errors: <code>cd logs/2026-10</code> without the script's folder; quoting only part of the path. The lab check runs the script from the workspace folder, which is the real test.</p><p>Debrief in two minutes: why was ST07's log the largest? Leave the full answer to lab 1.2.</p></aside>
+</section>
+
+<!-- Session 2 -->
+
+<section class="slide section" id="s2" data-auto="section" data-session="2" data-n="13">
+  <div class="kicker">Session 2</div>
+  <h1>Pipes, redirection and filters</h1>
+  <ul class="bullets outcomes"><li>Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question</li><li>Redirect output and errors to files</li><li>Find a hidden character or a repeated line that skews a count</li></ul>
+  <div class="sess-no">02</div>
+</section>
+
+<section class="slide" id="three-streams" data-lo="LO2" data-n="14" data-session="2">
+  <div class="kicker">Streams</div>
+  <h2>Every program has one input and two outputs</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>stdin (0)</h4><p class="small mb0">What the program reads: the keyboard, a file after <code>&lt;</code>, or the previous program after <code>|</code>.</p></div>
+    <div class="card c-cyan"><h4>stdout (1)</h4><p class="small mb0">The result. <code>&gt;</code> writes it to a file, <code>&gt;&gt;</code> adds to the end, <code>|</code> hands it on.</p></div>
+    <div class="card c-coral"><h4>stderr (2)</h4><p class="small mb0">Errors and progress. <code>2&gt;</code> sends them to a file; they do not go down a pipe.</p></div>
+  </div>
+  <pre class="code mt" data-file="terminal"><code class="language-bash"><span class="hljs-built_in">wc</span> -l visits/*.csv &gt; lines.txt 2&gt; errors.txt</code></pre>
+  <aside class="notes"><p>Show that an error from a misspelt file name still appears on screen when only stdout is redirected. Ask: "Where should a script print its error messages?" (stderr, so they never end up inside the result file). Lab 1.3 needs this.</p></aside>
+</section>
+
+<section class="slide" id="small-tools" data-lo="LO2" data-n="15" data-session="2">
+  <div class="kicker">The filters</div>
+  <h2>Six small programs cover most counting questions</h2>
+  <table class="t">
+    <tr><th>Command</th><th>Does one thing</th></tr>
+    <tr><td><code>grep 'ERR'</code> · <code>grep -v '^#'</code></td><td>keeps the lines that match · that do not match</td></tr>
+    <tr><td><code>cut -d' ' -f2</code></td><td>keeps field 2 of each line, fields split by a space</td></tr>
+    <tr><td><code>sort</code> · <code>sort -rn</code></td><td>orders lines · by number, largest first</td></tr>
+    <tr><td><code>uniq -c</code> · <code>uniq -d</code></td><td>counts runs of equal neighbours · prints each repeated line once</td></tr>
+    <tr><td><code>wc -l</code> · <code>grep -c .</code></td><td>counts lines · counts lines that are not empty</td></tr>
+    <tr><td><code>head -n 3</code> · <code>tail -n +2</code></td><td>the first three lines · everything from line 2 (skip a header)</td></tr>
+  </table>
+  <aside class="notes"><p>Each tool reads lines and writes lines, which is why they join. <code>awk</code> appears once, in the stretch: say it is a small language, worth learning later.</p></aside>
+</section>
+
+<section class="slide" id="pipeline-built-up" data-lo="LO2" data-n="16" data-session="2">
+  <div class="kicker">Build it one stage at a time</div>
+  <h2>Add one stage, look at the output, then add the next</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash"><span class="hljs-built_in">cat</span> visits.log | <span class="hljs-built_in">head</span> -n 3                           <span class="hljs-comment"># 1 · look first</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> visits.log | <span class="hljs-built_in">head</span> -n 3                  <span class="hljs-comment"># 2 · drop comments</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> visits.log | <span class="hljs-built_in">cut</span> -d<span class="hljs-string">&#x27; &#x27;</span> -f3 | <span class="hljs-built_in">head</span> -n 3  <span class="hljs-comment"># 3 · keep the technician code</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> visits.log | <span class="hljs-built_in">cut</span> -d<span class="hljs-string">&#x27; &#x27;</span> -f3 | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c | <span class="hljs-built_in">sort</span> -rn | <span class="hljs-built_in">head</span> -n 3</code></pre>
+  <div class="callout tip mt"><b>Read a pipeline left to right</b> as a sentence: "lines that are not comments, their third field, sorted, counted, largest count first, top three".</div>
+  <aside class="notes"><p>Demonstrate live on a short log of field visits you type in front of the room (five lines with a comment line and technician codes T1 to T3); do not use the station logs, whose counts are the lab. The habit to teach: <code>head</code> after every new stage.</p></aside>
+</section>
+
+<section class="slide" id="sort-before-uniq" data-lo="LO2" data-n="17" data-session="2">
+  <div class="kicker">The rule people forget</div>
+  <h2>uniq only sees neighbours, so sort first</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Without sort</h4><pre class="code s"><code>T1
+T2
+T1
+$ uniq -c
+  1 T1
+  1 T2
+  1 T1</code></pre></div>
+    <div class="card c-teal"><h4>With sort</h4><pre class="code s"><code>$ sort | uniq -c
+  2 T1
+  1 T2</code></pre></div>
+  </div>
+  <aside class="notes"><p>Ask the room to predict the left output before you reveal it. This one mistake gives plausible but wrong counts, which is worse than an error.</p></aside>
+</section>
+
+<section class="slide" id="hidden-characters" data-lo="LO2 LO6" data-n="18" data-session="2">
+  <div class="kicker">What you cannot see</div>
+  <h2>A file written on Windows ends each line with an extra character</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Linux and macOS end a line with <b>LF</b>; Windows programs often write <b>CR LF</b></li>
+      <li>The CR sticks to the last field: <code>OK</code> and <code>OK\r</code> are two words to <code>sort</code></li>
+      <li><code>cat -A</code> (<code>cat -e</code> on macOS) shows it as <code>^M</code>; <code>file</code> names the line endings</li>
+      <li><code>tr -d '\r'</code> removes it</li>
+    </ul>
+    <div class="card c-purple"><h4>The same pipeline, two answers</h4><p class="small mb0">Git Bash's <code>grep</code> on Windows drops the CR from its output; <code>grep</code> on Linux keeps it. A pipeline can be right on one machine and wrong on the next: the theme of the whole course.</p></div>
+  </div>
+  <aside class="notes"><p>This difference was measured when the course was built: on Git for Windows, <code>grep</code> and <code>awk</code> drop the CR; <code>cut</code> keeps it; <code>grep -U</code> keeps it too. Do not say which station's log has CR LF: lab 1.2 finds it.</p></aside>
+</section>
+
+<section class="slide" id="script-it" data-lo="LO2" data-n="19" data-session="2">
+  <div class="kicker">Keep the pipelines</div>
+  <h2>A pipeline you will run again belongs in a script</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash"><span class="hljs-meta">#!/usr/bin/env bash</span>
+<span class="hljs-comment"># Counts over the field visits. Run: bash visit_counts.sh &gt; visit_counts.txt</span>
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;== V1 visit lines (no comments)&quot;</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> visits.log | grep -c .
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;== V2 visits per technician&quot;</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> visits.log | <span class="hljs-built_in">cut</span> -d<span class="hljs-string">&#x27; &#x27;</span> -f3 | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c</code></pre>
+  <div class="callout note mt"><b>The echo lines are labels.</b> They make the output readable by a person and by a check.</div>
+  <aside class="notes"><p>Same visits example. The lab's <code>counts.sh</code> has this shape with six questions on the station logs; the lab check reads the labels.</p></aside>
+</section>
+
+<section class="slide" id="check-uniq" data-lo="LO2" data-n="20" data-session="2">
+  <div class="kicker">Checkpoint</div>
+  <h2>Why does the count list one technician twice?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2" data-id="check-uniq-q1">
+    <p class="lead">On a colleague's Linux machine, <code>cut -d' ' -f4 visits.log | sort | uniq -c</code> prints <code>12 T2</code> and, further down, <code>3 T2</code>. Field 4 is the last field. What is the most likely cause?</p>
+    <div class="opts">
+      <div class="opt" data-why="sort puts equal lines together, so two identical words cannot end up in separate runs" data-k="A">sort did not group the lines</div>
+      <div class="opt" data-why="uniq -c counts runs of equal lines; it does not split one word into two" data-k="B">uniq -c counts each run twice</div>
+      <div class="opt" data-why="A wrong field would give different words, not the same technician code twice" data-k="C">cut took the wrong field</div>
+      <div class="opt" data-ok data-k="D">Some lines end in CR LF, so one T2 carries an invisible CR</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The last field of a CR LF line ends in the CR, so <code>T2</code> and <code>T2\r</code> sort as different words; <code>cat -A</code> shows it and <code>tr -d '\r'</code> fixes it.</div>
+  </div>
+  <aside class="notes"><p>Answer: D. Ask how to prove it in one command: pipe into <code>cat -A</code>.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-1-2" data-auto="lab" data-lab="1.2" data-label="Lab 1.2" data-n="21" data-session="2">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 1.2 · 35 min</div><h2>A counting pipeline over synthetic logs</h2><p class="lead small">Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh</p><a class="nb" href="../labs/D1_2_counting_pipeline.html">D1_2_counting_pipeline.html</a></div><ul class="checklist"><li>Look at the logs: head, tail, wc -l <span class="min">4 min</span></li><li>Count the reading lines without comments or blank lines (Q1) <span class="min">5 min</span></li><li>Lines per status, and the carriage-return trap (Q2) <span class="min">8 min</span></li><li>The three stations with most errors, and each error code (Q3, Q4) <span class="min">8 min</span></li><li>Duplicate lines after a restart, and stations per client from the CSV (Q5, Q6) <span class="min">6 min</span></li><li>Save the output to counts.txt and check the lab <span class="min">4 min</span></li><li class="stretch">✱ Stretch: Alert hours (PM10 above 150) per station with awk, each hour counted once</li></ul></div>
+  <aside class="notes"><p>AI off for every first attempt. Watch for: <code>uniq -c</code> without <code>sort</code>; counting comment lines; Q5 counted as lines in all instead of repeated ones. For Q2, on Windows, Git Bash hides the CR trap: have one participant run with <code>grep -U</code> and show the two OK rows, or show it on the Linux workspace.</p><p>Debrief at the start of session 3, not before: the trainer's values are on the lab page.</p></aside>
+</section>
+
+<!-- Session 3 -->
+
+<section class="slide section" id="s3" data-auto="section" data-session="3" data-n="22">
+  <div class="kicker">Session 3</div>
+  <h1>Variables, exit codes and SSH</h1>
+  <ul class="bullets outcomes"><li>Pass a folder as an argument with an environment variable as the fallback</li><li>Make a script stop with a non-zero exit code and a message on stderr</li><li>Create an SSH key pair, read its fingerprint and write a host entry</li></ul>
+  <div class="sess-no">03</div>
+</section>
+
+<section class="slide" id="debrief-1-2" data-lo="LO2" data-n="23" data-session="3">
+  <div class="kicker">Lab 1.2 debrief</div>
+  <h2>Seven lines in October were not readings, and one log hid a character</h2>
+  <div class="cols cols-3">
+    <div class="stat center"><div class="big">8,892</div><div class="lbl">reading lines out of 8,899 in October</div></div>
+    <div class="stat center"><div class="big">735</div><div class="lbl">OK lines of ST07 that end in CR LF</div></div>
+    <div class="stat center"><div class="big">12</div><div class="lbl">lines sent twice after two logger restarts</div></div>
+  </div>
+  <p class="small mt">Status counts once the CR is removed: OK 8,728 · WARN 103 · ERR 61. Most errors: ST05 (26), ST09 (17), ST12 (8).</p>
+  <aside class="notes"><p>Numbers from the lab's solution run (labs/solutions/S1_2.sh). The 735 is visible only where grep keeps the CR: on Linux, or with grep -U on Git Bash. Ask who got 8,899 for Q1 and why (comments and a blank line).</p></aside>
+</section>
+
+<section class="slide" id="arguments" data-lo="LO2" data-n="24" data-session="3">
+  <div class="kicker">Input from outside</div>
+  <h2>A script takes its folder as an argument, with a variable as the fallback</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash">DIR=<span class="hljs-string">&quot;<span class="hljs-variable">${1:-<span class="hljs-variable">${VISITS_DIR:-}</span>}</span>&quot;</span>     <span class="hljs-comment"># the first argument, else $VISITS_DIR, else empty</span>
+grep -v <span class="hljs-string">&#x27;^#&#x27;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$DIR</span>&quot;</span>/visits.log | grep -c .</code></pre>
+  <table class="t small mt">
+    <tr><th>You run</th><th><code>DIR</code> is</th></tr>
+    <tr><td><code>bash visit_counts.sh march</code></td><td><code>march</code></td></tr>
+    <tr><td><code>VISITS_DIR=april bash visit_counts.sh</code></td><td><code>april</code></td></tr>
+    <tr><td><code>bash visit_counts.sh</code> (no variable set)</td><td>empty: stop and say so</td></tr>
+  </table>
+  <aside class="notes"><p><code>VAR=value command</code> sets the variable for that one command only. <code>export VAR=value</code> sets it for every later command in this shell. Show <code>env | grep VISITS</code> before and after.</p></aside>
+</section>
+
+<section class="slide" id="exit-codes" data-lo="LO2" data-n="25" data-session="3">
+  <div class="kicker">Did it work?</div>
+  <h2>Every command ends with a number: 0 means it worked</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal"><code class="language-bash">grep -q T9 visits.log; <span class="hljs-built_in">echo</span> $?  <span class="hljs-comment"># 1: no match</span>
+<span class="hljs-built_in">ls</span> nowhere; <span class="hljs-built_in">echo</span> $?     <span class="hljs-comment"># 2: an error</span>
+<span class="hljs-literal">false</span> | <span class="hljs-literal">true</span>; <span class="hljs-built_in">echo</span> $?   <span class="hljs-comment"># 0: last counts</span>
+<span class="hljs-built_in">set</span> -o pipefail
+<span class="hljs-literal">false</span> | <span class="hljs-literal">true</span>; <span class="hljs-built_in">echo</span> $?   <span class="hljs-comment"># 1: any failure</span></code></pre>
+    <ul class="bullets">
+      <li><code>$?</code> holds the code of the last command</li>
+      <li><b>set -e</b> stops the script at the first failing command</li>
+      <li><b>set -u</b> stops on a variable that was never set</li>
+      <li><b>set -o pipefail</b> makes a pipeline fail when any stage fails</li>
+    </ul>
+  </div>
+  <div class="callout tip mt"><b>Pick your own code for "bad input".</b> Many tools use 2; say it in the script's usage line.</div>
+  <aside class="notes"><p>Run the left column live. The third line surprises people: without pipefail, a pipeline reports only its last command. A script that another program or a pipeline calls must say "I failed" through its exit code, not only in words.</p></aside>
+</section>
+
+<section class="slide" id="fail-clearly" data-lo="LO2 LO6" data-n="26" data-session="3">
+  <div class="kicker">A clear failure</div>
+  <h2>Stop early, say what is missing on stderr, and return a non-zero code</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash"><span class="hljs-meta">#!/usr/bin/env bash</span>
+<span class="hljs-built_in">set</span> -euo pipefail
+DIR=<span class="hljs-string">&quot;<span class="hljs-variable">${1:-<span class="hljs-variable">${VISITS_DIR:-}</span>}</span>&quot;</span>
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">&quot;<span class="hljs-variable">$DIR</span>&quot;</span> ] || [ ! -f <span class="hljs-string">&quot;<span class="hljs-variable">$DIR</span>/visits.log&quot;</span> ]; <span class="hljs-keyword">then</span>
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;usage: bash visit_counts.sh &lt;folder&gt; (or set VISITS_DIR)&quot;</span> &gt;&amp;2
+  <span class="hljs-built_in">exit</span> 2
+<span class="hljs-keyword">fi</span></code></pre>
+  <div class="callout note mt"><b>Why it matters for reproduction.</b> A peer following your README sees "set VISITS_DIR" instead of an empty result that looks like zero visits.</div>
+  <aside class="notes"><p>Ask what the script printed before this guard when the folder was wrong: zero, which reads like a real answer. Lab 1.3 applies this to counts.sh with AIR_LOGS.</p></aside>
+</section>
+
+<section class="slide" id="ssh-key-pair" data-lo="LO2" data-n="27" data-session="3">
+  <div class="kicker">Remote login</div>
+  <h2>An SSH key pair: the public half opens the door, the private half never leaves you</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Make</b><code>ssh-keygen -t ed25519</code> writes <code>key</code> and <code>key.pub</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Give</b>the <code>.pub</code> file to the server or the Git host</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Prove</b>the server checks a signature made with the private key</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>4 · Check</b>compare fingerprints: <code>ssh-keygen -lf key.pub</code></div>
+  </div>
+  <div class="callout warn mt"><b>The private key is a secret.</b> Protect it with a passphrase, readable by you only, never in a repository.</div>
+  <aside class="notes"><p>Ed25519 is the default type of current OpenSSH ssh-keygen (OpenBSD manual page). The fingerprint is how you check, by reading it aloud or comparing it on the host's page, that the key on the server is yours.</p><p>Sources: ssh-keygen(1) and ssh_config(5), OpenBSD manual pages.</p></aside>
+</section>
+
+<section class="slide" id="ssh-config" data-lo="LO2" data-n="28" data-session="3">
+  <div class="kicker">A host entry</div>
+  <h2>One entry in a config file saves typing and picks the right key</h2>
+  <pre class="code" data-file="ssh_config"><code>Host field-server
+    HostName 198.51.100.7
+    User technician
+    IdentityFile keys/field_key
+    IdentitiesOnly yes</code></pre>
+  <p class="small mt"><code>ssh -F ssh_config field-server</code> now logs in as <code>technician</code> with that key only. <code>192.0.2.0/24</code> and <code>198.51.100.0/24</code> are address ranges reserved for examples.</p>
+  <aside class="notes"><p>IdentitiesOnly stops ssh from offering every key it can find, which some servers count as failed attempts. The lab writes the same kind of entry for the lab workspace; logging in needs the provided workspace and the trainer adding the public key.</p></aside>
+</section>
+
+<section class="slide" id="check-exit-code" data-lo="LO2" data-n="29" data-session="3">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does the caller see?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2" data-id="check-exit-code-q1">
+    <p class="lead">A script without <code>set -o pipefail</code> ends with <code>grep -h ERR "$DIR"/*.log | wc -l</code>. <code>DIR</code> names a folder that does not exist. What exit code does the script return, and what does it print?</p>
+    <div class="opts">
+      <div class="opt" data-ok data-k="A">0, after printing 0 and an error from grep on stderr</div>
+      <div class="opt" data-why="A pipeline's code is its last command's unless pipefail is set, and wc succeeded" data-k="B">2, the code of the failed grep</div>
+      <div class="opt" data-why="grep's complaint goes to stderr; wc still counts the empty stdout and prints 0" data-k="C">1, and it prints nothing at all</div>
+      <div class="opt" data-why="Without set -e or pipefail nothing stops the pipeline; wc runs on an empty input" data-k="D">The script stops before wc runs</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Without pipefail a pipeline returns its last command's code: <code>wc</code> counted zero lines and succeeded, so the failure is hidden.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. Run it to confirm. Then add set -o pipefail and run it again: the code becomes 2.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-1-3" data-auto="lab" data-lab="1.3" data-label="Lab 1.3" data-n="30" data-session="3">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 1.3 · 35 min</div><h2>The counting script on a second folder, and a practice key</h2><p class="lead small">Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry</p><a class="nb" href="../labs/D1_3_second_folder_key.html">D1_3_second_folder_key.html</a></div><ul class="checklist"><li>Take the folder as $1, with AIR_LOGS as the fallback <span class="min">8 min</span></li><li>Stop with exit code 2 and a message on stderr; set -euo pipefail <span class="min">7 min</span></li><li>Run it unchanged on the November folder <span class="min">5 min</span></li><li>Make a practice Ed25519 key pair in keys/ and save its fingerprint <span class="min">6 min</span></li><li>Write the ssh_config entry and check the lab <span class="min">9 min</span></li><li class="stretch">✱ Stretch: Log in to the provided Linux workspace with the key and run counts.sh there</li></ul></div>
+  <aside class="notes"><p>Anyone who did not finish 1.2 starts here anyway: the starting counts.sh already holds working pipelines. Watch for <code>DIR=$1</code> under <code>set -u</code> (fails with no argument), and <code>"$DIR/*.log"</code> (the quotes stop the star). The practice key stays in the lab folder; never let anyone overwrite their own <code>~/.ssh</code> keys.</p></aside>
+</section>
+
+<!-- Session 4 -->
+
+<section class="slide section" id="s4" data-auto="section" data-session="4" data-n="31">
+  <div class="kicker">Session 4</div>
+  <h1>Commits, staging and history</h1>
+  <ul class="bullets outcomes"><li>Draw the commit graph that a sequence of commands produces</li><li>Tell what is changed, what is staged and what is committed</li><li>Read git log --graph and match it to a drawing</li></ul>
+  <div class="sess-no">04</div>
+</section>
+
+<section class="slide" id="three-places" data-lo="LO1" data-n="32" data-session="4">
+  <div class="kicker">Where a change lives</div>
+  <h2>A change moves through three places: the folder, the staging area, the history</h2>
+  <div class="flow">
+    <div class="step c-coral"><b>Working folder</b>files as you edit them</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>Staging area</b><code>git add</code> picks what the next commit holds</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>History</b><code>git commit</code> records a snapshot</div>
+  </div>
+  <table class="t small mt">
+    <tr><th>Command</th><th>Compares</th></tr>
+    <tr><td><code>git diff</code></td><td>working folder with the staging area: what is not staged</td></tr>
+    <tr><td><code>git diff --staged</code></td><td>staging area with the last commit: what the next commit holds</td></tr>
+    <tr><td><code>git status --short</code></td><td>both, one line per file</td></tr>
+  </table>
+  <aside class="notes"><p>Many participants have committed before; this is the model behind it. Demonstrate: change two files, add one, run both diffs. Ask which diff shows which file before you run it.</p></aside>
+</section>
+
+<section class="slide" id="commit-is-snapshot" data-lo="LO1" data-n="33" data-session="4">
+  <div class="kicker">What a commit is</div>
+  <h2>A commit is a snapshot with a parent, an author, a message and an id</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>The <b>snapshot</b>: every tracked file as it was</li>
+      <li>The <b>parent</b>: the commit it follows (two for a merge)</li>
+      <li>The <b>id</b> is a hash of all of it: change anything, get a new id</li>
+      <li>So history is a chain you can check, and rewriting it changes every id after the change</li>
+    </ul>
+    <pre class="code" data-file="terminal"><code class="language-bash">git <span class="hljs-built_in">log</span> --format=<span class="hljs-string">&#x27;%h %p %s&#x27;</span>
+<span class="hljs-comment"># id      parent   message</span></code></pre>
+  </div>
+  <aside class="notes"><p>The id depends on the author and the time too, which is why two participants who type the same commands get different ids. The lab kit fixes authors and dates so its practice repositories have the same ids for everyone. Keep this in mind for Day 3: cleaning a key out of history changes ids.</p></aside>
+</section>
+
+<section class="slide" id="branch-is-pointer" data-lo="LO1" data-n="34" data-session="4">
+  <div class="kicker">What a branch is</div>
+  <h2>A branch is a name that points at one commit, and HEAD says which name you are on</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="a graph"><code>o---o---o   &lt;- main &lt;- HEAD
+         \
+          o   &lt;- draft</code></pre>
+    <ul class="bullets">
+      <li>Pro Git calls a branch "a lightweight movable pointer" to a commit</li>
+      <li>A new commit moves the branch HEAD points at, and only that one</li>
+      <li>Creating a branch writes one small reference: it is cheap</li>
+      <li><code>git switch draft</code> moves HEAD; the next commit moves <code>draft</code></li>
+    </ul>
+  </div>
+  <aside class="notes"><p>Draw it on the board as you speak. Arrows in the graph point from a commit to its parent, which is the opposite of time. Sources: Pro Git, "Branches in a Nutshell".</p></aside>
+</section>
+
+<section class="slide" id="draw-a-sequence" data-lo="LO1" data-n="35" data-session="4">
+  <div class="kicker">Worked example</div>
+  <h2>Draw first, run second, compare third</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="sequence"><code class="language-bash">git commit -m <span class="hljs-string">&quot;A&quot;</span>        <span class="hljs-comment"># on main</span>
+git branch notes
+git commit -m <span class="hljs-string">&quot;B&quot;</span>        <span class="hljs-comment"># still on main</span>
+git switch notes
+git commit -m <span class="hljs-string">&quot;C&quot;</span></code></pre>
+    <pre class="code frag" data-file="the graph"><code>        B   &lt;- main
+       /
+o--A--+
+       \
+        C   &lt;- notes &lt;- HEAD</code></pre>
+  </div>
+  <p class="small mt frag">main reaches 3 commits (the first, A, B); notes reaches 3 (the first, A, C); 4 commits in all.</p>
+  <aside class="notes"><p>Ask the room to draw it on paper before you press. This is a different sequence from the lab's three; the supervised check asks for five more like it, drawn by hand.</p></aside>
+</section>
+
+<section class="slide" id="read-log-graph" data-lo="LO1" data-n="36" data-session="4">
+  <div class="kicker">Reading Git's drawing</div>
+  <h2>git log --graph draws the same graph on its side</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">git <span class="hljs-built_in">log</span> --oneline --graph --all
+* 3c1d0e2 (HEAD -&gt; notes) C
+| * 9b7a4f1 (main) B
+|/
+* 5e2a8c3 A
+* 1f0b6d9 First commit</code></pre>
+  <ul class="bullets mt">
+    <li>Newest at the top; each <code>*</code> is a commit; the lines are parent links</li>
+    <li><code>--all</code> shows every branch, not only the one you are on</li>
+  </ul>
+  <aside class="notes"><p>The ids here are illustrative, not from a run. Ask: "Which commit is the last both branches share?" (A).</p></aside>
+</section>
+
+<section class="slide" id="check-graph" data-lo="LO1" data-n="37" data-session="4">
+  <div class="kicker">Checkpoint</div>
+  <h2>How many commits does main reach?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1" data-id="check-graph-q1">
+    <p class="lead">A new repository gets one commit on <code>main</code>. Then: <code>git branch fix</code>, two commits on <code>main</code>, <code>git switch fix</code>, one commit. How many commits does <code>main</code> reach, and how many does the repository hold?</p>
+    <div class="opts">
+      <div class="opt" data-why="Counts the commit made on fix as part of main, as if branches shared everything" data-k="A">main 4, the repository 4</div>
+      <div class="opt" data-why="Forgets the first commit, which every branch created later still reaches" data-k="B">main 2, the repository 3</div>
+      <div class="opt" data-ok data-k="C">main 3, the repository 4</div>
+      <div class="opt" data-why="Treats the branch as a copy of the commits, so the shared first commit is counted twice" data-k="D">main 3, the repository 5</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The two branches share the first commit; main adds two, fix adds one, so main reaches three of the four.</div>
+  </div>
+  <aside class="notes"><p>Answer: C. Draw it on the board after the reveal.</p></aside>
+</section>
+
+<section class="slide lab top" id="lab-1-4" data-auto="lab" data-lab="1.4" data-label="Lab 1.4" data-n="38" data-session="4">
+  <div class="cols cols-2 mid"><div><div class="lab-tag">Lab 1.4 · 35 min</div><h2>Draw the graph, then check it</h2><p class="lead small">Addition: predict the graphs of three command sequences on paper, run them, compare with git log --graph</p><a class="nb" href="../labs/D1_4_draw_the_graph.html">D1_4_draw_the_graph.html</a></div><ul class="checklist"><li>Predict, then run sequence 1 <span class="min">6 min</span></li><li>Compare with git log --graph and correct your drawing <span class="min">4 min</span></li><li>Sequence 2: stage one change of two and read both diffs <span class="min">9 min</span></li><li>Sequence 3: a branch that moves while main moves too <span class="min">10 min</span></li><li>Answer the four questions and check the lab <span class="min">6 min</span></li><li class="stretch">✱ Stretch: Predict what git commit --amend does to your drawing, then try it and compare the ids</li></ul></div>
+  <aside class="notes"><p>Paper first. Collect two drawings of sequence 3 and show them without names: one right, one with a merge that never happened. Common errors: arrows from parent to child; forgetting the first commit; believing <code>commit -am</code> adds new files.</p></aside>
+</section>
+
+<section class="slide" id="wrap-up" data-n="39" data-session="4">
+  <div class="kicker">Day 1 · wrap-up</div>
+  <h2>Three things to keep</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Paths travel badly</h4><p class="small mb0">A script finds its files from its own folder and takes data folders as arguments.</p></div>
+    <div class="card c-coral"><h4>Look at every stage</h4><p class="small mb0">Build pipelines one stage at a time; a hidden character or a repeat changes the count.</p></div>
+    <div class="card c-purple"><h4>History is a graph</h4><p class="small mb0">Commits point to parents; branches and HEAD are names that point to commits.</p></div>
+  </div>
+  <aside class="notes"><p>Ask each person to say which of the three they would have got wrong yesterday.</p></aside>
+</section>
+
+<section class="slide dark" id="next" data-label="Next" data-n="40" data-session="4">
+  <div class="kicker">Next</div>
+  <h2>Day 2: Working together on one history</h2>
+  <p class="lead">Tonight, 30 minutes: the commit-graph practice in <code>labs/practice/commit_graphs.md</code>, drawn on paper. Bring a laptop with the workspace; unfinished labs can be finished at home with <code>uv run lab.py check</code>.</p>
+  <aside class="notes"><p>The practice set counts towards the guided self-study hours. Day 2 starts with a review checkpoint on today's graph.</p></aside>
+</section>
+</div>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"deck":{"id":"day1","kind":"day","day":1,"label":"Day 1","title":"The shell and the commit graph","prev":null,"next":"day2.html","md":"day1.md","alt":{}},"sessions":[{"n":1,"label":"Session 1","title":"Paths and permissions","slide":"s1","outcomes":["Tell an absolute path from a relative one and predict where each points after a move","Read a permission string and say who may read, write or run the file","Make a script independent of the folder it is run from"],"minutes":60,"lab":{"id":"1.1","title":"Find your way round the project folder","minutes":35,"href":"../labs/D1_1_project_folder.html"}},{"n":2,"label":"Session 2","title":"Pipes, redirection and filters","slide":"s2","outcomes":["Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question","Redirect output and errors to files","Find a hidden character or a repeated line that skews a count"],"minutes":60,"lab":{"id":"1.2","title":"A counting pipeline over synthetic logs","minutes":35,"href":"../labs/D1_2_counting_pipeline.html"}},{"n":3,"label":"Session 3","title":"Variables, exit codes and SSH","slide":"s3","outcomes":["Pass a folder as an argument with an environment variable as the fallback","Make a script stop with a non-zero exit code and a message on stderr","Create an SSH key pair, read its fingerprint and write a host entry"],"minutes":60,"lab":{"id":"1.3","title":"The counting script on a second folder, and a practice key","minutes":35,"href":"../labs/D1_3_second_folder_key.html"}},{"n":4,"label":"Session 4","title":"Commits, staging and history","slide":"s4","outcomes":["Draw the commit graph that a sequence of commands produces","Tell what is changed, what is staged and what is committed","Read git log --graph and match it to a drawing"],"minutes":60,"lab":{"id":"1.4","title":"Draw the graph, then check it","minutes":35,"href":"../labs/D1_4_draw_the_graph.html"}}],"slides":[{"id":"title","n":1,"title":"The shell and the commit graph","kind":"title","session":0,"hash":"6df3df7a","md":"#### [day1#title] The shell and the commit graph\n\n*SDAIA Academy · Command Line, Git and Reproducible Environments*\n\nDay 1: Find, count and script in the shell, then draw what Git records\n\nData & AI Foundations Track · 3 teaching days + capstone day · 4 sessions · 4 labs · FND-PRG-102","notes":"Welcome the room and introduce yourself. Ask one calibrating question: \"Who has typed a command into a terminal this month?\" and \"Who has committed to a shared repository?\" The answers set the pace of sessions 1 and 4.\n\nThe rhythm: four sessions of an hour, each about 25 minutes of slides and demonstration, then a 35-minute lab. Breaks are yours: press B.","minutes":null,"lo":[]},{"id":"agenda","n":2,"title":"The shell and the commit graph","kind":"content","session":0,"hash":"def1559f","md":"#### [day1#agenda] The shell and the commit graph\n\n*Today*\n\n- **Session 1 · Paths and permissions**: Where you are, how a path is read, and who may read, change or run a file\n- **Session 2 · Pipes, redirection and filters**: Small programs joined by pipes answer counting questions over thousands of lines\n- **Session 3 · Variables, exit codes and SSH**: A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere\n- **Session 4 · Commits, staging and history**: A commit is a snapshot with a parent; a branch is a name that points at one","notes":"","minutes":null,"lo":[]},{"id":"the-case","n":3,"title":"The monthly client report runs on one laptop only","kind":"content","session":0,"hash":"d56c62d3","md":"#### [day1#the-case] The monthly client report runs on one laptop only\n\n*The case for three days*\n\n- An **air-quality monitoring company** runs twelve dust and particle stations, **ST01 to ST12**, at four clients' sites\n- Each station writes **one line an hour** to a log\n- The analyst turns a month of logs into each client's report, by a Python project on their laptop\n- Nobody else can rebuild it: no history, no declared packages, a key in the code\n\n- **By the capstone day.** A peer rebuilds your own small project on a clean workspace, using only your README. Every lab practises one step of that.\n\n> **Synthetic.** Company, clients and logs are invented; people appear as roles only.","notes":"Tell the story in one minute. The company is fictional and has no name on purpose: it is one of many contractors that run sensors at industrial and building sites. The alert threshold the report uses (PM10 above 150 for an hour) is the company's own rule, not a national standard.\n\nSay what the capstone is now, so every lab has a reason: a peer will try to rebuild your repository from its README alone.","minutes":null,"lo":["LO6"]},{"id":"setup-check","n":4,"title":"Three tools and one command prove the laptop is ready","kind":"content","session":0,"hash":"3e895cb9","md":"#### [day1#setup-check] Three tools and one command prove the laptop is ready\n\n*Setup check*\n\n```bash\n# file: terminal\ngit --version\nbash --version | head -n 1\nuv --version\ngit config user.name\nuv run labs/kit/setup.py --to ../air-labs\ncd ../air-labs && uv run lab.py list\n```\n\n- **Git** with a name and an email set (yours, or a neutral one such as `Participant A`)\n- **Bash**: Git Bash on Windows, the terminal on macOS or Linux\n- **uv**, from the pre-work\n- The last command lists the twelve labs\n\n> **No admin rights on your laptop?** Every lab except 3.2 runs without them; lab 3.2 also runs on the provided Linux workspace.","notes":"Run this before session 1 starts, while people arrive. The workspace goes beside the course folder by default; on Windows keep its path short. A participant whose laptop blocks installs works on the provided Linux workspace for the whole course.\n\nIf `git config user.name` prints nothing: `git config --global user.name \"Participant A\"` and the same for the email with an address ending in `example.invalid` when they prefer not to use their own.","minutes":null,"lo":[]},{"id":"s1","n":5,"title":"Paths and permissions","kind":"section","session":1,"hash":"ef678286","md":"#### [day1#s1] Paths and permissions\n\n*Session 1*\n\n- Tell an absolute path from a relative one and predict where each points after a move\n- Read a permission string and say who may read, write or run the file\n- Make a script independent of the folder it is run from","notes":"","minutes":null,"lo":["LO2"]},{"id":"shell-reads-a-line","n":6,"title":"The shell reads a line, splits it into words and runs the first one","kind":"content","session":1,"hash":"bfde762e","md":"#### [day1#shell-reads-a-line] The shell reads a line, splits it into words and runs the first one\n\n*What the shell does*\n\n1. **1 · Read** `ls -l logs`\n2. **2 · Split** on spaces: `ls`, `-l`, `logs`\n3. **3 · Expand** `*`, `$VAR`, `~`\n4. **4 · Run** the program `ls` with two words\n\n> **What goes wrong.** A space splits words: `cat field notes.txt` asks for two files. Quotes keep one word: `cat \"field notes.txt\"`.","notes":"Type `echo one two three` and `echo \"one two three\"` and let the room see the spaces collapse in the first. That single demonstration explains most quoting errors of the day.","minutes":null,"lo":["LO2"]},{"id":"where-you-are","n":7,"title":"A relative path starts where you are; an absolute one starts at the root","kind":"content","session":1,"hash":"f36220ff","md":"#### [day1#where-you-are] A relative path starts where you are; an absolute one starts at the root\n\n*Paths*\n\n| You are in | You type | It means |\n| --- | --- | --- |\n| `/srv/air` | `logs/ST01.log` | `/srv/air/logs/ST01.log` |\n| `/srv/air/logs` | `../stations.csv` | `/srv/air/stations.csv` |\n| anywhere | `/srv/air/logs` | the same folder, always |\n| anywhere | `~/notes.md` | your home folder, then `notes.md` |\n\nCommands to know: `pwd` (where am I), `ls -a` (what is here), `cd` (go), `.` (here), `..` (one up).","notes":"Ask: \"If I move the whole folder to another disk, which of these lines still work?\" The relative ones inside the folder do; an absolute path written into a script breaks. That is the fault in lab 1.1.\n\nWindows note: Git Bash shows `C:` as `/c/`. Paths in scripts use forward slashes everywhere.","minutes":null,"lo":["LO2"]},{"id":"find-and-du","n":8,"title":"find lists what matches, ls -S orders by size, du adds sizes up","kind":"content","session":1,"hash":"b8f310b3","md":"#### [day1#find-and-du] find lists what matches, ls -S orders by size, du adds sizes up\n\n*Looking round without a file browser*\n\n```bash\n# file: terminal\nfind visits -name '*.csv'            # every CSV under visits/, at any depth\nfind visits -name '*.csv' | wc -l    # how many\nls -S visits/*.csv | head -n 3       # the three largest\ndu -h visits                          # the size of the folder, human-readable\n```\n\n> **Quote the pattern.** `'*.csv'` in quotes reaches `find` as a pattern; without quotes the shell may expand it first, in the current folder.","notes":"Demonstrate on any folder of your own, not on the lab's logs: the lab asks for the November count and the largest October log. Ask why two files with the same number of lines could differ in size (line endings, longer numbers). Leave the answer to the lab.","minutes":null,"lo":["LO2"]},{"id":"permission-string","n":9,"title":"Ten characters say who may read, write or run a file","kind":"content","session":1,"hash":"95ffca8e","md":"#### [day1#permission-string] Ten characters say who may read, write or run a file\n\n*Permissions*\n\n```\n# file: ls -l on Linux\n-rw-r-----  1 analyst field  612 visits.csv\ndrwxr-xr-x  2 analyst field 4096 archive\n```\n\n| Part | In `-rw-r-----` |\n| --- | --- |\n| Type | `-` a file (`d` a folder) |\n| Owner | `rw-` read, write |\n| Group | `r--` read |\n| Everyone else | `---` nothing |\n\n- **r** read, **w** change, **x** run a file or enter a folder\n- `chmod u+x run.sh` lets the owner run it as `./run.sh`\n- `chmod go-r secret.env` takes reading away from group and others\n- A key file is readable by its owner only","notes":"The example is a pattern, not output from the lab. On Git Bash for Windows, `ls -l` shows approximate bits because Windows files do not have these permissions; that is why lab 1.1 supplies a listing taken in the shape Linux prints. On the provided Linux workspace the real thing works.","minutes":null,"lo":["LO2"]},{"id":"script-tied-to-a-folder","n":10,"title":"A script that names your folder works on your computer only","kind":"content","session":1,"hash":"c8237f87","md":"#### [day1#script-tied-to-a-folder] A script that names your folder works on your computer only\n\n*A script that works here only*\n\n- **Tied to one computer.**\n  ```bash\n  cd /mnt/share/visits\n  wc -l *.csv\n  ```\n  Runs only where that folder exists.\n- **Tied to itself.**\n  ```bash\n  cd \"$(dirname \"$0\")/visits\"\n  wc -l *.csv\n  ```\n  `$0` is the script's own path; `dirname` keeps its folder.\n\n> **Single quotes stop the substitution.** `'$(dirname \"$0\")'` is printed as it is; double quotes let `$( )` run and still keep spaces in one word.","notes":"This is the pattern the lab asks for, on a different folder. Run both versions from another folder to show the first failing with \"No such file or directory\".","minutes":null,"lo":["LO2","LO6"]},{"id":"check-paths","n":11,"title":"Which line still works after the folder moves?","kind":"quiz","session":1,"hash":"438d950d","md":"#### [day1#check-paths] Which line still works after the folder moves?\n\n*Checkpoint*\n\n**Question:** A script `tally.sh` sits in `reports/` beside a folder `visits/`. The whole `reports/` folder is copied to a colleague's laptop. Which first line lets the script find `visits/` there, from whatever folder it is started?\n\n- A. cd visits\n- B. cd \"$(dirname \"$0\")/visits\"\n- C. cd /mnt/share/reports/visits\n- D. cd '$(dirname \"$0\")/visits'","notes":"Answer: B. If many pick A, run it from the home folder and show the error. If they pick D, echo it to show the literal text.","minutes":null,"lo":["LO2"]},{"id":"lab-1-1","n":12,"title":"Find your way round the project folder","kind":"lab","session":1,"hash":"31514a2c","md":"#### [day1#lab-1-1] Find your way round the project folder\n\nLab 1.1 · 35 min\n\nAddition: map the report folder, read permission strings, and fix a script that ran on one computer only\n\n[D1_1_project_folder.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_1_project_folder.html)\n\n- [ ] Start the lab and see where you are: pwd, ls -a (4 min)\n- [ ] Map the logs with find, ls -S and du (8 min)\n- [ ] Read the permission strings of listing.txt and answer in answers.md (8 min)\n- [ ] Fix run_counts.sh: its own folder, and quotes round a folder name with a space (10 min)\n- [ ] Run it from the workspace folder and check the lab (5 min)\n- [ ] ✱ Stretch: On a Linux workspace, chmod u+x the script, run it as ./run_counts.sh, and say why bash never needed that","notes":"Walk the room at minute 10: most will be stuck on the permission strings or on quoting. Common errors: `cd logs/2026-10` without the script's folder; quoting only part of the path. The lab check runs the script from the workspace folder, which is the real test.\n\nDebrief in two minutes: why was ST07's log the largest? Leave the full answer to lab 1.2.","minutes":null,"lo":[]},{"id":"s2","n":13,"title":"Pipes, redirection and filters","kind":"section","session":2,"hash":"6d64ad42","md":"#### [day1#s2] Pipes, redirection and filters\n\n*Session 2*\n\n- Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question\n- Redirect output and errors to files\n- Find a hidden character or a repeated line that skews a count","notes":"","minutes":null,"lo":["LO2"]},{"id":"three-streams","n":14,"title":"Every program has one input and two outputs","kind":"content","session":2,"hash":"1f6499e3","md":"#### [day1#three-streams] Every program has one input and two outputs\n\n*Streams*\n\n- **stdin (0).** What the program reads: the keyboard, a file after `\u003c`, or the previous program after `|`.\n- **stdout (1).** The result. `>` writes it to a file, `>>` adds to the end, `|` hands it on.\n- **stderr (2).** Errors and progress. `2>` sends them to a file; they do not go down a pipe.\n\n```bash\n# file: terminal\nwc -l visits/*.csv > lines.txt 2> errors.txt\n```","notes":"Show that an error from a misspelt file name still appears on screen when only stdout is redirected. Ask: \"Where should a script print its error messages?\" (stderr, so they never end up inside the result file). Lab 1.3 needs this.","minutes":null,"lo":["LO2"]},{"id":"small-tools","n":15,"title":"Six small programs cover most counting questions","kind":"content","session":2,"hash":"b6d13d95","md":"#### [day1#small-tools] Six small programs cover most counting questions\n\n*The filters*\n\n| Command | Does one thing |\n| --- | --- |\n| `grep 'ERR'` · `grep -v '^#'` | keeps the lines that match · that do not match |\n| `cut -d' ' -f2` | keeps field 2 of each line, fields split by a space |\n| `sort` · `sort -rn` | orders lines · by number, largest first |\n| `uniq -c` · `uniq -d` | counts runs of equal neighbours · prints each repeated line once |\n| `wc -l` · `grep -c .` | counts lines · counts lines that are not empty |\n| `head -n 3` · `tail -n +2` | the first three lines · everything from line 2 (skip a header) |","notes":"Each tool reads lines and writes lines, which is why they join. `awk` appears once, in the stretch: say it is a small language, worth learning later.","minutes":null,"lo":["LO2"]},{"id":"pipeline-built-up","n":16,"title":"Add one stage, look at the output, then add the next","kind":"content","session":2,"hash":"06fa4627","md":"#### [day1#pipeline-built-up] Add one stage, look at the output, then add the next\n\n*Build it one stage at a time*\n\n```bash\n# file: terminal\ncat visits.log | head -n 3                           # 1 · look first\ngrep -v '^#' visits.log | head -n 3                  # 2 · drop comments\ngrep -v '^#' visits.log | cut -d' ' -f3 | head -n 3  # 3 · keep the technician code\ngrep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c | sort -rn | head -n 3\n```\n\n> **Read a pipeline left to right** as a sentence: \"lines that are not comments, their third field, sorted, counted, largest count first, top three\".","notes":"Demonstrate live on a short log of field visits you type in front of the room (five lines with a comment line and technician codes T1 to T3); do not use the station logs, whose counts are the lab. The habit to teach: `head` after every new stage.","minutes":null,"lo":["LO2"]},{"id":"sort-before-uniq","n":17,"title":"uniq only sees neighbours, so sort first","kind":"content","session":2,"hash":"2f4633a0","md":"#### [day1#sort-before-uniq] uniq only sees neighbours, so sort first\n\n*The rule people forget*\n\n- **Without sort.**\n  ```\n  T1\n  T2\n  T1\n  $ uniq -c\n    1 T1\n    1 T2\n    1 T1\n  ```\n- **With sort.**\n  ```\n  $ sort | uniq -c\n    2 T1\n    1 T2\n  ```","notes":"Ask the room to predict the left output before you reveal it. This one mistake gives plausible but wrong counts, which is worse than an error.","minutes":null,"lo":["LO2"]},{"id":"hidden-characters","n":18,"title":"A file written on Windows ends each line with an extra character","kind":"content","session":2,"hash":"47921079","md":"#### [day1#hidden-characters] A file written on Windows ends each line with an extra character\n\n*What you cannot see*\n\n- Linux and macOS end a line with **LF**; Windows programs often write **CR LF**\n- The CR sticks to the last field: `OK` and `OK\\r` are two words to `sort`\n- `cat -A` (`cat -e` on macOS) shows it as `^M`; `file` names the line endings\n- `tr -d '\\r'` removes it\n\n- **The same pipeline, two answers.** Git Bash's `grep` on Windows drops the CR from its output; `grep` on Linux keeps it. A pipeline can be right on one machine and wrong on the next: the theme of the whole course.","notes":"This difference was measured when the course was built: on Git for Windows, `grep` and `awk` drop the CR; `cut` keeps it; `grep -U` keeps it too. Do not say which station's log has CR LF: lab 1.2 finds it.","minutes":null,"lo":["LO2","LO6"]},{"id":"script-it","n":19,"title":"A pipeline you will run again belongs in a script","kind":"content","session":2,"hash":"f8bac079","md":"#### [day1#script-it] A pipeline you will run again belongs in a script\n\n*Keep the pipelines*\n\n```bash\n# file: visit_counts.sh\n#!/usr/bin/env bash\n# Counts over the field visits. Run: bash visit_counts.sh > visit_counts.txt\n\necho \"== V1 visit lines (no comments)\"\ngrep -v '^#' visits.log | grep -c .\n\necho \"== V2 visits per technician\"\ngrep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c\n```\n\n> **The echo lines are labels.** They make the output readable by a person and by a check.","notes":"Same visits example. The lab's `counts.sh` has this shape with six questions on the station logs; the lab check reads the labels.","minutes":null,"lo":["LO2"]},{"id":"check-uniq","n":20,"title":"Why does the count list one technician twice?","kind":"quiz","session":2,"hash":"fbb1ecab","md":"#### [day1#check-uniq] Why does the count list one technician twice?\n\n*Checkpoint*\n\n**Question:** On a colleague's Linux machine, `cut -d' ' -f4 visits.log | sort | uniq -c` prints `12 T2` and, further down, `3 T2`. Field 4 is the last field. What is the most likely cause?\n\n- A. sort did not group the lines\n- B. uniq -c counts each run twice\n- C. cut took the wrong field\n- D. Some lines end in CR LF, so one T2 carries an invisible CR","notes":"Answer: D. Ask how to prove it in one command: pipe into `cat -A`.","minutes":null,"lo":["LO2"]},{"id":"lab-1-2","n":21,"title":"A counting pipeline over synthetic logs","kind":"lab","session":2,"hash":"10f1b771","md":"#### [day1#lab-1-2] A counting pipeline over synthetic logs\n\nLab 1.2 · 35 min\n\nSix counts over twelve stations' October logs, one pipeline each, kept in counts.sh\n\n[D1_2_counting_pipeline.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_2_counting_pipeline.html)\n\n- [ ] Look at the logs: head, tail, wc -l (4 min)\n- [ ] Count the reading lines without comments or blank lines (Q1) (5 min)\n- [ ] Lines per status, and the carriage-return trap (Q2) (8 min)\n- [ ] The three stations with most errors, and each error code (Q3, Q4) (8 min)\n- [ ] Duplicate lines after a restart, and stations per client from the CSV (Q5, Q6) (6 min)\n- [ ] Save the output to counts.txt and check the lab (4 min)\n- [ ] ✱ Stretch: Alert hours (PM10 above 150) per station with awk, each hour counted once","notes":"AI off for every first attempt. Watch for: `uniq -c` without `sort`; counting comment lines; Q5 counted as lines in all instead of repeated ones. For Q2, on Windows, Git Bash hides the CR trap: have one participant run with `grep -U` and show the two OK rows, or show it on the Linux workspace.\n\nDebrief at the start of session 3, not before: the trainer's values are on the lab page.","minutes":null,"lo":[]},{"id":"s3","n":22,"title":"Variables, exit codes and SSH","kind":"section","session":3,"hash":"5ff82643","md":"#### [day1#s3] Variables, exit codes and SSH\n\n*Session 3*\n\n- Pass a folder as an argument with an environment variable as the fallback\n- Make a script stop with a non-zero exit code and a message on stderr\n- Create an SSH key pair, read its fingerprint and write a host entry","notes":"","minutes":null,"lo":["LO2"]},{"id":"debrief-1-2","n":23,"title":"Seven lines in October were not readings, and one log hid a character","kind":"content","session":3,"hash":"c68fbfdc","md":"#### [day1#debrief-1-2] Seven lines in October were not readings, and one log hid a character\n\n*Lab 1.2 debrief*\n\n- **8,892** reading lines out of 8,899 in October\n- **735** OK lines of ST07 that end in CR LF\n- **12** lines sent twice after two logger restarts\n\nStatus counts once the CR is removed: OK 8,728 · WARN 103 · ERR 61. Most errors: ST05 (26), ST09 (17), ST12 (8).","notes":"Numbers from the lab's solution run (labs/solutions/S1_2.sh). The 735 is visible only where grep keeps the CR: on Linux, or with grep -U on Git Bash. Ask who got 8,899 for Q1 and why (comments and a blank line).","minutes":null,"lo":["LO2"]},{"id":"arguments","n":24,"title":"A script takes its folder as an argument, with a variable as the fallback","kind":"content","session":3,"hash":"6ac86e97","md":"#### [day1#arguments] A script takes its folder as an argument, with a variable as the fallback\n\n*Input from outside*\n\n```bash\n# file: visit_counts.sh\nDIR=\"${1:-${VISITS_DIR:-}}\"     # the first argument, else $VISITS_DIR, else empty\ngrep -v '^#' \"$DIR\"/visits.log | grep -c .\n```\n\n| You run | `DIR` is |\n| --- | --- |\n| `bash visit_counts.sh march` | `march` |\n| `VISITS_DIR=april bash visit_counts.sh` | `april` |\n| `bash visit_counts.sh` (no variable set) | empty: stop and say so |","notes":"`VAR=value command` sets the variable for that one command only. `export VAR=value` sets it for every later command in this shell. Show `env | grep VISITS` before and after.","minutes":null,"lo":["LO2"]},{"id":"exit-codes","n":25,"title":"Every command ends with a number: 0 means it worked","kind":"content","session":3,"hash":"6d198416","md":"#### [day1#exit-codes] Every command ends with a number: 0 means it worked\n\n*Did it work?*\n\n```bash\n# file: terminal\ngrep -q T9 visits.log; echo $?  # 1: no match\nls nowhere; echo $?     # 2: an error\nfalse | true; echo $?   # 0: last counts\nset -o pipefail\nfalse | true; echo $?   # 1: any failure\n```\n\n- `$?` holds the code of the last command\n- **set -e** stops the script at the first failing command\n- **set -u** stops on a variable that was never set\n- **set -o pipefail** makes a pipeline fail when any stage fails\n\n> **Pick your own code for \"bad input\".** Many tools use 2; say it in the script's usage line.","notes":"Run the left column live. The third line surprises people: without pipefail, a pipeline reports only its last command. A script that another program or a pipeline calls must say \"I failed\" through its exit code, not only in words.","minutes":null,"lo":["LO2"]},{"id":"fail-clearly","n":26,"title":"Stop early, say what is missing on stderr, and return a non-zero code","kind":"content","session":3,"hash":"2d74b3a3","md":"#### [day1#fail-clearly] Stop early, say what is missing on stderr, and return a non-zero code\n\n*A clear failure*\n\n```bash\n# file: visit_counts.sh\n#!/usr/bin/env bash\nset -euo pipefail\nDIR=\"${1:-${VISITS_DIR:-}}\"\nif [ -z \"$DIR\" ] || [ ! -f \"$DIR/visits.log\" ]; then\n  echo \"usage: bash visit_counts.sh \u003cfolder> (or set VISITS_DIR)\" >&2\n  exit 2\nfi\n```\n\n> **Why it matters for reproduction.** A peer following your README sees \"set VISITS_DIR\" instead of an empty result that looks like zero visits.","notes":"Ask what the script printed before this guard when the folder was wrong: zero, which reads like a real answer. Lab 1.3 applies this to counts.sh with AIR_LOGS.","minutes":null,"lo":["LO2","LO6"]},{"id":"ssh-key-pair","n":27,"title":"An SSH key pair: the public half opens the door, the private half never leaves you","kind":"content","session":3,"hash":"89f28e67","md":"#### [day1#ssh-key-pair] An SSH key pair: the public half opens the door, the private half never leaves you\n\n*Remote login*\n\n1. **1 · Make** `ssh-keygen -t ed25519` writes `key` and `key.pub`\n2. **2 · Give** the `.pub` file to the server or the Git host\n3. **3 · Prove** the server checks a signature made with the private key\n4. **4 · Check** compare fingerprints: `ssh-keygen -lf key.pub`\n\n> **The private key is a secret.** Protect it with a passphrase, readable by you only, never in a repository.","notes":"Ed25519 is the default type of current OpenSSH ssh-keygen (OpenBSD manual page). The fingerprint is how you check, by reading it aloud or comparing it on the host's page, that the key on the server is yours.\n\nSources: ssh-keygen(1) and ssh_config(5), OpenBSD manual pages.","minutes":null,"lo":["LO2"]},{"id":"ssh-config","n":28,"title":"One entry in a config file saves typing and picks the right key","kind":"content","session":3,"hash":"4667a598","md":"#### [day1#ssh-config] One entry in a config file saves typing and picks the right key\n\n*A host entry*\n\n```\n# file: ssh_config\nHost field-server\n    HostName 198.51.100.7\n    User technician\n    IdentityFile keys/field_key\n    IdentitiesOnly yes\n```\n\n`ssh -F ssh_config field-server` now logs in as `technician` with that key only. `192.0.2.0/24` and `198.51.100.0/24` are address ranges reserved for examples.","notes":"IdentitiesOnly stops ssh from offering every key it can find, which some servers count as failed attempts. The lab writes the same kind of entry for the lab workspace; logging in needs the provided workspace and the trainer adding the public key.","minutes":null,"lo":["LO2"]},{"id":"check-exit-code","n":29,"title":"What does the caller see?","kind":"quiz","session":3,"hash":"f9a66661","md":"#### [day1#check-exit-code] What does the caller see?\n\n*Checkpoint*\n\n**Question:** A script without `set -o pipefail` ends with `grep -h ERR \"$DIR\"/*.log | wc -l`. `DIR` names a folder that does not exist. What exit code does the script return, and what does it print?\n\n- A. 0, after printing 0 and an error from grep on stderr\n- B. 2, the code of the failed grep\n- C. 1, and it prints nothing at all\n- D. The script stops before wc runs","notes":"Answer: A. Run it to confirm. Then add set -o pipefail and run it again: the code becomes 2.","minutes":null,"lo":["LO2"]},{"id":"lab-1-3","n":30,"title":"The counting script on a second folder, and a practice key","kind":"lab","session":3,"hash":"5aca828d","md":"#### [day1#lab-1-3] The counting script on a second folder, and a practice key\n\nLab 1.3 · 35 min\n\nAddition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry\n\n[D1_3_second_folder_key.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_3_second_folder_key.html)\n\n- [ ] Take the folder as $1, with AIR_LOGS as the fallback (8 min)\n- [ ] Stop with exit code 2 and a message on stderr; set -euo pipefail (7 min)\n- [ ] Run it unchanged on the November folder (5 min)\n- [ ] Make a practice Ed25519 key pair in keys/ and save its fingerprint (6 min)\n- [ ] Write the ssh_config entry and check the lab (9 min)\n- [ ] ✱ Stretch: Log in to the provided Linux workspace with the key and run counts.sh there","notes":"Anyone who did not finish 1.2 starts here anyway: the starting counts.sh already holds working pipelines. Watch for `DIR=$1` under `set -u` (fails with no argument), and `\"$DIR/*.log\"` (the quotes stop the star). The practice key stays in the lab folder; never let anyone overwrite their own `~/.ssh` keys.","minutes":null,"lo":[]},{"id":"s4","n":31,"title":"Commits, staging and history","kind":"section","session":4,"hash":"c7b1374d","md":"#### [day1#s4] Commits, staging and history\n\n*Session 4*\n\n- Draw the commit graph that a sequence of commands produces\n- Tell what is changed, what is staged and what is committed\n- Read git log --graph and match it to a drawing","notes":"","minutes":null,"lo":["LO1"]},{"id":"three-places","n":32,"title":"A change moves through three places: the folder, the staging area, the history","kind":"content","session":4,"hash":"34de0ca7","md":"#### [day1#three-places] A change moves through three places: the folder, the staging area, the history\n\n*Where a change lives*\n\n1. **Working folder** files as you edit them\n2. **Staging area** `git add` picks what the next commit holds\n3. **History** `git commit` records a snapshot\n\n| Command | Compares |\n| --- | --- |\n| `git diff` | working folder with the staging area: what is not staged |\n| `git diff --staged` | staging area with the last commit: what the next commit holds |\n| `git status --short` | both, one line per file |","notes":"Many participants have committed before; this is the model behind it. Demonstrate: change two files, add one, run both diffs. Ask which diff shows which file before you run it.","minutes":null,"lo":["LO1"]},{"id":"commit-is-snapshot","n":33,"title":"A commit is a snapshot with a parent, an author, a message and an id","kind":"content","session":4,"hash":"748b2905","md":"#### [day1#commit-is-snapshot] A commit is a snapshot with a parent, an author, a message and an id\n\n*What a commit is*\n\n- The **snapshot**: every tracked file as it was\n- The **parent**: the commit it follows (two for a merge)\n- The **id** is a hash of all of it: change anything, get a new id\n- So history is a chain you can check, and rewriting it changes every id after the change\n\n```bash\n# file: terminal\ngit log --format='%h %p %s'\n# id      parent   message\n```","notes":"The id depends on the author and the time too, which is why two participants who type the same commands get different ids. The lab kit fixes authors and dates so its practice repositories have the same ids for everyone. Keep this in mind for Day 3: cleaning a key out of history changes ids.","minutes":null,"lo":["LO1"]},{"id":"branch-is-pointer","n":34,"title":"A branch is a name that points at one commit, and HEAD says which name you are on","kind":"content","session":4,"hash":"d18fc2d2","md":"#### [day1#branch-is-pointer] A branch is a name that points at one commit, and HEAD says which name you are on\n\n*What a branch is*\n\n```\n# file: a graph\no---o---o   \u003c- main \u003c- HEAD\n         \\\n          o   \u003c- draft\n```\n\n- Pro Git calls a branch \"a lightweight movable pointer\" to a commit\n- A new commit moves the branch HEAD points at, and only that one\n- Creating a branch writes one small reference: it is cheap\n- `git switch draft` moves HEAD; the next commit moves `draft`","notes":"Draw it on the board as you speak. Arrows in the graph point from a commit to its parent, which is the opposite of time. Sources: Pro Git, \"Branches in a Nutshell\".","minutes":null,"lo":["LO1"]},{"id":"draw-a-sequence","n":35,"title":"Draw first, run second, compare third","kind":"content","session":4,"hash":"50657a86","md":"#### [day1#draw-a-sequence] Draw first, run second, compare third\n\n*Worked example*\n\n```bash\n# file: sequence\ngit commit -m \"A\"        # on main\ngit branch notes\ngit commit -m \"B\"        # still on main\ngit switch notes\ngit commit -m \"C\"\n```\n\n```\n# file: the graph\n        B   \u003c- main\n       /\no--A--+\n       \\\n        C   \u003c- notes \u003c- HEAD\n```\n\nmain reaches 3 commits (the first, A, B); notes reaches 3 (the first, A, C); 4 commits in all.","notes":"Ask the room to draw it on paper before you press. This is a different sequence from the lab's three; the supervised check asks for five more like it, drawn by hand.","minutes":null,"lo":["LO1"]},{"id":"read-log-graph","n":36,"title":"git log --graph draws the same graph on its side","kind":"content","session":4,"hash":"806ba8c3","md":"#### [day1#read-log-graph] git log --graph draws the same graph on its side\n\n*Reading Git's drawing*\n\n```bash\n# file: terminal\ngit log --oneline --graph --all\n* 3c1d0e2 (HEAD -> notes) C\n| * 9b7a4f1 (main) B\n|/\n* 5e2a8c3 A\n* 1f0b6d9 First commit\n```\n\n- Newest at the top; each `*` is a commit; the lines are parent links\n- `--all` shows every branch, not only the one you are on","notes":"The ids here are illustrative, not from a run. Ask: \"Which commit is the last both branches share?\" (A).","minutes":null,"lo":["LO1"]},{"id":"check-graph","n":37,"title":"How many commits does main reach?","kind":"quiz","session":4,"hash":"e8ec31be","md":"#### [day1#check-graph] How many commits does main reach?\n\n*Checkpoint*\n\n**Question:** A new repository gets one commit on `main`. Then: `git branch fix`, two commits on `main`, `git switch fix`, one commit. How many commits does `main` reach, and how many does the repository hold?\n\n- A. main 4, the repository 4\n- B. main 2, the repository 3\n- C. main 3, the repository 4\n- D. main 3, the repository 5","notes":"Answer: C. Draw it on the board after the reveal.","minutes":null,"lo":["LO1"]},{"id":"lab-1-4","n":38,"title":"Draw the graph, then check it","kind":"lab","session":4,"hash":"cbd5dfad","md":"#### [day1#lab-1-4] Draw the graph, then check it\n\nLab 1.4 · 35 min\n\nAddition: predict the graphs of three command sequences on paper, run them, compare with git log --graph\n\n[D1_4_draw_the_graph.html](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_4_draw_the_graph.html)\n\n- [ ] Predict, then run sequence 1 (6 min)\n- [ ] Compare with git log --graph and correct your drawing (4 min)\n- [ ] Sequence 2: stage one change of two and read both diffs (9 min)\n- [ ] Sequence 3: a branch that moves while main moves too (10 min)\n- [ ] Answer the four questions and check the lab (6 min)\n- [ ] ✱ Stretch: Predict what git commit --amend does to your drawing, then try it and compare the ids","notes":"Paper first. Collect two drawings of sequence 3 and show them without names: one right, one with a merge that never happened. Common errors: arrows from parent to child; forgetting the first commit; believing `commit -am` adds new files.","minutes":null,"lo":[]},{"id":"wrap-up","n":39,"title":"Three things to keep","kind":"content","session":4,"hash":"fd7aa27a","md":"#### [day1#wrap-up] Three things to keep\n\n*Day 1 · wrap-up*\n\n- **Paths travel badly.** A script finds its files from its own folder and takes data folders as arguments.\n- **Look at every stage.** Build pipelines one stage at a time; a hidden character or a repeat changes the count.\n- **History is a graph.** Commits point to parents; branches and HEAD are names that point to commits.","notes":"Ask each person to say which of the three they would have got wrong yesterday.","minutes":null,"lo":[]},{"id":"next","n":40,"title":"Day 2: Working together on one history","kind":"content","session":4,"hash":"5561cdba","md":"#### [day1#next] Day 2: Working together on one history\n\n*Next*\n\nTonight, 30 minutes: the commit-graph practice in `labs/practice/commit_graphs.md`, drawn on paper. Bring a laptop with the workspace; unfinished labs can be finished at home with `uv run lab.py check`.","notes":"The practice set counts towards the guided self-study hours. Day 2 starts with a review checkpoint on today's graph.","minutes":null,"lo":[]}],"activities":[{"id":"check-paths-q1","slide":"check-paths","type":"single","prompt":"A script tally.sh sits in reports/ beside a folder visits/. The whole reports/ folder is copied to a colleague's laptop. Which first line lets the script find visits/ there, from whatever folder it is started?","options":[{"key":"A","text":"cd visits"},{"key":"B","text":"cd \"$(dirname \"$0\")/visits\""},{"key":"C","text":"cd /mnt/share/reports/visits"},{"key":"D","text":"cd '$(dirname \"$0\")/visits'"}],"correct":[1],"explanation":"$0 is the script's own path wherever it is copied, so dirname gives its folder on any computer.","misconceptions":["Relative to where the script is started, not to where it lives: it fails when run from any other folder","","An absolute path names the folder on the first laptop; it does not exist on the colleague's","Single quotes print the text as it is, so the command substitution never runs"],"lo":["LO2"]},{"id":"check-uniq-q1","slide":"check-uniq","type":"single","prompt":"On a colleague's Linux machine, cut -d' ' -f4 visits.log | sort | uniq -c prints 12 T2 and, further down, 3 T2. Field 4 is the last field. What is the most likely cause?","options":[{"key":"A","text":"sort did not group the lines"},{"key":"B","text":"uniq -c counts each run twice"},{"key":"C","text":"cut took the wrong field"},{"key":"D","text":"Some lines end in CR LF, so one T2 carries an invisible CR"}],"correct":[3],"explanation":"The last field of a CR LF line ends in the CR, so T2 and T2\\r sort as different words; cat -A shows it and tr -d '\\r' fixes it.","misconceptions":["sort puts equal lines together, so two identical words cannot end up in separate runs","uniq -c counts runs of equal lines; it does not split one word into two","A wrong field would give different words, not the same technician code twice",""],"lo":["LO2"]},{"id":"check-exit-code-q1","slide":"check-exit-code","type":"single","prompt":"A script without set -o pipefail ends with grep -h ERR \"$DIR\"/*.log | wc -l. DIR names a folder that does not exist. What exit code does the script return, and what does it print?","options":[{"key":"A","text":"0, after printing 0 and an error from grep on stderr"},{"key":"B","text":"2, the code of the failed grep"},{"key":"C","text":"1, and it prints nothing at all"},{"key":"D","text":"The script stops before wc runs"}],"correct":[0],"explanation":"Without pipefail a pipeline returns its last command's code: wc counted zero lines and succeeded, so the failure is hidden.","misconceptions":["","A pipeline's code is its last command's unless pipefail is set, and wc succeeded","grep's complaint goes to stderr; wc still counts the empty stdout and prints 0","Without set -e or pipefail nothing stops the pipeline; wc runs on an empty input"],"lo":["LO2"]},{"id":"check-graph-q1","slide":"check-graph","type":"single","prompt":"A new repository gets one commit on main. Then: git branch fix, two commits on main, git switch fix, one commit. How many commits does main reach, and how many does the repository hold?","options":[{"key":"A","text":"main 4, the repository 4"},{"key":"B","text":"main 2, the repository 3"},{"key":"C","text":"main 3, the repository 4"},{"key":"D","text":"main 3, the repository 5"}],"correct":[2],"explanation":"The two branches share the first commit; main adds two, fix adds one, so main reaches three of the four.","misconceptions":["Counts the commit made on fix as part of main, as if branches shared everything","Forgets the first commit, which every branch created later still reaches","","Treats the branch as a copy of the commits, so the shared first commit is counted twice"],"lo":["LO1"]}],"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":"day1.md","llms":"../llms.txt"},"tasks":[],"tools":[]},"bridge":{"allowedOrigins":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

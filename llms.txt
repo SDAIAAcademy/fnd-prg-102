@@ -1,0 +1,41 @@
+# Command Line, Git and Reproducible Environments
+
+> Set up work that another person can rebuild from a clean machine: shell scripts, a reviewed Git history, locked environments, a container and no secrets in history. SDAIA Academy course FND-PRG-102, version 2027.1.0, in English.
+
+Each slide is a heading such as "#### [day1#slide-id] Title": cite slides by that id, and each citation is a link (slides/day1.html#slide-id). These files are what a trainee sees: no speaker notes and no answer keys.
+
+## Course
+
+- [Course page](https://sdaiaacademy.github.io/fnd-prg-102/index.md): overview, outcomes, schedule and labs; the page itself is https://sdaiaacademy.github.io/fnd-prg-102/index.html
+- [The whole course](https://sdaiaacademy.github.io/fnd-prg-102/llms-full.txt): every unit, session and slide in one file, about 15,766 tokens
+- [Practice questions](https://sdaiaacademy.github.io/fnd-prg-102/practice.html): questions to check yourself, with feedback after each answer
+
+## Slides
+
+- [Day 1: The shell and the commit graph](https://sdaiaacademy.github.io/fnd-prg-102/slides/day1.md): Find, count and script in the shell, then draw what Git records; sessions: Paths and permissions, Pipes, redirection and filters, Variables, exit codes and SSH, Commits, staging and history; page: https://sdaiaacademy.github.io/fnd-prg-102/slides/day1.html; about 5,005 tokens
+- [Day 2: Working together on one history](https://sdaiaacademy.github.io/fnd-prg-102/slides/day2.md): Branches, reviewed pull requests, conflicts, undoing, and an environment that rebuilds; sessions: Branches, merges and conflicts, Pull requests and review etiquette, Undoing mistakes, Virtual environments and lock files; page: https://sdaiaacademy.github.io/fnd-prg-102/slides/day2.html; about 4,362 tokens
+- [Day 3: Rebuild anywhere, leak nothing](https://sdaiaacademy.github.io/fnd-prg-102/slides/day3.md): One documented command, a container with mounted data, and keys kept out of history; sessions: One command to rebuild and run, Images, containers and volumes, What a container shares, Scanning, and after a leak; page: https://sdaiaacademy.github.io/fnd-prg-102/slides/day3.html; about 4,643 tokens
+- [Capstone: Capstone: peer reproduction](https://sdaiaacademy.github.io/fnd-prg-102/slides/capstone.md): A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step; page: https://sdaiaacademy.github.io/fnd-prg-102/slides/capstone.html; about 1,354 tokens
+
+## Labs
+
+- [Lab 1.1: Find your way round the project folder](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_1_project_folder.md): Day 1, Session 1, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_1_project_folder.html
+- [Lab 1.2: A counting pipeline over synthetic logs](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_2_counting_pipeline.md): Day 1, Session 2, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_2_counting_pipeline.html
+- [Lab 1.3: The counting script on a second folder, and a practice key](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_3_second_folder_key.md): Day 1, Session 3, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_3_second_folder_key.html
+- [Lab 1.4: Draw the graph, then check it](https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_4_draw_the_graph.md): Day 1, Session 4, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D1_4_draw_the_graph.html
+- [Lab 2.1: Merge two branches and resolve a conflict alone](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_1_merge_alone.md): Day 2, Session 1, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_1_merge_alone.html
+- [Lab 2.2: Branch, review and resolve a conflict in teams of three](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_2_team_review.md): Day 2, Session 2, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_2_team_review.html
+- [Lab 2.3: Undo five mistakes](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_3_undo_five.md): Day 2, Session 3, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_3_undo_five.html
+- [Lab 2.4: Rescue a project that fails on a second machine](https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_4_second_machine.md): Day 2, Session 4, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D2_4_second_machine.html
+- [Lab 3.1: One command, and data kept out of the code](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_1_one_command.md): Day 3, Session 1, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_1_one_command.html
+- [Lab 3.2: Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_2_container.md): Day 3, Session 2, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_2_container.html
+- [Lab 3.3: The key out of the code](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_3_key_out_of_code.md): Day 3, Session 3, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_3_key_out_of_code.html
+- [Lab 3.4: Remediate a seeded leaked key with a scanner and a commit hook](https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_4_leaked_key.md): Day 3, Session 4, 35 min; page: https://sdaiaacademy.github.io/fnd-prg-102/labs/D3_4_leaked_key.html
+
+## Context files
+
+- [context/course.md](https://sdaiaacademy.github.io/fnd-prg-102/context/course.md): the whole course, for an assistant that takes a file, about 15,766 tokens
+- [context/day1.md](https://sdaiaacademy.github.io/fnd-prg-102/context/day1.md): Day 1, about 5,005 tokens
+- [context/day2.md](https://sdaiaacademy.github.io/fnd-prg-102/context/day2.md): Day 2, about 4,362 tokens
+- [context/day3.md](https://sdaiaacademy.github.io/fnd-prg-102/context/day3.md): Day 3, about 4,643 tokens
+- [context/capstone.md](https://sdaiaacademy.github.io/fnd-prg-102/context/capstone.md): Capstone, about 1,354 tokens

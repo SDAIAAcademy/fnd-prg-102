@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="deck" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capstone · Capstone: peer reproduction · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="capstone.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<div class="deck" data-course="Command Line, Git and Reproducible Environments" data-track="foundations" data-day="Capstone">
+<section class="slide title" id="title" data-auto="title" data-label="Welcome" data-n="1">
+  <div class="kicker">SDAIA Academy · Command Line, Git and Reproducible Environments</div>
+  <h1>Capstone: peer reproduction</h1>
+  <p class="lead mt">Capstone: A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step</p>
+  <div class="meta"><span class="track">Data &amp; AI Foundations Track</span><span>3 teaching days + capstone day</span><span>3 min talk and demo · 4 min Q&amp;A</span><span>FND-PRG-102</span></div>
+  <aside class="notes">Today is theirs: keep your own talking to the opening and the closing. Before the room fills: the clean workspaces are ready (the provided Linux workspace, or a fresh user account with only uv, Git and a container engine), the check papers are printed, and the pairs from yesterday's kickoff are on the running order.</aside>
+</section>
+
+<section class="slide" id="agenda" data-label="Agenda" data-n="2">
+  <div class="kicker">Capstone</div>
+  <h2>A peer rebuilds your project from its README alone</h2>
+  <div class="agenda">
+    <div class="item now"><div><b>Supervised check, AI off</b><small>shell commands and five commit graphs</small></div></div>
+    <div class="item"><div><b>Rubric, pairs and a self-test</b><small>your own rebuild in a fresh clone, one last time</small></div></div>
+    <div class="item"><div><b>Peer reproduction</b><small>on a clean workspace, following only the README, logging every step</small></div></div>
+    <div class="item"><div><b>Log, handback and fix clinic</b><small>the log as a pull request; you start fixing what failed</small></div></div>
+    <div class="item"><div><b>Trainer review, then the follow-up</b><small>a second reproduction and a seven-minute oral</small></div></div>
+  </div>
+  <aside class="notes">The day's minutes: check briefing 5 and the check 45 (assessment hours); rubric and pairing 15, self-test 35, changeover 10, reproduction 150, writing the log 20, handback 20, fix clinic 70, trainer review 30 (capstone hours). Breaks are not slides: press B when the room needs one.</aside>
+</section>
+
+<section class="slide dark" id="check" data-label="Supervised check" data-n="3">
+  <div class="kicker">Assessment · AI off</div>
+  <h1>Supervised check · 45 minutes</h1>
+  <div class="timer" data-minutes="45"></div>
+  <p class="lead">Paper only: no laptop, no assistant. Shell commands, then five commit graphs to draw.</p>
+  <aside class="notes">Five minutes of briefing first: what is allowed (a pen), how the graphs are drawn (one circle per commit, an arrow to its parent, branch labels in boxes, HEAD marked). The paper and its key are in the trainer pack, never in the repository. Pass mark on the check: 60%; LO1's evidence is four of the five graphs correct.</aside>
+</section>
+
+<section class="slide" id="rubric" data-label="The rubric" data-n="4">
+  <div class="kicker">How the peer reproduction is scored</div>
+  <h2>The rubric, out of 100</h2>
+  <div class="bars">
+    <div class="row"><span><b>README</b>: tools, data source, one command</span><div class="bar c-teal" style="--w:67%"></div><span class="val">20%</span></div>
+    <div class="row"><span><b>Clean rebuild</b> on the peer's workspace</span><div class="bar c-cyan" style="--w:100%"></div><span class="val">30%</span></div>
+    <div class="row"><span><b>Container</b>: locked, rootless, mounted data</span><div class="bar c-coral" style="--w:50%"></div><span class="val">15%</span></div>
+    <div class="row"><span><b>Hygiene</b>: no secret or data in history</span><div class="bar c-purple" style="--w:50%"></div><span class="val">15%</span></div>
+    <div class="row"><span><b>History</b>: reviewed pull requests</span><div class="bar c-amber" style="--w:33%"></div><span class="val">10%</span></div>
+    <div class="row"><span><b>Follow-up</b>: second reproduction passes</span><div class="bar c-teal" style="--w:33%"></div><span class="val">10%</span></div>
+  </div>
+  <aside class="notes">Walk through each criterion with what full marks look like: a README a stranger follows without asking; the checksum line printing OK on the peer's workspace; a container that runs as a user that is not root; a scan of every commit that comes back empty; the log merged through a reviewed pull request. The rubric is 40% of the course; the oral (10%) and the labs (30%) are graded apart, so nothing here counts twice.</aside>
+</section>
+
+<section class="slide" id="pairs" data-label="Pairs" data-n="5">
+  <div class="kicker">Pairs</div>
+  <h2>You reproduce one peer's project; a different peer reproduces yours</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Pairs run in a ring: A reproduces B, B reproduces C, and so on, so no two people check each other</li>
+      <li>The reproducer works on a clean workspace, never on the author's laptop</li>
+      <li>The author does not help during the reproduction: the README speaks for them</li>
+    </ul>
+    <div class="card c-teal"><h4>Self-test first, 35 minutes</h4><p class="small mb0">Clone your own repository into an empty folder, follow your README word for word, and fix what you find. After this, no more commits until the handback.</p></div>
+  </div>
+  <aside class="notes">The ring stops two people trading favours. The freeze matters: the reproduction must be of a fixed commit, so ask each author to post the commit id they want reproduced.</aside>
+</section>
+
+<section class="slide order" id="running-order" data-label="Running order" data-n="6">
+  <div class="kicker">Running order</div>
+  <h2>Who reproduces whom</h2>
+  <table class="t small">
+    <tr><th>#</th><th>Author</th><th>Reproduced by</th></tr>
+    <tr><td>1</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>2</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>3</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>4</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>5</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>6</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>7</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>8</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+  </table>
+  <aside class="notes">Type the pairs in at the start; the fields can be edited live and are not saved, so keep the list in your notes too. The same order serves the orals after the follow-up.</aside>
+</section>
+
+<section class="slide dark" id="final-prep" data-label="Self-test" data-n="7">
+  <div class="kicker">Before the reproduction</div>
+  <h1>Self-test · 35 minutes</h1>
+  <div class="timer" data-minutes="35"></div>
+  <p class="lead">Clone your own repository into an empty folder and follow the README word for word. Then post the commit id.</p>
+  <aside class="notes">Press T to start the timer. Anyone who finishes early reads a neighbour's README as a stranger would, without touching it. At the end, every author posts the commit id to be reproduced; no commits after that until the handback. Then ten minutes of changeover to the peers' workspaces.</aside>
+</section>
+
+<section class="slide" id="reproduce-flow" data-label="The reproduction" data-n="8">
+  <div class="kicker">The peer reproduction · 150 minutes</div>
+  <h2>Follow the README exactly, and write down every step as it happened</h2>
+  <div class="flow">
+    <div class="step c-navy"><b>Clone</b>the commit the author posted, on a clean workspace</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>Rebuild</b>the one command; does the checksum match?</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>Container</b>build and run, data mounted read-only</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>Scan</b>the whole history, and look for committed data</div>
+  </div>
+  <div class="callout warn mt"><b>Do not repair it for them.</b> When a step fails, record the exact command and the last line of the error, then try the smallest guess and record that too.</div>
+  <aside class="notes">The log template is labs/capstone/REPRODUCTION_LOG.md: one row per step, with the command, what the README said, what happened and the last line of any error. A step the reproducer had to guess counts as failed, even if the guess worked: the README did not say it.</aside>
+</section>
+
+<section class="slide dark" id="reproduce-timer" data-label="Reproduction" data-n="9">
+  <div class="kicker">Peer reproduction</div>
+  <h1>Reproduce · 150 minutes</h1>
+  <div class="timer" data-minutes="150"></div>
+  <p class="lead">Only the README. Log every step. Ask the trainer, never the author.</p>
+  <aside class="notes">Walk the room. When a reproducer is stuck for more than ten minutes on one step, tell them to log it as failed and move to the next part (the container, the scan), so the rest of the rubric can still be scored.</aside>
+</section>
+
+<section class="slide" id="handback" data-label="Handback" data-n="10">
+  <div class="kicker">Log and handback · 40 minutes</div>
+  <h2>The log arrives as a pull request, and the author merges it after review</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>The reproducer adds <code>reproduction/peer-1.md</code> on a branch and opens a pull request</li>
+      <li>The author reviews it: questions in comments, no edits to the peer's findings</li>
+      <li>Merged by pull request, the log is part of the history the rubric reads</li>
+    </ul>
+    <div class="card c-coral"><h4>Fix clinic, 70 minutes</h4><p class="small mb0">Each author starts on the failed steps, one small commit per fix, each through a pull request. The trainer takes questions at the front.</p></div>
+  </div>
+  <aside class="notes">Twenty minutes to write the log, twenty for the handback and review. In the fix clinic, nudge authors towards the smallest fix that makes the README true, not a rewrite. The follow-up task (60 minutes, guided self-study) finishes the fixes; the same peer then records a second reproduction as peer-2.md.</aside>
+</section>
+
+<section class="slide" id="format" data-label="The oral" data-n="11">
+  <div class="kicker">After the follow-up · the oral</div>
+  <h2>Seven minutes: three on one failed step and its fix, four of questions</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>1 · What failed</h4><p class="small mb0">The step from the peer's log, and the last line of the error.</p></div>
+    <div class="card c-cyan"><h4>2 · Why</h4><p class="small mb0">What the README assumed that the clean workspace did not have.</p></div>
+    <div class="card c-coral"><h4>3 · The fix</h4><p class="small mb0">The commit that fixed it, and the line of the second log that proves it.</p></div>
+  </div>
+  <div class="callout note mt"><b>Your own words.</b> The capstone is AI-full: you may have used an assistant, and you explain every step yourself.</div>
+  <aside class="notes">The oral is 10% of the course and is graded on its own marking guide (trainer pack). Questions probe the participant's own fix: what would have happened on a different workspace, which command in the history shows it, what they would check next time.</aside>
+</section>
+
+<section class="slide dark presenting" id="now-presenting" data-label="Now presenting" data-n="12">
+  <div class="kicker center">Now presenting</div>
+  <div class="center"><input placeholder="Participant · project"></div>
+  <div class="timers mt">
+    <div><h3>Talk</h3><div class="timer" data-minutes="3"></div></div>
+    <div><h3>Questions</h3><div class="timer" data-minutes="4"></div></div>
+  </div>
+  <aside class="notes">Type the participant's name and press T to start the talk timer; start the second timer for the questions. Reuse this slide for every participant; allow three minutes between orals for the changeover.</aside>
+</section>
+
+<section class="slide" id="review" data-label="Trainer review" data-n="13">
+  <div class="kicker">Trainer review</div>
+  <h2>What the reproductions showed</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>What rebuilt first time</h4><p class="small mb0">The habits behind the projects that reproduced at once.</p></div>
+    <div class="card c-coral"><h4>The common failures</h4><p class="small mb0">The steps most READMEs left out.</p></div>
+    <div class="card c-purple"><h4>One surprise</h4><p class="small mb0">Something nobody expected to fail.</p></div>
+  </div>
+  <aside class="notes">Fill these in from the logs during the fix clinic. Name projects for strengths; keep failures anonymous. Typical failures in courses like this one: a tool not listed among the prerequisites, a data path on the author's laptop, a lock not committed, a container that cannot write to its output folder.</aside>
+</section>
+
+<section class="slide" id="what-next" data-label="After the course" data-n="14">
+  <div class="kicker">After the course</div>
+  <h2>Keep going</h2>
+  <ul class="bullets">
+    <li><b>Your project stays yours:</b> finish the follow-up, then keep every new project rebuildable from its README</li>
+    <li><b>Next Academy courses:</b> FND-PRG-104 Software Testing, Code Review and Documentation; FND-PRG-105 Computer Systems and Cloud Essentials for AI Work; and DEV-SWE-201 Software Engineering with Coding Agents, which all build on this one</li>
+  </ul>
+  <aside class="notes">All three name this course among their prerequisites in the Academy catalog.</aside>
+</section>
+
+<section class="slide dark" id="thanks" data-label="Thank you" data-n="15">
+  <div class="kicker">SDAIA Academy</div>
+  <h1>Thank you</h1>
+  <p class="lead">Command Line, Git and Reproducible Environments</p>
+</section>
+</div>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"deck":{"id":"capstone","kind":"capstone","day":4,"label":"Capstone","title":"Capstone: peer reproduction","prev":"day3.html","next":null,"md":"capstone.md","alt":{}},"sessions":[],"slides":[{"id":"title","n":1,"title":"Capstone: peer reproduction","kind":"title","session":0,"hash":"58c847c9","md":"#### [capstone#title] Capstone: peer reproduction\n\n*SDAIA Academy · Command Line, Git and Reproducible Environments*\n\nCapstone: A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step\n\nData & AI Foundations Track · 3 teaching days + capstone day · 3 min talk and demo · 4 min Q&A · FND-PRG-102","notes":"Today is theirs: keep your own talking to the opening and the closing. Before the room fills: the clean workspaces are ready (the provided Linux workspace, or a fresh user account with only uv, Git and a container engine), the check papers are printed, and the pairs from yesterday's kickoff are on the running order.","minutes":null,"lo":[]},{"id":"agenda","n":2,"title":"A peer rebuilds your project from its README alone","kind":"content","session":0,"hash":"2462fe22","md":"#### [capstone#agenda] A peer rebuilds your project from its README alone\n\n*Capstone*\n\n- **Supervised check, AI off**: shell commands and five commit graphs\n- **Rubric, pairs and a self-test**: your own rebuild in a fresh clone, one last time\n- **Peer reproduction**: on a clean workspace, following only the README, logging every step\n- **Log, handback and fix clinic**: the log as a pull request; you start fixing what failed\n- **Trainer review, then the follow-up**: a second reproduction and a seven-minute oral","notes":"The day's minutes: check briefing 5 and the check 45 (assessment hours); rubric and pairing 15, self-test 35, changeover 10, reproduction 150, writing the log 20, handback 20, fix clinic 70, trainer review 30 (capstone hours). Breaks are not slides: press B when the room needs one.","minutes":null,"lo":[]},{"id":"check","n":3,"title":"Supervised check · 45 minutes","kind":"content","session":0,"hash":"6aa6c960","md":"#### [capstone#check] Supervised check · 45 minutes\n\n*Assessment · AI off*\n\nPaper only: no laptop, no assistant. Shell commands, then five commit graphs to draw.","notes":"Five minutes of briefing first: what is allowed (a pen), how the graphs are drawn (one circle per commit, an arrow to its parent, branch labels in boxes, HEAD marked). The paper and its key are in the trainer pack, never in the repository. Pass mark on the check: 60%; LO1's evidence is four of the five graphs correct.","minutes":null,"lo":[]},{"id":"rubric","n":4,"title":"The rubric, out of 100","kind":"content","session":0,"hash":"e8f26a5b","md":"#### [capstone#rubric] The rubric, out of 100\n\n*How the peer reproduction is scored*\n\n| Item | Value |\n| --- | --- |\n| **README**: tools, data source, one command | 20% |\n| **Clean rebuild** on the peer's workspace | 30% |\n| **Container**: locked, rootless, mounted data | 15% |\n| **Hygiene**: no secret or data in history | 15% |\n| **History**: reviewed pull requests | 10% |\n| **Follow-up**: second reproduction passes | 10% |","notes":"Walk through each criterion with what full marks look like: a README a stranger follows without asking; the checksum line printing OK on the peer's workspace; a container that runs as a user that is not root; a scan of every commit that comes back empty; the log merged through a reviewed pull request. The rubric is 40% of the course; the oral (10%) and the labs (30%) are graded apart, so nothing here counts twice.","minutes":null,"lo":[]},{"id":"pairs","n":5,"title":"You reproduce one peer's project; a different peer reproduces yours","kind":"content","session":0,"hash":"54a2225a","md":"#### [capstone#pairs] You reproduce one peer's project; a different peer reproduces yours\n\n*Pairs*\n\n- Pairs run in a ring: A reproduces B, B reproduces C, and so on, so no two people check each other\n- The reproducer works on a clean workspace, never on the author's laptop\n- The author does not help during the reproduction: the README speaks for them\n\n- **Self-test first, 35 minutes.** Clone your own repository into an empty folder, follow your README word for word, and fix what you find. After this, no more commits until the handback.","notes":"The ring stops two people trading favours. The freeze matters: the reproduction must be of a fixed commit, so ask each author to post the commit id they want reproduced.","minutes":null,"lo":[]},{"id":"running-order","n":6,"title":"Who reproduces whom","kind":"order","session":0,"hash":"92e569ff","md":"#### [capstone#running-order] Who reproduces whom\n\n*Running order*\n\n| # | Author | Reproduced by |\n| --- | --- | --- |\n| 1 |  |  |\n| 2 |  |  |\n| 3 |  |  |\n| 4 |  |  |\n| 5 |  |  |\n| 6 |  |  |\n| 7 |  |  |\n| 8 |  |  |","notes":"Type the pairs in at the start; the fields can be edited live and are not saved, so keep the list in your notes too. The same order serves the orals after the follow-up.","minutes":null,"lo":[]},{"id":"final-prep","n":7,"title":"Self-test · 35 minutes","kind":"content","session":0,"hash":"0dd1cf40","md":"#### [capstone#final-prep] Self-test · 35 minutes\n\n*Before the reproduction*\n\nClone your own repository into an empty folder and follow the README word for word. Then post the commit id.","notes":"Press T to start the timer. Anyone who finishes early reads a neighbour's README as a stranger would, without touching it. At the end, every author posts the commit id to be reproduced; no commits after that until the handback. Then ten minutes of changeover to the peers' workspaces.","minutes":null,"lo":[]},{"id":"reproduce-flow","n":8,"title":"Follow the README exactly, and write down every step as it happened","kind":"content","session":0,"hash":"5c701369","md":"#### [capstone#reproduce-flow] Follow the README exactly, and write down every step as it happened\n\n*The peer reproduction · 150 minutes*\n\n1. **Clone** the commit the author posted, on a clean workspace\n2. **Rebuild** the one command; does the checksum match?\n3. **Container** build and run, data mounted read-only\n4. **Scan** the whole history, and look for committed data\n\n> **Do not repair it for them.** When a step fails, record the exact command and the last line of the error, then try the smallest guess and record that too.","notes":"The log template is labs/capstone/REPRODUCTION_LOG.md: one row per step, with the command, what the README said, what happened and the last line of any error. A step the reproducer had to guess counts as failed, even if the guess worked: the README did not say it.","minutes":null,"lo":[]},{"id":"reproduce-timer","n":9,"title":"Reproduce · 150 minutes","kind":"content","session":0,"hash":"2be82d47","md":"#### [capstone#reproduce-timer] Reproduce · 150 minutes\n\n*Peer reproduction*\n\nOnly the README. Log every step. Ask the trainer, never the author.","notes":"Walk the room. When a reproducer is stuck for more than ten minutes on one step, tell them to log it as failed and move to the next part (the container, the scan), so the rest of the rubric can still be scored.","minutes":null,"lo":[]},{"id":"handback","n":10,"title":"The log arrives as a pull request, and the author merges it after review","kind":"content","session":0,"hash":"b921c697","md":"#### [capstone#handback] The log arrives as a pull request, and the author merges it after review\n\n*Log and handback · 40 minutes*\n\n- The reproducer adds `reproduction/peer-1.md` on a branch and opens a pull request\n- The author reviews it: questions in comments, no edits to the peer's findings\n- Merged by pull request, the log is part of the history the rubric reads\n\n- **Fix clinic, 70 minutes.** Each author starts on the failed steps, one small commit per fix, each through a pull request. The trainer takes questions at the front.","notes":"Twenty minutes to write the log, twenty for the handback and review. In the fix clinic, nudge authors towards the smallest fix that makes the README true, not a rewrite. The follow-up task (60 minutes, guided self-study) finishes the fixes; the same peer then records a second reproduction as peer-2.md.","minutes":null,"lo":[]},{"id":"format","n":11,"title":"Seven minutes: three on one failed step and its fix, four of questions","kind":"content","session":0,"hash":"fb008760","md":"#### [capstone#format] Seven minutes: three on one failed step and its fix, four of questions\n\n*After the follow-up · the oral*\n\n- **1 · What failed.** The step from the peer's log, and the last line of the error.\n- **2 · Why.** What the README assumed that the clean workspace did not have.\n- **3 · The fix.** The commit that fixed it, and the line of the second log that proves it.\n\n> **Your own words.** The capstone is AI-full: you may have used an assistant, and you explain every step yourself.","notes":"The oral is 10% of the course and is graded on its own marking guide (trainer pack). Questions probe the participant's own fix: what would have happened on a different workspace, which command in the history shows it, what they would check next time.","minutes":null,"lo":[]},{"id":"now-presenting","n":12,"title":"Talk","kind":"presenting","session":0,"hash":"ceab03ef","md":"#### [capstone#now-presenting] Talk\n\n*Now presenting*\n\n##### Questions","notes":"Type the participant's name and press T to start the talk timer; start the second timer for the questions. Reuse this slide for every participant; allow three minutes between orals for the changeover.","minutes":null,"lo":[]},{"id":"review","n":13,"title":"What the reproductions showed","kind":"content","session":0,"hash":"8dacfd1e","md":"#### [capstone#review] What the reproductions showed\n\n*Trainer review*\n\n- **What rebuilt first time.** The habits behind the projects that reproduced at once.\n- **The common failures.** The steps most READMEs left out.\n- **One surprise.** Something nobody expected to fail.","notes":"Fill these in from the logs during the fix clinic. Name projects for strengths; keep failures anonymous. Typical failures in courses like this one: a tool not listed among the prerequisites, a data path on the author's laptop, a lock not committed, a container that cannot write to its output folder.","minutes":null,"lo":[]},{"id":"what-next","n":14,"title":"Keep going","kind":"content","session":0,"hash":"5bc257c2","md":"#### [capstone#what-next] Keep going\n\n*After the course*\n\n- **Your project stays yours:** finish the follow-up, then keep every new project rebuildable from its README\n- **Next Academy courses:** FND-PRG-104 Software Testing, Code Review and Documentation; FND-PRG-105 Computer Systems and Cloud Essentials for AI Work; and DEV-SWE-201 Software Engineering with Coding Agents, which all build on this one","notes":"All three name this course among their prerequisites in the Academy catalog.","minutes":null,"lo":[]},{"id":"thanks","n":15,"title":"Thank you","kind":"content","session":0,"hash":"599e6a0a","md":"#### [capstone#thanks] Thank you\n\n*SDAIA Academy*\n\nCommand Line, Git and Reproducible Environments","notes":"","minutes":null,"lo":[]}],"activities":[],"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":"capstone.md","llms":"../llms.txt"},"tasks":[],"tools":[]},"bridge":{"allowedOrigins":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

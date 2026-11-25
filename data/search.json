@@ -1,0 +1,1165 @@
+{
+  "v": 1,
+  "engine": "1.0.0",
+  "build": {
+    "at": "2026-11-25T09:41:52Z",
+    "version": "2027.1.0",
+    "commit": "89bccf3"
+  },
+  "lang": "en",
+  "dir": "ltr",
+  "slides": [
+    {
+      "deck": "day1",
+      "id": "title",
+      "n": 1,
+      "session": 0,
+      "title": "The shell and the commit graph",
+      "text": "SDAIA Academy · Command Line, Git and Reproducible Environments The shell and the commit graph Day 1: Find, count and script in the shell, then draw what Git records Data & AI Foundations Track3 teaching days + capstone day4 sessions · 4 labsFND-PRG-102",
+      "href": "../slides/day1.html#title"
+    },
+    {
+      "deck": "day1",
+      "id": "agenda",
+      "n": 2,
+      "session": 0,
+      "title": "The shell and the commit graph",
+      "text": "Today The shell and the commit graph Session 1 · Paths and permissions Where you are, how a path is read, and who may read, change or run a file Session 2 · Pipes, redirection and filters Small programs joined by pipes answer counting questions over thousands of lines Session 3 · Variables, exit codes and SSH A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere Session 4 · Commits, staging and history A commit is a snapshot with a parent; a branch is a name that points at one",
+      "href": "../slides/day1.html#agenda"
+    },
+    {
+      "deck": "day1",
+      "id": "the-case",
+      "n": 3,
+      "session": 0,
+      "title": "The monthly client report runs on one laptop only",
+      "text": "The case for three days The monthly client report runs on one laptop only An air-quality monitoring company runs twelve dust and particle stations, ST01 to ST12, at four clients' sites Each station writes one line an hour to a log The analyst turns a month of logs into each client's report, by a Python project on their laptop Nobody else can rebuild it: no history, no declared packages, a key in the code By the capstone day A peer rebuilds your own small project on a clean workspace, using only your README. Every lab practises one step of that. Synthetic. Company, clients and logs are invented; people appear as roles only.",
+      "href": "../slides/day1.html#the-case"
+    },
+    {
+      "deck": "day1",
+      "id": "setup-check",
+      "n": 4,
+      "session": 0,
+      "title": "Three tools and one command prove the laptop is ready",
+      "text": "Setup check Three tools and one command prove the laptop is ready git --version bash --version | head -n 1 uv --version git config user.name uv run labs/kit/setup.py --to ../air-labs cd ../air-labs && uv run lab.py list Git with a name and an email set (yours, or a neutral one such as Participant A) Bash : Git Bash on Windows, the terminal on macOS or Linux uv , from the pre-work The last command lists the twelve labs No admin rights on your laptop? Every lab except 3.2 runs without them; lab 3.2 also runs on the provided Linux workspace.",
+      "href": "../slides/day1.html#setup-check"
+    },
+    {
+      "deck": "day1",
+      "id": "s1",
+      "n": 5,
+      "session": 1,
+      "title": "Paths and permissions",
+      "text": "Session 1 Paths and permissions Tell an absolute path from a relative one and predict where each points after a move Read a permission string and say who may read, write or run the file Make a script independent of the folder it is run from 01",
+      "href": "../slides/day1.html#s1"
+    },
+    {
+      "deck": "day1",
+      "id": "shell-reads-a-line",
+      "n": 6,
+      "session": 1,
+      "title": "The shell reads a line, splits it into words and runs the first one",
+      "text": "What the shell does The shell reads a line, splits it into words and runs the first one 1 · Read ls -l logs → 2 · Split on spaces: ls, -l, logs → 3 · Expand *, $VAR, ~ → 4 · Run the program ls with two words What goes wrong. A space splits words: cat field notes.txt asks for two files. Quotes keep one word: cat \"field notes.txt\".",
+      "href": "../slides/day1.html#shell-reads-a-line"
+    },
+    {
+      "deck": "day1",
+      "id": "where-you-are",
+      "n": 7,
+      "session": 1,
+      "title": "A relative path starts where you are; an absolute one starts at the root",
+      "text": "Paths A relative path starts where you are; an absolute one starts at the root You are in You type It means /srv/air logs/ST01.log /srv/air/logs/ST01.log /srv/air/logs ../stations.csv /srv/air/stations.csv anywhere /srv/air/logs the same folder, always anywhere ~/notes.md your home folder, then notes.md Commands to know: pwd (where am I), ls -a (what is here), cd (go), . (here), .. (one up).",
+      "href": "../slides/day1.html#where-you-are"
+    },
+    {
+      "deck": "day1",
+      "id": "find-and-du",
+      "n": 8,
+      "session": 1,
+      "title": "find lists what matches, ls -S orders by size, du adds sizes up",
+      "text": "Looking round without a file browser find lists what matches, ls -S orders by size, du adds sizes up find visits -name '*.csv' # every CSV under visits/, at any depth find visits -name '*.csv' | wc -l # how many ls -S visits/*.csv | head -n 3 # the three largest du -h visits # the size of the folder, human-readable Quote the pattern. '*.csv' in quotes reaches find as a pattern; without quotes the shell may expand it first, in the current folder.",
+      "href": "../slides/day1.html#find-and-du"
+    },
+    {
+      "deck": "day1",
+      "id": "permission-string",
+      "n": 9,
+      "session": 1,
+      "title": "Ten characters say who may read, write or run a file",
+      "text": "Permissions Ten characters say who may read, write or run a file -rw-r----- 1 analyst field 612 visits.csv drwxr-xr-x 2 analyst field 4096 archive Part In -rw-r----- Type - a file (d a folder) Owner rw- read, write Group r-- read Everyone else --- nothing r read, w change, x run a file or enter a folder chmod u+x run.sh lets the owner run it as ./run.sh chmod go-r secret.env takes reading away from group and others A key file is readable by its owner only",
+      "href": "../slides/day1.html#permission-string"
+    },
+    {
+      "deck": "day1",
+      "id": "script-tied-to-a-folder",
+      "n": 10,
+      "session": 1,
+      "title": "A script that names your folder works on your computer only",
+      "text": "A script that works here only A script that names your folder works on your computer only Tied to one computer cd /mnt/share/visits wc -l *.csv Runs only where that folder exists. Tied to itself cd \"$(dirname \"$0\")/visits\" wc -l *.csv $0 is the script's own path; dirname keeps its folder. Single quotes stop the substitution. '$(dirname \"$0\")' is printed as it is; double quotes let $( ) run and still keep spaces in one word.",
+      "href": "../slides/day1.html#script-tied-to-a-folder"
+    },
+    {
+      "deck": "day1",
+      "id": "check-paths",
+      "n": 11,
+      "session": 1,
+      "title": "Which line still works after the folder moves?",
+      "text": "Checkpoint Which line still works after the folder moves? A script tally.sh sits in reports/ beside a folder visits/. The whole reports/ folder is copied to a colleague's laptop. Which first line lets the script find visits/ there, from whatever folder it is started? cd visits cd \"$(dirname \"$0\")/visits\" cd /mnt/share/reports/visits cd '$(dirname \"$0\")/visits'",
+      "href": "../slides/day1.html#check-paths"
+    },
+    {
+      "deck": "day1",
+      "id": "lab-1-1",
+      "n": 12,
+      "session": 1,
+      "title": "Find your way round the project folder",
+      "text": "Lab 1.1 · 35 min Find your way round the project folder Addition: map the report folder, read permission strings, and fix a script that ran on one computer only D1_1_project_folder.html Start the lab and see where you are: pwd, ls -a 4 min Map the logs with find, ls -S and du 8 min Read the permission strings of listing.txt and answer in answers.md 8 min Fix run_counts.sh: its own folder, and quotes round a folder name with a space 10 min Run it from the workspace folder and check the lab 5 min ✱ Stretch: On a Linux workspace, chmod u+x the script, run it as ./run_counts.sh, and say why bash never needed that",
+      "href": "../slides/day1.html#lab-1-1"
+    },
+    {
+      "deck": "day1",
+      "id": "s2",
+      "n": 13,
+      "session": 2,
+      "title": "Pipes, redirection and filters",
+      "text": "Session 2 Pipes, redirection and filters Chain head, grep, cut, sort, uniq and wc into a pipeline that answers one question Redirect output and errors to files Find a hidden character or a repeated line that skews a count 02",
+      "href": "../slides/day1.html#s2"
+    },
+    {
+      "deck": "day1",
+      "id": "three-streams",
+      "n": 14,
+      "session": 2,
+      "title": "Every program has one input and two outputs",
+      "text": "Streams Every program has one input and two outputs stdin (0) What the program reads: the keyboard, a file after <, or the previous program after |. stdout (1) The result. > writes it to a file, >> adds to the end, | hands it on. stderr (2) Errors and progress. 2> sends them to a file; they do not go down a pipe. wc -l visits/*.csv > lines.txt 2> errors.txt",
+      "href": "../slides/day1.html#three-streams"
+    },
+    {
+      "deck": "day1",
+      "id": "small-tools",
+      "n": 15,
+      "session": 2,
+      "title": "Six small programs cover most counting questions",
+      "text": "The filters Six small programs cover most counting questions Command Does one thing grep 'ERR' · grep -v '^#' keeps the lines that match · that do not match cut -d' ' -f2 keeps field 2 of each line, fields split by a space sort · sort -rn orders lines · by number, largest first uniq -c · uniq -d counts runs of equal neighbours · prints each repeated line once wc -l · grep -c . counts lines · counts lines that are not empty head -n 3 · tail -n +2 the first three lines · everything from line 2 (skip a header)",
+      "href": "../slides/day1.html#small-tools"
+    },
+    {
+      "deck": "day1",
+      "id": "pipeline-built-up",
+      "n": 16,
+      "session": 2,
+      "title": "Add one stage, look at the output, then add the next",
+      "text": "Build it one stage at a time Add one stage, look at the output, then add the next cat visits.log | head -n 3 # 1 · look first grep -v '^#' visits.log | head -n 3 # 2 · drop comments grep -v '^#' visits.log | cut -d' ' -f3 | head -n 3 # 3 · keep the technician code grep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c | sort -rn | head -n 3 Read a pipeline left to right as a sentence: \"lines that are not comments, their third field, sorted, counted, largest count first, top three\".",
+      "href": "../slides/day1.html#pipeline-built-up"
+    },
+    {
+      "deck": "day1",
+      "id": "sort-before-uniq",
+      "n": 17,
+      "session": 2,
+      "title": "uniq only sees neighbours, so sort first",
+      "text": "The rule people forget uniq only sees neighbours, so sort first Without sort T1 T2 T1 $ uniq -c 1 T1 1 T2 1 T1 With sort $ sort | uniq -c 2 T1 1 T2",
+      "href": "../slides/day1.html#sort-before-uniq"
+    },
+    {
+      "deck": "day1",
+      "id": "hidden-characters",
+      "n": 18,
+      "session": 2,
+      "title": "A file written on Windows ends each line with an extra character",
+      "text": "What you cannot see A file written on Windows ends each line with an extra character Linux and macOS end a line with LF; Windows programs often write CR LF The CR sticks to the last field: OK and OK\\r are two words to sort cat -A (cat -e on macOS) shows it as ^M; file names the line endings tr -d '\\r' removes it The same pipeline, two answers Git Bash's grep on Windows drops the CR from its output; grep on Linux keeps it. A pipeline can be right on one machine and wrong on the next: the theme of the whole course.",
+      "href": "../slides/day1.html#hidden-characters"
+    },
+    {
+      "deck": "day1",
+      "id": "script-it",
+      "n": 19,
+      "session": 2,
+      "title": "A pipeline you will run again belongs in a script",
+      "text": "Keep the pipelines A pipeline you will run again belongs in a script #!/usr/bin/env bash # Counts over the field visits. Run: bash visit_counts.sh > visit_counts.txt echo \"== V1 visit lines (no comments)\" grep -v '^#' visits.log | grep -c . echo \"== V2 visits per technician\" grep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c The echo lines are labels. They make the output readable by a person and by a check.",
+      "href": "../slides/day1.html#script-it"
+    },
+    {
+      "deck": "day1",
+      "id": "check-uniq",
+      "n": 20,
+      "session": 2,
+      "title": "Why does the count list one technician twice?",
+      "text": "Checkpoint Why does the count list one technician twice? On a colleague's Linux machine, cut -d' ' -f4 visits.log | sort | uniq -c prints 12 T2 and, further down, 3 T2. Field 4 is the last field. What is the most likely cause? sort did not group the lines uniq -c counts each run twice cut took the wrong field Some lines end in CR LF, so one T2 carries an invisible CR",
+      "href": "../slides/day1.html#check-uniq"
+    },
+    {
+      "deck": "day1",
+      "id": "lab-1-2",
+      "n": 21,
+      "session": 2,
+      "title": "A counting pipeline over synthetic logs",
+      "text": "Lab 1.2 · 35 min A counting pipeline over synthetic logs Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh D1_2_counting_pipeline.html Look at the logs: head, tail, wc -l 4 min Count the reading lines without comments or blank lines (Q1) 5 min Lines per status, and the carriage-return trap (Q2) 8 min The three stations with most errors, and each error code (Q3, Q4) 8 min Duplicate lines after a restart, and stations per client from the CSV (Q5, Q6) 6 min Save the output to counts.txt and check the lab 4 min ✱ Stretch: Alert hours (PM10 above 150) per station with awk, each hour counted once",
+      "href": "../slides/day1.html#lab-1-2"
+    },
+    {
+      "deck": "day1",
+      "id": "s3",
+      "n": 22,
+      "session": 3,
+      "title": "Variables, exit codes and SSH",
+      "text": "Session 3 Variables, exit codes and SSH Pass a folder as an argument with an environment variable as the fallback Make a script stop with a non-zero exit code and a message on stderr Create an SSH key pair, read its fingerprint and write a host entry 03",
+      "href": "../slides/day1.html#s3"
+    },
+    {
+      "deck": "day1",
+      "id": "debrief-1-2",
+      "n": 23,
+      "session": 3,
+      "title": "Seven lines in October were not readings, and one log hid a character",
+      "text": "Lab 1.2 debrief Seven lines in October were not readings, and one log hid a character 8,892 reading lines out of 8,899 in October 735 OK lines of ST07 that end in CR LF 12 lines sent twice after two logger restarts Status counts once the CR is removed: OK 8,728 · WARN 103 · ERR 61. Most errors: ST05 (26), ST09 (17), ST12 (8).",
+      "href": "../slides/day1.html#debrief-1-2"
+    },
+    {
+      "deck": "day1",
+      "id": "arguments",
+      "n": 24,
+      "session": 3,
+      "title": "A script takes its folder as an argument, with a variable as the fallback",
+      "text": "Input from outside A script takes its folder as an argument, with a variable as the fallback DIR=\"${1:-${VISITS_DIR:-}}\" # the first argument, else $VISITS_DIR, else empty grep -v '^#' \"$DIR\"/visits.log | grep -c . You run DIR is bash visit_counts.sh march march VISITS_DIR=april bash visit_counts.sh april bash visit_counts.sh (no variable set) empty: stop and say so",
+      "href": "../slides/day1.html#arguments"
+    },
+    {
+      "deck": "day1",
+      "id": "exit-codes",
+      "n": 25,
+      "session": 3,
+      "title": "Every command ends with a number: 0 means it worked",
+      "text": "Did it work? Every command ends with a number: 0 means it worked grep -q T9 visits.log; echo $? # 1: no match ls nowhere; echo $? # 2: an error false | true; echo $? # 0: last counts set -o pipefail false | true; echo $? # 1: any failure $? holds the code of the last command set -e stops the script at the first failing command set -u stops on a variable that was never set set -o pipefail makes a pipeline fail when any stage fails Pick your own code for \"bad input\". Many tools use 2; say it in the script's usage line.",
+      "href": "../slides/day1.html#exit-codes"
+    },
+    {
+      "deck": "day1",
+      "id": "fail-clearly",
+      "n": 26,
+      "session": 3,
+      "title": "Stop early, say what is missing on stderr, and return a non-zero code",
+      "text": "A clear failure Stop early, say what is missing on stderr, and return a non-zero code #!/usr/bin/env bash set -euo pipefail DIR=\"${1:-${VISITS_DIR:-}}\" if [ -z \"$DIR\" ] || [ ! -f \"$DIR/visits.log\" ]; then echo \"usage: bash visit_counts.sh <folder> (or set VISITS_DIR)\" >&2 exit 2 fi Why it matters for reproduction. A peer following your README sees \"set VISITS_DIR\" instead of an empty result that looks like zero visits.",
+      "href": "../slides/day1.html#fail-clearly"
+    },
+    {
+      "deck": "day1",
+      "id": "ssh-key-pair",
+      "n": 27,
+      "session": 3,
+      "title": "An SSH key pair: the public half opens the door, the private half never leaves you",
+      "text": "Remote login An SSH key pair: the public half opens the door, the private half never leaves you 1 · Make ssh-keygen -t ed25519 writes key and key.pub → 2 · Give the .pub file to the server or the Git host → 3 · Prove the server checks a signature made with the private key → 4 · Check compare fingerprints: ssh-keygen -lf key.pub The private key is a secret. Protect it with a passphrase, readable by you only, never in a repository.",
+      "href": "../slides/day1.html#ssh-key-pair"
+    },
+    {
+      "deck": "day1",
+      "id": "ssh-config",
+      "n": 28,
+      "session": 3,
+      "title": "One entry in a config file saves typing and picks the right key",
+      "text": "A host entry One entry in a config file saves typing and picks the right key Host field-server HostName 198.51.100.7 User technician IdentityFile keys/field_key IdentitiesOnly yes ssh -F ssh_config field-server now logs in as technician with that key only. 192.0.2.0/24 and 198.51.100.0/24 are address ranges reserved for examples.",
+      "href": "../slides/day1.html#ssh-config"
+    },
+    {
+      "deck": "day1",
+      "id": "check-exit-code",
+      "n": 29,
+      "session": 3,
+      "title": "What does the caller see?",
+      "text": "Checkpoint What does the caller see? A script without set -o pipefail ends with grep -h ERR \"$DIR\"/*.log | wc -l. DIR names a folder that does not exist. What exit code does the script return, and what does it print? 0, after printing 0 and an error from grep on stderr 2, the code of the failed grep 1, and it prints nothing at all The script stops before wc runs",
+      "href": "../slides/day1.html#check-exit-code"
+    },
+    {
+      "deck": "day1",
+      "id": "lab-1-3",
+      "n": 30,
+      "session": 3,
+      "title": "The counting script on a second folder, and a practice key",
+      "text": "Lab 1.3 · 35 min The counting script on a second folder, and a practice key Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry D1_3_second_folder_key.html Take the folder as $1, with AIR_LOGS as the fallback 8 min Stop with exit code 2 and a message on stderr; set -euo pipefail 7 min Run it unchanged on the November folder 5 min Make a practice Ed25519 key pair in keys/ and save its fingerprint 6 min Write the ssh_config entry and check the lab 9 min ✱ Stretch: Log in to the provided Linux workspace with the key and run counts.sh there",
+      "href": "../slides/day1.html#lab-1-3"
+    },
+    {
+      "deck": "day1",
+      "id": "s4",
+      "n": 31,
+      "session": 4,
+      "title": "Commits, staging and history",
+      "text": "Session 4 Commits, staging and history Draw the commit graph that a sequence of commands produces Tell what is changed, what is staged and what is committed Read git log --graph and match it to a drawing 04",
+      "href": "../slides/day1.html#s4"
+    },
+    {
+      "deck": "day1",
+      "id": "three-places",
+      "n": 32,
+      "session": 4,
+      "title": "A change moves through three places: the folder, the staging area, the history",
+      "text": "Where a change lives A change moves through three places: the folder, the staging area, the history Working folder files as you edit them → Staging area git add picks what the next commit holds → History git commit records a snapshot Command Compares git diff working folder with the staging area: what is not staged git diff --staged staging area with the last commit: what the next commit holds git status --short both, one line per file",
+      "href": "../slides/day1.html#three-places"
+    },
+    {
+      "deck": "day1",
+      "id": "commit-is-snapshot",
+      "n": 33,
+      "session": 4,
+      "title": "A commit is a snapshot with a parent, an author, a message and an id",
+      "text": "What a commit is A commit is a snapshot with a parent, an author, a message and an id The snapshot: every tracked file as it was The parent: the commit it follows (two for a merge) The id is a hash of all of it: change anything, get a new id So history is a chain you can check, and rewriting it changes every id after the change git log --format='%h %p %s' # id parent message",
+      "href": "../slides/day1.html#commit-is-snapshot"
+    },
+    {
+      "deck": "day1",
+      "id": "branch-is-pointer",
+      "n": 34,
+      "session": 4,
+      "title": "A branch is a name that points at one commit, and HEAD says which name you are on",
+      "text": "What a branch is A branch is a name that points at one commit, and HEAD says which name you are on o---o---o <- main <- HEAD \\ o <- draft Pro Git calls a branch \"a lightweight movable pointer\" to a commit A new commit moves the branch HEAD points at, and only that one Creating a branch writes one small reference: it is cheap git switch draft moves HEAD; the next commit moves draft",
+      "href": "../slides/day1.html#branch-is-pointer"
+    },
+    {
+      "deck": "day1",
+      "id": "draw-a-sequence",
+      "n": 35,
+      "session": 4,
+      "title": "Draw first, run second, compare third",
+      "text": "Worked example Draw first, run second, compare third git commit -m \"A\" # on main git branch notes git commit -m \"B\" # still on main git switch notes git commit -m \"C\" B <- main / o--A--+ \\ C <- notes <- HEAD main reaches 3 commits (the first, A, B); notes reaches 3 (the first, A, C); 4 commits in all.",
+      "href": "../slides/day1.html#draw-a-sequence"
+    },
+    {
+      "deck": "day1",
+      "id": "read-log-graph",
+      "n": 36,
+      "session": 4,
+      "title": "git log --graph draws the same graph on its side",
+      "text": "Reading Git's drawing git log --graph draws the same graph on its side git log --oneline --graph --all * 3c1d0e2 (HEAD -> notes) C | * 9b7a4f1 (main) B |/ * 5e2a8c3 A * 1f0b6d9 First commit Newest at the top; each * is a commit; the lines are parent links --all shows every branch, not only the one you are on",
+      "href": "../slides/day1.html#read-log-graph"
+    },
+    {
+      "deck": "day1",
+      "id": "check-graph",
+      "n": 37,
+      "session": 4,
+      "title": "How many commits does main reach?",
+      "text": "Checkpoint How many commits does main reach? A new repository gets one commit on main. Then: git branch fix, two commits on main, git switch fix, one commit. How many commits does main reach, and how many does the repository hold? main 4, the repository 4 main 2, the repository 3 main 3, the repository 4 main 3, the repository 5",
+      "href": "../slides/day1.html#check-graph"
+    },
+    {
+      "deck": "day1",
+      "id": "lab-1-4",
+      "n": 38,
+      "session": 4,
+      "title": "Draw the graph, then check it",
+      "text": "Lab 1.4 · 35 min Draw the graph, then check it Addition: predict the graphs of three command sequences on paper, run them, compare with git log --graph D1_4_draw_the_graph.html Predict, then run sequence 1 6 min Compare with git log --graph and correct your drawing 4 min Sequence 2: stage one change of two and read both diffs 9 min Sequence 3: a branch that moves while main moves too 10 min Answer the four questions and check the lab 6 min ✱ Stretch: Predict what git commit --amend does to your drawing, then try it and compare the ids",
+      "href": "../slides/day1.html#lab-1-4"
+    },
+    {
+      "deck": "day1",
+      "id": "wrap-up",
+      "n": 39,
+      "session": 4,
+      "title": "Three things to keep",
+      "text": "Day 1 · wrap-up Three things to keep Paths travel badly A script finds its files from its own folder and takes data folders as arguments. Look at every stage Build pipelines one stage at a time; a hidden character or a repeat changes the count. History is a graph Commits point to parents; branches and HEAD are names that point to commits.",
+      "href": "../slides/day1.html#wrap-up"
+    },
+    {
+      "deck": "day1",
+      "id": "next",
+      "n": 40,
+      "session": 4,
+      "title": "Day 2: Working together on one history",
+      "text": "Next Day 2: Working together on one history Tonight, 30 minutes: the commit-graph practice in labs/practice/commit_graphs.md, drawn on paper. Bring a laptop with the workspace; unfinished labs can be finished at home with uv run lab.py check.",
+      "href": "../slides/day1.html#next"
+    },
+    {
+      "deck": "day2",
+      "id": "title",
+      "n": 1,
+      "session": 0,
+      "title": "Working together on one history",
+      "text": "SDAIA Academy · Command Line, Git and Reproducible Environments Working together on one history Day 2: Branches, reviewed pull requests, conflicts, undoing, and an environment that rebuilds Data & AI Foundations Track3 teaching days + capstone day4 sessions · 4 labsFND-PRG-102",
+      "href": "../slides/day2.html#title"
+    },
+    {
+      "deck": "day2",
+      "id": "agenda",
+      "n": 2,
+      "session": 0,
+      "title": "Working together on one history",
+      "text": "Today Working together on one history Session 1 · Branches, merges and conflicts Two lines of work join in a merge; when both changed the same lines, a person decides Session 2 · Pull requests and review etiquette Main changes only through small, reviewed requests; a good comment names a line and a reason Session 3 · Undoing mistakes Each mistake has its own undo, and a pushed commit is undone with a new one Session 4 · Virtual environments and lock files Declare what the project needs, lock the exact versions, and rebuild from the lock",
+      "href": "../slides/day2.html#agenda"
+    },
+    {
+      "deck": "day2",
+      "id": "review-day1",
+      "n": 3,
+      "session": 0,
+      "title": "Where does HEAD point, and what does the next commit move?",
+      "text": "Review of Day 1 Where does HEAD point, and what does the next commit move? On main, someone runs git branch notes and then commits once. Which name moved? notes, because it is the newest branch Both main and notes main, because HEAD still points at it Neither: the commit has no branch",
+      "href": "../slides/day2.html#review-day1"
+    },
+    {
+      "deck": "day2",
+      "id": "s1",
+      "n": 4,
+      "session": 1,
+      "title": "Branches, merges and conflicts",
+      "text": "Session 1 Branches, merges and conflicts Tell a fast-forward from a merge commit on a graph Read conflict markers and keep both changes where both are right Push, fetch and read origin/main as the hub's last known state 01",
+      "href": "../slides/day2.html#s1"
+    },
+    {
+      "deck": "day2",
+      "id": "two-kinds-of-merge",
+      "n": 5,
+      "session": 1,
+      "title": "If main has not moved, Git just slides it forward; if it has, Git makes a merge commit",
+      "text": "Two kinds of merge If main has not moved, Git just slides it forward; if it has, Git makes a merge commit Fast-forward before: o--o main \\ a--b topic after: o--o--a--b main, topic No new commit; main points where topic does. Merge commit before: o--o--m main \\ a--b topic after: o--o--m---M main \\ / a-b topic M has two parents: m and b.",
+      "href": "../slides/day2.html#two-kinds-of-merge"
+    },
+    {
+      "deck": "day2",
+      "id": "remotes",
+      "n": 6,
+      "session": 1,
+      "title": "origin/main is your clone's memory of the hub, updated only when you talk to it",
+      "text": "Remotes origin/main is your clone's memory of the hub, updated only when you talk to it Command Your main origin/main Working files git fetch stays moves to the hub's stay git merge origin/main moves stays change git pull moves moves change git push stays moves to yours stay git pull is fetch followed by merge (or rebase, if configured). Fetch first when you want to look before anything changes.",
+      "href": "../slides/day2.html#remotes"
+    },
+    {
+      "deck": "day2",
+      "id": "conflict-why",
+      "n": 7,
+      "session": 1,
+      "title": "A conflict means both sides changed the same lines, and only a person knows the answer",
+      "text": "When Git stops A conflict means both sides changed the same lines, and only a person knows the answer Git merges changes to different lines by itself When both sides changed the same or touching lines, it writes both and stops The merge waits, half done, until you resolve, git add and git commit git merge --abort puts everything back as it was Not an error A conflict is a question: \"both of you changed this, which text is right?\" The answer is often a third text that keeps both intentions.",
+      "href": "../slides/day2.html#conflict-why"
+    },
+    {
+      "deck": "day2",
+      "id": "read-markers",
+      "n": 8,
+      "session": 1,
+      "title": "Between the markers, the top is your branch, the bottom is the one coming in",
+      "text": "Reading the markers Between the markers, the top is your branch, the bottom is the one coming in Visits: every two weeks <<<<<<< HEAD Inlet cleaned at every visit, photo before and after ======= Inlet cleaned at every visit; fan checked >>>>>>> field-checks A resolution that keeps both Inlet cleaned at every visit; fan checked; photo before and after A resolution that loses one Taking one side whole (--ours or --theirs) when both changes were wanted.",
+      "href": "../slides/day2.html#read-markers"
+    },
+    {
+      "deck": "day2",
+      "id": "conflict-steps",
+      "n": 9,
+      "session": 1,
+      "title": "Five steps resolve any conflict",
+      "text": "Step by step Five steps resolve any conflict 1 · See git status lists the files → 2 · Read both sides and why each changed → 3 · Write the text that keeps both intentions → 4 · Test no markers left; it still runs → 5 · Record git add, git commit",
+      "href": "../slides/day2.html#conflict-steps"
+    },
+    {
+      "deck": "day2",
+      "id": "check-fast-forward",
+      "n": 10,
+      "session": 1,
+      "title": "What does this merge leave behind?",
+      "text": "Checkpoint What does this merge leave behind? A branch fix has three commits. Nobody committed to main since fix started. On main you run git merge fix. What is in the history now? The same three commits; main now points at the last one Three commits and a new merge commit with two parents One new commit holding the three changes together Six commits: the three, and a copy of each on main",
+      "href": "../slides/day2.html#check-fast-forward"
+    },
+    {
+      "deck": "day2",
+      "id": "lab-2-1",
+      "n": 11,
+      "session": 1,
+      "title": "Merge two branches and resolve a conflict alone",
+      "text": "Lab 2.1 · 35 min Merge two branches and resolve a conflict alone Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub D2_1_merge_alone.html Read the graph and both branches 5 min Merge the first branch: a fast-forward 5 min Merge the second and read the conflict markers 7 min Resolve so both changes survive, and commit 10 min Push to the hub, fetch, read origin/main and check the lab 8 min ✱ Stretch: In a copy, rebase the second branch onto main instead and compare the graphs",
+      "href": "../slides/day2.html#lab-2-1"
+    },
+    {
+      "deck": "day2",
+      "id": "s2",
+      "n": 12,
+      "session": 2,
+      "title": "Pull requests and review etiquette",
+      "text": "Session 2 Pull requests and review etiquette Open a small pull request from a branch with a title that says what changes Write review comments that name a line and a reason, and answer them with commits Resolve a conflict on your own branch before the merge 02",
+      "href": "../slides/day2.html#s2"
+    },
+    {
+      "deck": "day2",
+      "id": "protected-main",
+      "n": 13,
+      "session": 2,
+      "title": "On a team, main changes only through a reviewed pull request",
+      "text": "A team's main On a team, main changes only through a reviewed pull request 1 · Branch one change, one branch → 2 · Push the branch to the host → 3 · Request open a pull request with a clear title → 4 · Review comments, answers, approval → 5 · Merge into a protected main Protected branch. The host refuses direct pushes and merges without the required approvals (Gitea and Forgejo call it branch protection; GitLab and GitHub have the same).",
+      "href": "../slides/day2.html#protected-main"
+    },
+    {
+      "deck": "day2",
+      "id": "small-requests",
+      "n": 14,
+      "session": 2,
+      "title": "A small request gets a real review; a large one gets a rubber stamp",
+      "text": "Size A small request gets a real review; a large one gets a rubber stamp One purpose per request: \"Add the rule on comment lines\", not \"various fixes\" A title that says what changes; a description that says why and how to check it Commits that each make sense on their own Open it early as a draft when you want direction, not approval For the reviewer If you cannot say in one sentence what a request changes, ask the author to split it before you review line by line.",
+      "href": "../slides/day2.html#small-requests"
+    },
+    {
+      "deck": "day2",
+      "id": "good-comment",
+      "n": 15,
+      "session": 2,
+      "title": "A useful comment names a line, a reason and a way forward",
+      "text": "Review etiquette A useful comment names a line, a reason and a way forward Comment Why it helps or not \"Looks good\" Says nothing the author can act on \"This is wrong\" No line, no reason, no suggestion \"visit_plan.md line 6: the photo rule repeats line 2; keep one, so they cannot disagree\" Line, reason and a fix the author can accept or answer \"Question: is the fan check every visit or monthly?\" Marked as a question, not a demand",
+      "href": "../slides/day2.html#good-comment"
+    },
+    {
+      "deck": "day2",
+      "id": "answer-with-commit",
+      "n": 16,
+      "session": 2,
+      "title": "Answer a comment with a commit on the branch, then mark it resolved",
+      "text": "Answering a review Answer a comment with a commit on the branch, then mark it resolved git switch field-checks # edit visit_plan.md as the comment asked git commit -am \"Keep one photo rule, as the review asked\" git push # the request shows the new commit An approval belongs to a commit. When the branch changes after an approval, the reviewer reads the new commits and approves again; hosts can be set to dismiss stale approvals.",
+      "href": "../slides/day2.html#answer-with-commit"
+    },
+    {
+      "deck": "day2",
+      "id": "update-the-branch",
+      "n": 17,
+      "session": 2,
+      "title": "The author brings main into the branch and resolves the conflict there",
+      "text": "When the request no longer merges The author brings main into the branch and resolves the conflict there git fetch origin git merge origin/main # resolve, then: git add visit_plan.md git commit git push The author knows the change best, so the author resolves main never holds a half-resolved state The reviewer sees the resolution as a commit and reviews it Some teams rebase the branch instead; never rebase a branch others share",
+      "href": "../slides/day2.html#update-the-branch"
+    },
+    {
+      "deck": "day2",
+      "id": "check-review",
+      "n": 18,
+      "session": 2,
+      "title": "Which comment should the author act on first?",
+      "text": "Checkpoint Which comment should the author act on first? A request changes how the field team's visit plan is checked. Four comments arrive. Which is the most useful review comment? \"LGTM, merging\" \"I don't like this approach\" \"While you are here, please rewrite the whole planner\" \"Line 12: the visit interval is set here and in the README; read it from one place\"",
+      "href": "../slides/day2.html#check-review"
+    },
+    {
+      "deck": "day2",
+      "id": "lab-2-2",
+      "n": 19,
+      "session": 2,
+      "title": "Branch, review and resolve a conflict in teams of three",
+      "text": "Lab 2.2 · 35 min Branch, review and resolve a conflict in teams of three Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged D2_2_team_review.html Take roles; try to push to main and read the refusal 4 min Authors: one branch, one commit and one pull request each 8 min Reviewer comments on a line, with a reason; authors answer with a commit 9 min Merge the first; the second author merges main into the branch and resolves 9 min Reviewer approves the new commits; merge and check the lab 5 min ✱ Stretch: Write the team's five-line review checklist and add it through a third pull request",
+      "href": "../slides/day2.html#lab-2-2"
+    },
+    {
+      "deck": "day2",
+      "id": "s3",
+      "n": 20,
+      "session": 3,
+      "title": "Undoing mistakes",
+      "text": "Session 3 Undoing mistakes Choose between restore, amend, reset and revert for a given mistake Undo a pushed commit without rewriting what others pulled Recover a lost commit or branch from the reflog 03",
+      "href": "../slides/day2.html#s3"
+    },
+    {
+      "deck": "day2",
+      "id": "debrief-2-2",
+      "n": 21,
+      "session": 3,
+      "title": "The second request had to change after the first was merged",
+      "text": "Lab 2.2 debrief The second request had to change after the first was merged * 9cd2132 Merge pull request #2: Add the rule on a station's first day |\\ | * 95f7f91 Merge remote-tracking branch 'origin/main' into rules/first-day | |\\ | |/ |/| * | e90c3f8 Merge pull request #1: Add the rule on comment lines The merge of main into the branch (95f7f91) holds the resolution the reviewer approved.",
+      "href": "../slides/day2.html#debrief-2-2"
+    },
+    {
+      "deck": "day2",
+      "id": "which-undo",
+      "n": 22,
+      "session": 3,
+      "title": "Pick the undo by where the mistake is",
+      "text": "Undoing Pick the undo by where the mistake is The mistake is Undo with Changes history? in a file, not staged git restore file no staged by mistake git restore --staged file no in the last commit, not pushed git commit --amend yes, one commit in commits not pushed git reset to an earlier commit yes in a commit already pushed git revert its id no: adds a commit",
+      "href": "../slides/day2.html#which-undo"
+    },
+    {
+      "deck": "day2",
+      "id": "reset-modes",
+      "n": 23,
+      "session": 3,
+      "title": "reset moves the branch; the flag decides what happens to your files",
+      "text": "reset, three ways reset moves the branch; the flag decides what happens to your files --soft The branch moves back; the undone changes stay staged. --mixed (default) The branch moves back; the changes stay in your files, unstaged. --hard The branch moves back; your files are made to match. Uncommitted work is lost. Before --hard, run git status. A file you never committed cannot come back from the reflog.",
+      "href": "../slides/day2.html#reset-modes"
+    },
+    {
+      "deck": "day2",
+      "id": "reflog",
+      "n": 24,
+      "session": 3,
+      "title": "The reflog remembers where your branches and HEAD have been",
+      "text": "The safety net The reflog remembers where your branches and HEAD have been git branch -D field-checks # deleted by mistake git reflog | head -n 5 # 4c2e9a1 HEAD@{2}: commit: Check the fan at every visit git branch field-checks 4c2e9a1 # back Local only: each clone has its own reflog, and the hub's is not yours Entries expire after a while (gc.reflogExpire): a net, not a backup",
+      "href": "../slides/day2.html#reflog"
+    },
+    {
+      "deck": "day2",
+      "id": "check-undo",
+      "n": 25,
+      "session": 3,
+      "title": "Which undo keeps everyone's clone working?",
+      "text": "Checkpoint Which undo keeps everyone's clone working? Yesterday you pushed a commit that set the visit interval to 90 days instead of 14. Three teammates have pulled since. How do you undo it? git reset --hard to the commit before it, then push --force git revert the commit, then push git commit --amend, then push git restore the file, then tell the team",
+      "href": "../slides/day2.html#check-undo"
+    },
+    {
+      "deck": "day2",
+      "id": "lab-2-3",
+      "n": 26,
+      "session": 3,
+      "title": "Undo five mistakes",
+      "text": "Lab 2.3 · 35 min Undo five mistakes Addition: five mistakes in one repository, each with its own undo, one of them already pushed D2_3_undo_five.html Read the state: status, log and what is pushed 4 min Unstage a file and discard a stray change with restore 6 min Drop a local commit with reset and fix the last one with amend 9 min Undo the pushed commit with revert, and push 8 min Bring back the deleted branch from the reflog and check the lab 8 min ✱ Stretch: For each of the five, write whether the same undo is safe after a push, and why",
+      "href": "../slides/day2.html#lab-2-3"
+    },
+    {
+      "deck": "day2",
+      "id": "s4",
+      "n": 27,
+      "session": 4,
+      "title": "Virtual environments and lock files",
+      "text": "Session 4 Virtual environments and lock files Explain why a project runs on one machine and fails on another Declare dependencies and lock them with an environment manager Rebuild a fresh environment from the lock and compare the output 04",
+      "href": "../slides/day2.html#s4"
+    },
+    {
+      "deck": "day2",
+      "id": "it-runs-here",
+      "n": 28,
+      "session": 4,
+      "title": "\"It runs on my laptop\" means the laptop holds something the repository does not",
+      "text": "Why it ran here \"It runs on my laptop\" means the laptop holds something the repository does not A package installed once, long ago, and never written down A version that happened to be current that month A folder that exists on one disk An output folder created by hand A Python version, a setting, a variable in a profile The test A clean clone in a fresh environment. uv run --isolated builds a fresh environment from the declaration alone on your own laptop; a colleague's machine or a container gives the real thing.",
+      "href": "../slides/day2.html#it-runs-here"
+    },
+    {
+      "deck": "day2",
+      "id": "declare-then-lock",
+      "n": 29,
+      "session": 4,
+      "title": "The declaration says what is acceptable; the lock says exactly what was installed",
+      "text": "Two files, two jobs The declaration says what is acceptable; the lock says exactly what was installed [project] name = \"visit-planner\" requires-python = \">=3.11\" dependencies = [ \"tabulate>=0.9\", ] pyproject.toml : the packages and the range of versions you accept uv.lock : every package, indirect ones included, at one exact version, with hashes uv's documentation calls the lock universal and says it \"should be checked into version control\"",
+      "href": "../slides/day2.html#declare-then-lock"
+    },
+    {
+      "deck": "day2",
+      "id": "environment",
+      "n": 30,
+      "session": 4,
+      "title": "A virtual environment keeps one project's packages away from every other project",
+      "text": "Environments A virtual environment keeps one project's packages away from every other project System Python shared by everything; never install into it → .venv/ per project its own packages, rebuilt from the lock → Ignored by git the folder is rebuilt, never committed uv sync makes .venv/ match the lock; uv run runs a command inside it.",
+      "href": "../slides/day2.html#environment"
+    },
+    {
+      "deck": "day2",
+      "id": "uv-commands",
+      "n": 31,
+      "session": 4,
+      "title": "Five commands take a project from undeclared to locked",
+      "text": "The commands Five commands take a project from undeclared to locked uv init --bare --name visit-planner --python 3.11 # a pyproject.toml, nothing else uv add tabulate # declare it, resolve, write uv.lock uv python pin 3.13 # .python-version uv sync --locked # build .venv exactly from the lock uv run python planner.py # run inside it --locked refuses to change the lock. uv's documentation: \"If the lockfile is not up-to-date, uv will raise an error instead of updating the lockfile.\"",
+      "href": "../slides/day2.html#uv-commands"
+    },
+    {
+      "deck": "day2",
+      "id": "check-lock",
+      "n": 32,
+      "session": 4,
+      "title": "What does the lock add?",
+      "text": "Checkpoint What does the lock add? A planner project declares tabulate>=0.9. A colleague installs it a year later from the declaration only and gets different output. What would a committed lock file have given them? The exact versions and hashes the author installed, indirect packages included A second list of the same package names A copy of the packages' code inside the repository The newest versions at the time of installing",
+      "href": "../slides/day2.html#check-lock"
+    },
+    {
+      "deck": "day2",
+      "id": "lab-2-4",
+      "n": 33,
+      "session": 4,
+      "title": "Rescue a project that fails on a second machine",
+      "text": "Lab 2.4 · 35 min Rescue a project that fails on a second machine Clone the report project as a second machine, read why it fails, then declare, lock and rebuild it to the expected output D2_4_second_machine.html Clone to a second machine, run it and read each failure 7 min Name the causes: an undeclared package, a path on one computer, no versions 5 min Declare with uv init and uv add, pin Python, lock 8 min Take the data folder as an argument; rebuild fresh and compare 10 min Commit pyproject.toml and uv.lock; check the lab 5 min ✱ Stretch: Lock the same project with pip-tools (pip-compile --generate-hashes) and compare",
+      "href": "../slides/day2.html#lab-2-4"
+    },
+    {
+      "deck": "day2",
+      "id": "wrap-up",
+      "n": 34,
+      "session": 4,
+      "title": "Three things to keep",
+      "text": "Day 2 · wrap-up Three things to keep Small and reviewed One purpose per request; comments name a line and a reason; answers are commits. Rewrite only what is yours Amend and reset before a push; revert after it. Declare, lock, rebuild If a fresh environment from the lock does not reproduce the result, the repository is missing something.",
+      "href": "../slides/day2.html#wrap-up"
+    },
+    {
+      "deck": "day2",
+      "id": "next",
+      "n": 35,
+      "session": 4,
+      "title": "Day 3: Rebuild anywhere, leak nothing",
+      "text": "Next Day 3: Rebuild anywhere, leak nothing Tonight, 60 minutes: choose your capstone project (labs/capstone/BRIEF.md), put it under Git and lock its environment. Lab 3.2 needs a container engine without administrator rights, or the provided Linux workspace: check yours.",
+      "href": "../slides/day2.html#next"
+    },
+    {
+      "deck": "day3",
+      "id": "title",
+      "n": 1,
+      "session": 0,
+      "title": "Rebuild anywhere, leak nothing",
+      "text": "SDAIA Academy · Command Line, Git and Reproducible Environments Rebuild anywhere, leak nothing Day 3: One documented command, a container with mounted data, and keys kept out of history Data & AI Foundations Track3 teaching days + capstone day4 sessions · 4 labsFND-PRG-102",
+      "href": "../slides/day3.html#title"
+    },
+    {
+      "deck": "day3",
+      "id": "agenda",
+      "n": 2,
+      "session": 0,
+      "title": "Rebuild anywhere, leak nothing",
+      "text": "Today Rebuild anywhere, leak nothing Session 1 · One command to rebuild and run A reader rebuilds the result with one documented command, and the repository holds code, not data or outputs Session 2 · Images, containers and volumes An image is built once from a short definition; each run is a container that sees only what you mount Session 3 · What a container shares A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code Session 4 · Scanning, and after a leak Scan before every commit; after a leak, rotate first, then clean the history and report",
+      "href": "../slides/day3.html#agenda"
+    },
+    {
+      "deck": "day3",
+      "id": "review-day2",
+      "n": 3,
+      "session": 0,
+      "title": "Which command leaves your own main where it was?",
+      "text": "Review of Day 2 Which command leaves your own main where it was? A teammate pushed to the hub. You want to see their commits before anything in your clone changes. Which command? git pull git merge origin/main git push git fetch",
+      "href": "../slides/day3.html#review-day2"
+    },
+    {
+      "deck": "day3",
+      "id": "debrief-2-4",
+      "n": 4,
+      "session": 0,
+      "title": "The second machine failed four times before the lock fixed it",
+      "text": "Lab 2.4 debrief The second machine failed four times before the lock fixed it Attempt Last line of the error Nothing installed ModuleNotFoundError: No module named 'dateutil' With requirements.txt the same: the file listed tabulate only With both packages FileNotFoundError on the analyst's absolute path With the path fixed FileNotFoundError on output/report.csv From the lock, fresh 12 stations written; checksum as expected",
+      "href": "../slides/day3.html#debrief-2-4"
+    },
+    {
+      "deck": "day3",
+      "id": "s1",
+      "n": 5,
+      "session": 1,
+      "title": "One command to rebuild and run",
+      "text": "Session 1 One command to rebuild and run Keep data and outputs out of the repository and say where they come from Write one documented command that rebuilds and checks the result Test a README by following it in a clean clone 01",
+      "href": "../slides/day3.html#s1"
+    },
+    {
+      "deck": "day3",
+      "id": "what-belongs",
+      "n": 6,
+      "session": 1,
+      "title": "Code and the recipe go in; data, outputs and environments stay out",
+      "text": "What a repository holds Code and the recipe go in; data, outputs and environments stay out In the repository Source, pyproject.toml and the lock, the container definition, the rebuild command, the README, small expected checksums, a .env.example. Out of it Raw data (it has its own home and its own rules), outputs (rebuilt), .venv/ (rebuilt), .env (secret), caches. .gitignore does not untrack. A file already committed stays tracked until git rm --cached removes it from the index.",
+      "href": "../slides/day3.html#what-belongs"
+    },
+    {
+      "deck": "day3",
+      "id": "data-path-outside",
+      "n": 7,
+      "session": 1,
+      "title": "The code asks where the data is; the README says where to get it",
+      "text": "Where the data comes from The code asks where the data is; the README says where to get it ap.add_argument(\"--data\", default=os.environ.get(\"VISITS_DIR\")) ... if not args.data: print(\"error: give --data <folder> or set VISITS_DIR\", file=sys.stderr) return 2 No default path that exists on one computer only A clear stop beats a silent empty result",
+      "href": "../slides/day3.html#data-path-outside"
+    },
+    {
+      "deck": "day3",
+      "id": "one-command",
+      "n": 8,
+      "session": 1,
+      "title": "One documented command rebuilds, runs and checks",
+      "text": "One command One documented command rebuilds, runs and checks #!/usr/bin/env bash set -euo pipefail cd \"$(dirname \"$0\")\" : \"${VISITS_DIR:?set VISITS_DIR to the folder of visit logs}\" uv sync --locked --quiet uv run --quiet python planner.py --data \"$VISITS_DIR\" --out output sha256sum -c expected/march.sha256 The last line is the test. sha256sum -c prints OK or FAILED and sets the exit code.",
+      "href": "../slides/day3.html#one-command"
+    },
+    {
+      "deck": "day3",
+      "id": "checksum",
+      "n": 9,
+      "session": 1,
+      "title": "A checksum turns \"it ran\" into \"it gave the same bytes\"",
+      "text": "Did it reproduce? A checksum turns \"it ran\" into \"it gave the same bytes\" Running without an error proves little: an empty input also runs A checksum of the expected output, committed, is a precise answer When it fails, compare the first rows to see where the difference starts Outputs that hold a date or a random number need those fixed first 64 hexadecimal characters in a SHA-256 checksum: one changed byte changes them all",
+      "href": "../slides/day3.html#checksum"
+    },
+    {
+      "deck": "day3",
+      "id": "readme-reproduce",
+      "n": 10,
+      "session": 1,
+      "title": "A Reproduce section answers four questions and assumes nothing",
+      "text": "The README A Reproduce section answers four questions and assumes nothing The four answers Which tools, and which versions at least Where the data comes from The one command What success looks like What a peer cannot know A folder on your laptop A package you installed once A variable in your shell profile A step you always do without thinking",
+      "href": "../slides/day3.html#readme-reproduce"
+    },
+    {
+      "deck": "day3",
+      "id": "check-data-path",
+      "n": 11,
+      "session": 1,
+      "title": "Where does the data path belong?",
+      "text": "Checkpoint Where does the data path belong? A planner project reads its visit logs from a folder. A peer will rebuild it on a clean workspace. Where should the folder's location come from? A default path in the code, the author's own folder An argument or a variable, with the README saying where to get the data The repository itself, in a data/ folder A chat message to the peer before the rebuild",
+      "href": "../slides/day3.html#check-data-path"
+    },
+    {
+      "deck": "day3",
+      "id": "lab-3-1",
+      "n": 12,
+      "session": 1,
+      "title": "One command, and data kept out of the code",
+      "text": "Lab 3.1 · 35 min One command, and data kept out of the code Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone D3_1_one_command.html List what the repository carries with git ls-files 4 min Stop tracking data and output: git rm --cached and .gitignore 7 min Write rebuild.sh: sync the lock, run, compare with the expected checksum 9 min Write the README's Reproduce section 6 min Clone to a clean folder, follow the README only, and check the lab 9 min ✱ Stretch: Make rebuild.sh print the versions it ran with, for the reproduction log",
+      "href": "../slides/day3.html#lab-3-1"
+    },
+    {
+      "deck": "day3",
+      "id": "s2",
+      "n": 13,
+      "session": 2,
+      "title": "Images, containers and volumes",
+      "text": "Session 2 Images, containers and volumes Tell an image from a container and a layer from a mount Write a short container definition that installs from the lock Run a container without administrator rights with data mounted read-only 02",
+      "href": "../slides/day3.html#s2"
+    },
+    {
+      "deck": "day3",
+      "id": "image-container",
+      "n": 14,
+      "session": 2,
+      "title": "An image is a packed file system; a container is one run of it",
+      "text": "Two words An image is a packed file system; a container is one run of it Image Built once from a definition: a base system, your packages, your code, in layers. Read-only. Container A process started from an image, with a thin writable layer that disappears with --rm. Volume or bind mount A folder from outside, mounted in: where data comes in and results go out. It is still a process. Docker's own explanation: \"every container on a machine shares that machine's kernel\".",
+      "href": "../slides/day3.html#image-container"
+    },
+    {
+      "deck": "day3",
+      "id": "containerfile",
+      "n": 15,
+      "session": 2,
+      "title": "Six instructions describe the whole image",
+      "text": "A short definition Six instructions describe the whole image FROM docker.io/library/python:3.13-alpine WORKDIR /app COPY requirements.txt . RUN pip install --no-cache-dir --require-hashes -r requirements.txt COPY planner.py . ENTRYPOINT [\"python\", \"planner.py\", \"--data\", \"/data\"] requirements.txt is exported from the lock, with hashes: uv export --frozen --format requirements.txt Packages before code: a code change reuses the cached package layer",
+      "href": "../slides/day3.html#containerfile"
+    },
+    {
+      "deck": "day3",
+      "id": "layers",
+      "n": 16,
+      "session": 2,
+      "title": "Each instruction is a layer, rebuilt only when it or one above it changes",
+      "text": "Layers and the cache Each instruction is a layer, rebuilt only when it or one above it changes FROM the base image, pulled once ↓ COPY requirements.txt, RUN pip install changes when the lock changes ↓ COPY planner.py changes with every code edit",
+      "href": "../slides/day3.html#layers"
+    },
+    {
+      "deck": "day3",
+      "id": "mounts",
+      "n": 17,
+      "session": 2,
+      "title": "Mount the input read-only and the output writable",
+      "text": "Data in, results out Mount the input read-only and the output writable podman run --rm \\ -v \"$PWD/visits:/data:ro\" \\ -v \"$PWD/output:/out\" \\ visit-planner The image never holds the data, so one image serves every month :ro means a bug cannot change the raw logs (Docker: \"prevent the container from writing to the mount\") Results appear on your disk because /out is your folder",
+      "href": "../slides/day3.html#mounts"
+    },
+    {
+      "deck": "day3",
+      "id": "rootless",
+      "n": 18,
+      "session": 2,
+      "title": "A rootless engine runs containers as you, inside a range of user ids lent to you",
+      "text": "No administrator rights A rootless engine runs containers as you, inside a range of user ids lent to you Podman is rootless by design; it needs a range of user ids for you in /etc/subuid and /etc/subgid Docker rootless mode runs the daemon and containers as a non-root user \"root\" inside the container is your own user outside, not the machine's root podman run --userns=keep-id maps your user id to the same id inside On the provided workspace The trainer has set up the user id ranges and pulled the base image. On a laptop without administrator rights, this is the place to do lab 3.2.",
+      "href": "../slides/day3.html#rootless"
+    },
+    {
+      "deck": "day3",
+      "id": "check-mount",
+      "n": 19,
+      "session": 2,
+      "title": "Why does the report appear on your disk?",
+      "text": "Checkpoint Why does the report appear on your disk? You run the planner image with -v \"$PWD/output:/out\" and --rm. The container is gone afterwards, yet output/plan.csv is on your disk. Why? --rm copies the container's files out before deleting it The file was written into the image /out inside the container is your own output/ folder, mounted The engine syncs every container folder back to the host",
+      "href": "../slides/day3.html#check-mount"
+    },
+    {
+      "deck": "day3",
+      "id": "lab-3-2",
+      "n": 20,
+      "session": 2,
+      "title": "Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace",
+      "text": "Lab 3.2 · 35 min Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace Complete a container definition that installs from the lock, build it rootless, run it on read-only logs D3_2_container.html Check the engine runs without administrator rights 4 min Export the lock as hashed requirements 5 min Fill the five numbered gaps of the Containerfile 10 min Build the image 6 min Run it with the logs mounted read-only and the output mounted; compare and check 10 min ✱ Stretch: Change report.py, rebuild, and see which layers are rebuilt",
+      "href": "../slides/day3.html#lab-3-2"
+    },
+    {
+      "deck": "day3",
+      "id": "s3",
+      "n": 21,
+      "session": 3,
+      "title": "What a container shares",
+      "text": "Session 3 What a container shares Name what a container shares with its host Read a key from the environment and stop clearly when it is missing Keep the key out of the output and the repository, with an example file in its place 03",
+      "href": "../slides/day3.html#s3"
+    },
+    {
+      "deck": "day3",
+      "id": "not-isolated",
+      "n": 22,
+      "session": 3,
+      "title": "A container isolates a process, not everything around it",
+      "text": "What a container shares A container isolates a process, not everything around it Shared with the host What it means The kernel A kernel flaw reaches every container; it is not a virtual machine Every mounted folder The container can read, and without :ro change, what you mount Every variable you pass --env-file .env hands the key to whatever runs in the image The network, by default The program can reach what your machine can reach The image's contents Anyone with the image can read a key that was copied into it",
+      "href": "../slides/day3.html#not-isolated"
+    },
+    {
+      "deck": "day3",
+      "id": "key-in-code",
+      "n": 23,
+      "session": 3,
+      "title": "A key in the code travels with every copy of the code",
+      "text": "The key in the code A key in the code travels with every copy of the code Where it goes Every clone and every fork Every backup and every image built from it A screenshot of the editor in a chat An assistant you pasted the file into Where it belongs The environment of the process that needs it A .env file that git ignores, on one machine The host's or the workplace's secret store",
+      "href": "../slides/day3.html#key-in-code"
+    },
+    {
+      "deck": "day3",
+      "id": "read-from-env",
+      "n": 24,
+      "session": 3,
+      "title": "Read the key from a variable, stop clearly without it, and never print it whole",
+      "text": "Reading it from the environment Read the key from a variable, stop clearly without it, and never print it whole def booking_key() -> str: key = os.environ.get(\"VISITS_BOOKING_KEY\", \"\") if not key: print(\"error: set VISITS_BOOKING_KEY (see .env.example)\", file=sys.stderr) raise SystemExit(2) return key key = booking_key() print(f\"booking with the key ending ...{key[-4:]}\")",
+      "href": "../slides/day3.html#read-from-env"
+    },
+    {
+      "deck": "day3",
+      "id": "env-example",
+      "n": 25,
+      "session": 3,
+      "title": ".env holds the value and stays home; .env.example holds the name and is committed",
+      "text": "Two files .env holds the value and stays home; .env.example holds the name and is committed VISITS_BOOKING_KEY= .env .env.* !.env.example git check-ignore -v .env # proves the rule matches uv run --env-file .env python planner.py # loads .env for this run only",
+      "href": "../slides/day3.html#env-example"
+    },
+    {
+      "deck": "day3",
+      "id": "check-env-file",
+      "n": 26,
+      "session": 3,
+      "title": "What does --env-file still expose?",
+      "text": "Checkpoint What does --env-file still expose? You run a planner image with --env-file .env; the key is no longer in the code or the image. Who can still read the key? Any program running in that container, and anyone who can inspect it Nobody: variables passed at run time are encrypted Anyone who pulls the image from the registry Nobody, because /data is mounted read-only",
+      "href": "../slides/day3.html#check-env-file"
+    },
+    {
+      "deck": "day3",
+      "id": "lab-3-3",
+      "n": 27,
+      "session": 3,
+      "title": "The key out of the code",
+      "text": "Lab 3.3 · 35 min The key out of the code Addition: move the portal key from the code to the environment, with .env.example committed and the key masked D3_3_key_out_of_code.html Find the key in the code and in the output of a run 5 min Read it from AIR_PORTAL_KEY; stop with exit 2 when it is missing 10 min Write .env.example, keep .env ignored, run with uv run --env-file 8 min Print only the key's last four characters 5 min Commit, find the key still in history with git log -S, and check the lab 7 min ✱ Stretch: Run the container with --env-file .env and list what it can see",
+      "href": "../slides/day3.html#lab-3-3"
+    },
+    {
+      "deck": "day3",
+      "id": "s4",
+      "n": 28,
+      "session": 4,
+      "title": "Scanning, and after a leak",
+      "text": "Session 4 Scanning, and after a leak Run a secret scan over files, staged changes and the whole history Carry out the leak response in order: rotate, clean, report Install a commit hook that refuses a commit holding a key 04",
+      "href": "../slides/day3.html#s4"
+    },
+    {
+      "deck": "day3",
+      "id": "three-scans",
+      "n": 29,
+      "session": 4,
+      "title": "Scan three places: the files, the next commit, and the whole history",
+      "text": "Scanning Scan three places: the files, the next commit, and the whole history Files What is in the folder now. Clean files can still have a dirty history. The next commit A hook runs the scan on staged changes and refuses the commit. The history Every commit on every branch: what anyone who clones can read. Tools: gitleaks (gitleaks git scans a repository's history), run from pre-commit; hosts add their own: GitHub push protection \"blocks pushes that contain secrets\", GitLab has secret push protection.",
+      "href": "../slides/day3.html#three-scans"
+    },
+    {
+      "deck": "day3",
+      "id": "custom-rule",
+      "n": 30,
+      "session": 4,
+      "title": "Default rules know public key formats; your own keys need your own rule",
+      "text": "Rules Default rules know public key formats; your own keys need your own rule [extend] useDefault = true [[rules]] id = \"booking-service-key\" description = \"Key of the visit booking service\" regex = '''vbk_[a-z]+_[0-9a-f]{24}''' keywords = [\"vbk_\"]",
+      "href": "../slides/day3.html#custom-rule"
+    },
+    {
+      "deck": "day3",
+      "id": "hook",
+      "n": 31,
+      "session": 4,
+      "title": "A pre-commit hook stops the key before it enters history",
+      "text": "Before each commit A pre-commit hook stops the key before it enters history repos: - repo: local hooks: - id: secret-scan name: secret scan entry: uv run --no-project python tools/scan_secrets.py --staged language: system pass_filenames: false uvx pre-commit install once per clone; every git commit then runs the scan A hook lives in your clone only: the host's push protection is the second net",
+      "href": "../slides/day3.html#hook"
+    },
+    {
+      "deck": "day3",
+      "id": "leak-order",
+      "n": 32,
+      "session": 4,
+      "title": "Rotate first, then clean the history, then report",
+      "text": "After a leak Rotate first, then clean the history, then report 1 · Rotate revoke the key where it was issued; issue a new one → 2 · Clean rewrite every commit that holds it; force-push → 3 · Tell the key's owner and the data protection officer; check the access log → 4 · Prevent the hook, the rule, push protection Why rotation comes first. GitHub's guidance: \"as a first step you need to revoke and/or rotate that secret\". Cleaning cannot reach the copies already made.",
+      "href": "../slides/day3.html#leak-order"
+    },
+    {
+      "deck": "day3",
+      "id": "filter-repo",
+      "n": 33,
+      "session": 4,
+      "title": "git filter-repo replaces the value in every commit, and every id after it changes",
+      "text": "Cleaning the history git filter-repo replaces the value in every commit, and every id after it changes printf '%s==>REMOVED\\n' \"$OLD_KEY\" > ../replacements.txt # outside the repository uvx git-filter-repo --replace-text ../replacements.txt --force git remote add origin <the hub> # filter-repo removes it on purpose git push --force origin main \"Rewriting history will change the hashes of the commits\" (GitHub): every teammate clones again The scan of the whole history must come back clean, on your clone and on the hub",
+      "href": "../slides/day3.html#filter-repo"
+    },
+    {
+      "deck": "day3",
+      "id": "check-leak",
+      "n": 34,
+      "session": 4,
+      "title": "What do you do first?",
+      "text": "Checkpoint What do you do first? A scan of the planner's history finds a booking-service key in a commit from three weeks ago. The repository has been public since. What is the first action? Rewrite the history with git filter-repo Delete the file in a new commit Make the repository private Revoke the key at the booking service and issue a new one",
+      "href": "../slides/day3.html#check-leak"
+    },
+    {
+      "deck": "day3",
+      "id": "lab-3-4",
+      "n": 35,
+      "session": 4,
+      "title": "Remediate a seeded leaked key with a scanner and a commit hook",
+      "text": "Lab 3.4 · 35 min Remediate a seeded leaked key with a scanner and a commit hook A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one D3_4_leaked_key.html Scan the whole history and find the key 5 min Rotate first: revoke the old key and issue a new one into .env 7 min Write ROTATION.md 6 min Clean the history with git filter-repo, force-push, scan again 10 min Install the hook, see it block a key, and check the lab 7 min ✱ Stretch: Run gitleaks with .gitleaks.toml, or the host's push protection, and compare",
+      "href": "../slides/day3.html#lab-3-4"
+    },
+    {
+      "deck": "day3",
+      "id": "capstone-kickoff",
+      "n": 36,
+      "session": 4,
+      "title": "Tomorrow a peer rebuilds your project from its README alone",
+      "text": "Capstone kickoff Tomorrow a peer rebuilds your project from its README alone Your own small project, on synthetic or public data A README with a Reproduce section, a lock file, a container definition, a clean scan of the history Your peer follows only the README, on a clean workspace, and logs every step Then you fix every step they could not follow; they reproduce it again Tonight, 60 minutes Run your own rebuild in a fresh clone, then read your README as a stranger would. The brief and the checklist: labs/capstone/.",
+      "href": "../slides/day3.html#capstone-kickoff"
+    },
+    {
+      "deck": "day3",
+      "id": "wrap-up",
+      "n": 37,
+      "session": 4,
+      "title": "Three things to keep",
+      "text": "Day 3 · wrap-up Three things to keep One command A reader rebuilds and checks the result with one documented command; data and outputs live elsewhere. A container is a process It shares the kernel, the mounts and the variables you give it. Rotate, clean, tell A leaked key is revoked first; then history, then the people who need to know.",
+      "href": "../slides/day3.html#wrap-up"
+    },
+    {
+      "deck": "day3",
+      "id": "next",
+      "n": 38,
+      "session": 4,
+      "title": "The capstone day: peer reproduction",
+      "text": "Next The capstone day: peer reproduction Bring your repository link and its README. The supervised check on shell commands and commit graphs opens the day, AI off.",
+      "href": "../slides/day3.html#next"
+    },
+    {
+      "deck": "capstone",
+      "id": "title",
+      "n": 1,
+      "session": 0,
+      "title": "Capstone: peer reproduction",
+      "text": "SDAIA Academy · Command Line, Git and Reproducible Environments Capstone: peer reproduction Capstone: A peer rebuilds your repository from its README on a clean workspace; then a short oral on one failed step Data & AI Foundations Track3 teaching days + capstone day3 min talk and demo · 4 min Q&AFND-PRG-102",
+      "href": "../slides/capstone.html#title"
+    },
+    {
+      "deck": "capstone",
+      "id": "agenda",
+      "n": 2,
+      "session": 0,
+      "title": "A peer rebuilds your project from its README alone",
+      "text": "Capstone A peer rebuilds your project from its README alone Supervised check, AI off shell commands and five commit graphs Rubric, pairs and a self-test your own rebuild in a fresh clone, one last time Peer reproduction on a clean workspace, following only the README, logging every step Log, handback and fix clinic the log as a pull request; you start fixing what failed Trainer review, then the follow-up a second reproduction and a seven-minute oral",
+      "href": "../slides/capstone.html#agenda"
+    },
+    {
+      "deck": "capstone",
+      "id": "check",
+      "n": 3,
+      "session": 0,
+      "title": "Supervised check · 45 minutes",
+      "text": "Assessment · AI off Supervised check · 45 minutes Paper only: no laptop, no assistant. Shell commands, then five commit graphs to draw.",
+      "href": "../slides/capstone.html#check"
+    },
+    {
+      "deck": "capstone",
+      "id": "rubric",
+      "n": 4,
+      "session": 0,
+      "title": "The rubric, out of 100",
+      "text": "How the peer reproduction is scored The rubric, out of 100 README : tools, data source, one command 20% Clean rebuild on the peer's workspace 30% Container : locked, rootless, mounted data 15% Hygiene : no secret or data in history 15% History : reviewed pull requests 10% Follow-up : second reproduction passes 10%",
+      "href": "../slides/capstone.html#rubric"
+    },
+    {
+      "deck": "capstone",
+      "id": "pairs",
+      "n": 5,
+      "session": 0,
+      "title": "You reproduce one peer's project; a different peer reproduces yours",
+      "text": "Pairs You reproduce one peer's project; a different peer reproduces yours Pairs run in a ring: A reproduces B, B reproduces C, and so on, so no two people check each other The reproducer works on a clean workspace, never on the author's laptop The author does not help during the reproduction: the README speaks for them Self-test first, 35 minutes Clone your own repository into an empty folder, follow your README word for word, and fix what you find. After this, no more commits until the handback.",
+      "href": "../slides/capstone.html#pairs"
+    },
+    {
+      "deck": "capstone",
+      "id": "running-order",
+      "n": 6,
+      "session": 0,
+      "title": "Who reproduces whom",
+      "text": "Running order Who reproduces whom # Author Reproduced by 1 2 3 4 5 6 7 8",
+      "href": "../slides/capstone.html#running-order"
+    },
+    {
+      "deck": "capstone",
+      "id": "final-prep",
+      "n": 7,
+      "session": 0,
+      "title": "Self-test · 35 minutes",
+      "text": "Before the reproduction Self-test · 35 minutes Clone your own repository into an empty folder and follow the README word for word. Then post the commit id.",
+      "href": "../slides/capstone.html#final-prep"
+    },
+    {
+      "deck": "capstone",
+      "id": "reproduce-flow",
+      "n": 8,
+      "session": 0,
+      "title": "Follow the README exactly, and write down every step as it happened",
+      "text": "The peer reproduction · 150 minutes Follow the README exactly, and write down every step as it happened Clone the commit the author posted, on a clean workspace → Rebuild the one command; does the checksum match? → Container build and run, data mounted read-only → Scan the whole history, and look for committed data Do not repair it for them. When a step fails, record the exact command and the last line of the error, then try the smallest guess and record that too.",
+      "href": "../slides/capstone.html#reproduce-flow"
+    },
+    {
+      "deck": "capstone",
+      "id": "reproduce-timer",
+      "n": 9,
+      "session": 0,
+      "title": "Reproduce · 150 minutes",
+      "text": "Peer reproduction Reproduce · 150 minutes Only the README. Log every step. Ask the trainer, never the author.",
+      "href": "../slides/capstone.html#reproduce-timer"
+    },
+    {
+      "deck": "capstone",
+      "id": "handback",
+      "n": 10,
+      "session": 0,
+      "title": "The log arrives as a pull request, and the author merges it after review",
+      "text": "Log and handback · 40 minutes The log arrives as a pull request, and the author merges it after review The reproducer adds reproduction/peer-1.md on a branch and opens a pull request The author reviews it: questions in comments, no edits to the peer's findings Merged by pull request, the log is part of the history the rubric reads Fix clinic, 70 minutes Each author starts on the failed steps, one small commit per fix, each through a pull request. The trainer takes questions at the front.",
+      "href": "../slides/capstone.html#handback"
+    },
+    {
+      "deck": "capstone",
+      "id": "format",
+      "n": 11,
+      "session": 0,
+      "title": "Seven minutes: three on one failed step and its fix, four of questions",
+      "text": "After the follow-up · the oral Seven minutes: three on one failed step and its fix, four of questions 1 · What failed The step from the peer's log, and the last line of the error. 2 · Why What the README assumed that the clean workspace did not have. 3 · The fix The commit that fixed it, and the line of the second log that proves it. Your own words. The capstone is AI-full: you may have used an assistant, and you explain every step yourself.",
+      "href": "../slides/capstone.html#format"
+    },
+    {
+      "deck": "capstone",
+      "id": "now-presenting",
+      "n": 12,
+      "session": 0,
+      "title": "Talk",
+      "text": "Now presenting Talk Questions",
+      "href": "../slides/capstone.html#now-presenting"
+    },
+    {
+      "deck": "capstone",
+      "id": "review",
+      "n": 13,
+      "session": 0,
+      "title": "What the reproductions showed",
+      "text": "Trainer review What the reproductions showed What rebuilt first time The habits behind the projects that reproduced at once. The common failures The steps most READMEs left out. One surprise Something nobody expected to fail.",
+      "href": "../slides/capstone.html#review"
+    },
+    {
+      "deck": "capstone",
+      "id": "what-next",
+      "n": 14,
+      "session": 0,
+      "title": "Keep going",
+      "text": "After the course Keep going Your project stays yours: finish the follow-up, then keep every new project rebuildable from its README Next Academy courses: FND-PRG-104 Software Testing, Code Review and Documentation; FND-PRG-105 Computer Systems and Cloud Essentials for AI Work; and DEV-SWE-201 Software Engineering with Coding Agents, which all build on this one",
+      "href": "../slides/capstone.html#what-next"
+    },
+    {
+      "deck": "capstone",
+      "id": "thanks",
+      "n": 15,
+      "session": 0,
+      "title": "Thank you",
+      "text": "SDAIA Academy Thank you Command Line, Git and Reproducible Environments",
+      "href": "../slides/capstone.html#thanks"
+    }
+  ]
+}

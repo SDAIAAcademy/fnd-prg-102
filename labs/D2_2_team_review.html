@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-ax="lab" data-track="foundations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab 2.2 · Branch, review and resolve a conflict in teams of three · Command Line, Git and Reproducible Environments</title>
+<meta name="generator" content="SDAIA Academy engine 1.0.0">
+<link rel="icon" href="../_engine/icon.svg">
+<link rel="alternate" type="text/markdown" href="D2_2_team_review.md">
+<link rel="describedby" href="../llms.txt">
+<link rel="stylesheet" href="../_engine/academy.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="top"><div class="logo"></div><nav><a href="../index.html">Course page</a><a href="../slides/day2.html#lab-2-2">Back to the slides</a></nav></div>
+<span class="tag">Lab 2.2</span>
+<h1>Branch, review and resolve a conflict in teams of three</h1>
+<p>Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged</p>
+<div class="meta"><span>35 minutes</span><span>Day 2</span><span>Session 2: Pull requests and review etiquette</span></div>
+</div>
+</header>
+<main class="wrap">
+<article class="lab" data-lab="2.2">
+  <div class="box goal">
+    <h3>Goal</h3>
+    <p>In teams of three, change the rules of the client report the way a team does: on branches, through pull requests that a teammate reviews, with comments answered by commits, and a merge conflict resolved by the author of the second request before it is merged into a protected <code>main</code>.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>Roles: <b>Participant A</b> (author of request 1), <b>Participant B</b> (author of request 2), <b>Participant C</b> (reviewer and integrator). Swap roles if you redo the lab</li>
+    <li>With a class Git host (Forgejo, Gitea, GitLab or GitHub): the trainer's team repository, whose <code>main</code> is protected and needs one approval; each person on their own laptop</li>
+    <li>Without one: one laptop per team and the kit's hub. <code>uv run lab.py start 2.2</code> writes <code>hub/</code> (protected <code>main</code>) and three clones, <code>participant-a/</code>, <code>participant-b/</code> and <code>participant-c/</code>; take turns at the keyboard, each in their own clone. <code>uv run lab.py pr ...</code> plays the host's pull requests</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
+  </ul>
+
+  <div class="step">
+    <h3>Take roles; try to push to main <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal (A)"><code class="language-bash">cd 2.2/participant-a
+echo "5. test" &gt;&gt; rules.md
+git commit -am "Try to push to main"
+git push origin main            # read the refusal
+git reset --hard origin/main    # throw the test away</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Authors: one branch, one commit, one pull request each <span class="min">8 min</span></h3>
+    <p>A adds a rule 4 on comment lines in the logs; B adds a rule 4 on a station's first day of readings. Each on a branch named after the change.</p>
+    <pre class="code" data-file="terminal (A, then B in its own clone)"><code class="language-bash">git switch -c rules/comment-lines
+echo "4. Lines that start with # are left out." &gt;&gt; rules.md
+git commit -am "Add the rule on comment lines"
+git push -u origin rules/comment-lines
+cd ../.. &amp;&amp; uv run lab.py pr open rules/comment-lines "Add the rule on comment lines" --as participant-a</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Reviewer comments on a line, with a reason; authors answer with a commit <span class="min">9 min</span></h3>
+    <p>C reads each request (<code>uv run lab.py pr show 1</code>) and writes one comment that names a line and a reason. Each author answers with a new commit on the branch, pushes, and only then resolves the comment.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py pr comment 1 "rules.md line 4: say why ..." --as participant-c
+uv run lab.py pr resolve 1 1 --as participant-a      # after pushing the answer</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Merge the first; the second author resolves the conflict <span class="min">9 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py pr approve 1 --as participant-c
+uv run lab.py pr merge 1 --as participant-c
+uv run lab.py pr approve 2 --as participant-c
+uv run lab.py pr merge 2 --as participant-c          # refused: a conflict</code></pre>
+    <p>B brings the new <code>main</code> into the branch, keeps both rules (numbered 4 and 5), commits and pushes:</p>
+    <pre class="code" data-file="terminal (B)"><code class="language-bash">git fetch origin
+git merge origin/main           # resolve rules.md, then git add and git commit
+git push</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Approve the new commits, merge and check <span class="min">5 min</span></h3>
+    <p>An approval counts for the commit it was given on; the merge from <code>main</code> is new, so C reads it and approves again.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py pr show 2
+uv run lab.py pr approve 2 --as participant-c
+uv run lab.py pr merge 2 --as participant-c
+uv run lab.py check 2.2</code></pre>
+  </div>
+
+  <div class="step stretch">
+    <h3>✱ Stretch</h3>
+    <p>Add the team's five-line review checklist through a third pull request, reviewed by A.</p>
+  </div>
+
+  <h2>Check yourself</h2>
+  <ol class="checks">
+    <li>Why did the host refuse the push to <code>main</code>, and why is that a good thing for a team?</li>
+    <li>Why does the author of the second request resolve the conflict, and not the reviewer?</li>
+    <li>Why must the reviewer approve again after the conflict was resolved?</li>
+  </ol>
+
+  <details class="instructor">
+    <summary>For the trainer</summary>
+    <p>Evidence the check reads: two merged requests, each with a comment that was resolved after a new commit, each approved by someone other than its author; a merge of <code>main</code> on the second branch; <code>rules.md</code> on <code>main</code> with five numbered rules and no markers. On a class host, check the same in the host's pull request pages.</p>
+    <p>What to watch: comments without a line or a reason ("looks good"); an author resolving a comment without a commit (the kit refuses); B resolving by taking one side; C merging without reading the resolution. Hold the AI-off rule. The kit's hub refuses any direct push to <code>main</code>; on a class host set branch protection with one required approval before the session. Solution (one person in all roles): <code>labs/solutions/S2_2.sh</code>.</p>
+  </details>
+</article>
+<nav class="pager"><a href="D2_1_merge_alone.html" rel="prev">← Previous lab</a><a href="D2_3_undo_five.html" rel="next">Next lab →</a></nav>
+</main>
+<footer><div class="wrap">SDAIA Academy · Data &amp; AI Foundations Track · Command Line, Git and Reproducible Environments<br><span class="muted">Course version 2027.1.0 · engine 1.0.0 · built 2026-11-25 · commit 89bccf3</span></div></footer>
+<script type="application/json" id="academy-data">{"v":1,"engine":"1.0.0","build":{"at":"2026-11-25T09:41:52Z","version":"2027.1.0","commit":"89bccf3"},"course":{"id":"fnd-prg-102","code":"FND-PRG-102","title":"Command Line, Git and Reproducible Environments","track":"foundations","lang":"en","dir":"ltr","url":"https://sdaiaacademy.github.io/fnd-prg-102/","repo":"SDAIAAcademy/fnd-prg-102","home":"../index.html"},"lab":{"id":"2.2","title":"Branch, review and resolve a conflict in teams of three","summary":"Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged","minutes":35,"day":2,"unit":"Day 2","session":2,"deck":"../slides/day2.html#lab-2-2","prev":"D2_1_merge_alone.html","next":"D2_3_undo_five.html","alt":{}},"ai":{"context":{"course":"../context/course.md","courseJs":"../context/course.js","day":null,"llms":"../llms.txt"},"tasks":[],"tools":[]},"features":{},"strings":{}}</script>
+<script src="../_engine/academy.js"></script>
+</body>
+</html>

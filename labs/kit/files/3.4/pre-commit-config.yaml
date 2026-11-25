@@ -1,0 +1,16 @@
+# pre-commit (https://pre-commit.com) runs these hooks before every commit:
+#   uvx pre-commit install       once per clone
+#   uvx pre-commit run --all-files
+repos:
+  - repo: local
+    hooks:
+      - id: course-secret-scan
+        name: secret scan (course stand-in)
+        entry: uv run --no-project python tools/scan_secrets.py --staged
+        language: system
+        pass_filenames: false
+# Where gitleaks is allowed on the machine, its own hook reads .gitleaks.toml:
+#  - repo: https://github.com/gitleaks/gitleaks
+#    rev: v8.30.1
+#    hooks:
+#      - id: gitleaks
