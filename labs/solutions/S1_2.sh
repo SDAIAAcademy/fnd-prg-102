@@ -8,7 +8,7 @@ head -n 3 logs/ST01.log
 wc -l logs/*.log | tail -n 1
 say "the trap: one status counted twice before tr -d '\r'"
 # grep -U: Git Bash's grep then keeps the carriage return, as grep on Linux always does
-cat logs/*.log | grep -U -v '^#' | grep -U . | cut -d' ' -f6 | cut -d- -f1 | sort | uniq -c | cat -A
+cat logs/*.log | grep -U -v '^#' | grep -U . | cut -d' ' -f6 | cut -d- -f1 | sort | uniq -c | cat -e
 cat > counts.sh <<'SH'
 #!/usr/bin/env bash
 # Six counts over the October logs in logs/. One pipeline per question, under its echo line.

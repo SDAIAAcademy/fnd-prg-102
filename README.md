@@ -169,6 +169,19 @@ uv run lab.py check 1.1             # PASS, or what is still missing
 confirms that its starting state does not pass, runs its solution script and confirms that it
 passes.
 
+What has and has not been run. All twelve solutions pass on Windows with Git Bash, including on a
+machine whose Git converts line endings (Git for Windows' default) and one with a machine-wide
+`core.hooksPath`; they have not been run on Linux or macOS. **Lab 3.2's container build and run
+have never been executed**: no container engine was running on the build or the review machine.
+Its hashed requirements were exported and installed with `pip --require-hashes` outside a
+container, and the report they run reproduced the expected checksum; the image build, the
+non-root user and the mounts are still to be rehearsed on the provided Linux workspace. The Git
+host, the key portal and the secret scanner of the labs are local stand-ins written for the
+course (a bare repository in `hub/` with `lab.py pr`, `lab.py keys`, and `tools/scan_secrets.py`);
+the entry's tools (a class host such as Forgejo, Gitea, GitLab or GitHub, and gitleaks with
+pre-commit) take their place where they are available. gitleaks itself and a host's push
+protection were not run.
+
 ## Prerequisites
 
 - Writes and runs a short program in Python or another language

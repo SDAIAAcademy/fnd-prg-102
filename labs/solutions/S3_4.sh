@@ -23,6 +23,7 @@ say "4. the hook: pre-commit with the course scanner"
 if ! uvx -q pre-commit install; then
   echo "pre-commit refused: core.hooksPath is set on this machine; installing the same scan as a plain hook"
   cp "$KIT/files/3.4/pre-commit-hook" .git/hooks/pre-commit
+  git config core.hooksPath .git/hooks
 fi
 cat > ROTATION.md <<'MD'
 # Rotation note

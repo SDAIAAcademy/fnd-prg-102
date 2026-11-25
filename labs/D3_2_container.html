@@ -7,7 +7,7 @@
   <h2>What you need</h2>
   <ul>
     <li>A container engine in rootless mode: Podman, or Docker in rootless mode, on your laptop or on the provided Linux workspace</li>
-    <li>The base image <code>docker.io/library/python:3.13-alpine</code>, about 16 MB compressed for amd64 on Docker Hub when the course was built: the trainer pulls it on the provided workspace before the session</li>
+    <li>The base image <code>docker.io/library/python:3.13-alpine</code>, about 17 MB compressed for amd64 on Docker Hub (its tags page, November 2026): the trainer pulls it on the provided workspace before the session</li>
     <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.2</code>: <code>air-report/</code> with a <code>Containerfile</code> to complete, and <code>data/</code> beside it</li>
     <li>AI policy: <b>off</b> for the first attempt</li>
   </ul>
@@ -28,7 +28,7 @@ grep -c -- '--hash=sha256:' requirements.txt</code></pre>
   </div>
 
   <div class="step">
-    <h3>Complete the five lines of the Containerfile <span class="min">10 min</span></h3>
+    <h3>Fill the five numbered gaps of the Containerfile <span class="min">10 min</span></h3>
     <p>Open <code>Containerfile</code>. Fill the numbered gaps: the base image, copying and installing <code>requirements.txt</code> before the code, a <code>USER</code> that is not root, and an <code>ENTRYPOINT</code> that runs the report on <code>/data</code> into <code>/out</code>.</p>
   </div>
 
@@ -47,6 +47,7 @@ podman run --rm --userns=keep-id \
 sha256sum output/report.csv
 cd ../.. &amp;&amp; uv run lab.py check 3.2</code></pre>
     <p>With Docker in rootless mode, use the same command without <code>--userns=keep-id</code>. On Git Bash for Windows, put <code>MSYS_NO_PATHCONV=1</code> before the command so the paths after <code>:</code> are not rewritten. If the container cannot write to <code>output/</code>, the user inside and the owner outside differ: keep that for session 3.</p>
+    <p><b>No engine at all</b> (neither on your laptop nor on the provided workspace): complete and commit the definition and <code>requirements.txt</code> anyway. <code>uv run lab.py check 3.2</code> then checks the definition and says plainly that the run was not done; the trainer records the lab as checked without a run. This lab's build and run have not yet been executed on any machine (see the trainer's note below).</p>
   </div>
 
   <div class="step stretch">
@@ -64,6 +65,6 @@ cd ../.. &amp;&amp; uv run lab.py check 3.2</code></pre>
   <details class="instructor">
     <summary>For the trainer</summary>
     <p>The reference definition is <code>labs/kit/files/3.2/Containerfile.solution</code>. The check reads the definition (a FROM line, requirements copied and installed with <code>--require-hashes</code>, a non-root USER, an entry point on <code>/data</code>) and the committed <code>requirements.txt</code>; when an engine answers, it also compares <code>output/report.csv</code> with the October checksum (<code>e04d6927...</code>).</p>
-    <p><b>Not run when the course was built:</b> no container engine was running on the build machine, so the build and the run of this lab were not executed; the export of the hashed requirements ran and the definition was checked by the lab tool. Rehearse the lab on the provided workspace before the first cohort, including <code>--userns=keep-id</code> with Podman and writing to the mounted <code>output/</code> with Docker rootless. Solution: <code>labs/solutions/S3_2.sh</code>.</p>
+    <p><b>Not run when the course was built:</b> no container engine was running on the build machine, so the build and the run of this lab were not executed; the export of the hashed requirements ran and the definition was checked by the lab tool. At review (25 November 2026, again without an engine), the definition's install line, <code>pip install --require-hashes -r requirements.txt</code>, ran in a plain Python 3.13 environment, and <code>report.py</code> from those packages wrote the expected checksum: the packages are pure Python, so the Alpine image needs no compiler. The image build, the non-root user, the mounts and <code>--userns=keep-id</code> remain unexecuted. Rehearse the lab on the provided workspace before the first cohort, including <code>--userns=keep-id</code> with Podman and writing to the mounted <code>output/</code> with Docker rootless. Solution: <code>labs/solutions/S3_2.sh</code>.</p>
   </details>
 </article>

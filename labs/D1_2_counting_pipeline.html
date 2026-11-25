@@ -28,7 +28,7 @@ head -n 3 logs/stations.csv</code></pre>
 
   <div class="step">
     <h3>Lines per status, and the hidden character (Q2) <span class="min">8 min</span></h3>
-    <p>Cut out the sixth field, keep only the part before the hyphen, then <code>sort | uniq -c</code>. Pipe the result into <code>cat -A</code> to see every character. If a status appears twice, one of the logs ends its lines differently: find which with <code>file logs/*.log</code>, and remove the extra character with <code>tr</code>.</p>
+    <p>Cut out the sixth field, keep only the part before the hyphen, then <code>sort | uniq -c</code>. Pipe the result into <code>cat -A</code> (<code>cat -e</code> on macOS) to see every character. If a status appears twice, one of the logs ends its lines differently: find which with <code>file logs/*.log</code>, and remove the extra character with <code>tr</code>.</p>
   </div>
 
   <div class="step">

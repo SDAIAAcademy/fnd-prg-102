@@ -121,10 +121,11 @@ def copy(src: Path, dst: Path) -> None:
 
 
 def project(version: str, dst: Path) -> None:
-    """Copy a version of the report project; 'gitignore' becomes '.gitignore'."""
+    """Copy a version of the report project; 'gitignore' becomes '.gitignore', 'gitattributes' '.gitattributes'."""
     copy(PROJECTS / version, dst)
-    if (dst / "gitignore").exists():
-        (dst / "gitignore").replace(dst / ".gitignore")
+    for name in ("gitignore", "gitattributes"):
+        if (dst / name).exists():
+            (dst / name).replace(dst / f".{name}")
 
 
 class Repo:
@@ -411,8 +412,9 @@ def start_22(d: Path) -> None:
     (d / "hub" / "pulls").mkdir(parents=True, exist_ok=True)
     for role in ("participant-a", "participant-b", "participant-c"):
         target = d / role
-        run(["git", "clone", "-q", hub.resolve().as_posix(), str(target)], d)
-        git(target, "config", "core.autocrlf", "false")
+        # -c applies before the checkout: on Windows, Git's default core.autocrlf=true would
+        # otherwise check rules.md out with CR LF and every edit would rewrite all its lines
+        run(["git", "clone", "-q", "-c", "core.autocrlf=false", hub.resolve().as_posix(), str(target)], d)
         git(target, "config", "core.hooksPath", ".git/hooks")
         name, mail = ROLES[role]
         git(target, "config", "user.name", name)
@@ -502,7 +504,7 @@ def cmd_pr(a: argparse.Namespace) -> int:
         work = Path(tempfile.mkdtemp(prefix="merge-", dir=WS / "2.2" / "hub"))
         try:
             hub = (WS / "2.2" / "hub" / "team-report.git").resolve().as_posix()
-            run(["git", "clone", "-q", hub, str(work / "w")], WS)
+            run(["git", "clone", "-q", "-c", "core.autocrlf=false", hub, str(work / "w")], WS)
             w = work / "w"
             env = who(role, T0 + timedelta(days=1, minutes=10 * pr["number"]))
             res = run(["git", "-c", "core.autocrlf=false", "merge", "--no-ff", "-m",
@@ -751,6 +753,9 @@ def start_34(d: Path) -> None:
     copy(DATA / "october", d / "data")
     copy(FILES / "3.4" / "ROTATION.md", d / "ROTATION-template.md")
     r.identity("participant-a")
+    # pre-commit refuses to install while core.hooksPath is set, so this repository goes back
+    # to Git's default hooks folder; a hooksPath set for the whole machine still applies
+    git(r.path, "config", "--unset", "core.hooksPath")
 
 
 def check_34(d: Path, c: Check) -> None:

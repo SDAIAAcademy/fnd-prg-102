@@ -31,5 +31,5 @@ echo "sectors: 5" >> settings.txt
 git commit -q -am "Count the sectors"
 git log --graph --all --format='%s%d'
 cd "$WS/1.4"
-sed -i '0,/answer:$/s//answer: 3/; 0,/answer:$/s//answer: 5/; 0,/answer:$/s//answer: 7/; 0,/answer:$/s//answer: main/' graphs.md
+awk 'BEGIN { split("3 5 7 main", a, " ") } /answer:$/ && n < 4 { sub(/answer:$/, "answer: " a[++n]) } { print }' graphs.md > graphs.new && mv graphs.new graphs.md
 cd "$WS" && lab check 1.4

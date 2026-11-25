@@ -37,7 +37,8 @@ cd 3.4/air-report &amp;&amp; git check-ignore -v .env</code></pre>
 
   <div class="step">
     <h3>Clean the history, force-push, scan again <span class="min">10 min</span></h3>
-    <pre class="code" data-file="terminal"><code class="language-bash">printf '%s==&gt;REMOVED\n' '&lt;the old key&gt;' &gt; ../replacements.txt   # outside the repository
+    <pre class="code" data-file="terminal"><code class="language-bash">pwd        # must end in 3.4/air-report: filter-repo rewrites the repository you are in
+printf '%s==&gt;REMOVED\n' '&lt;the old key&gt;' &gt; ../replacements.txt   # outside the repository
 uvx git-filter-repo --replace-text ../replacements.txt --force
 rm ../replacements.txt
 git remote add origin ../hub/air-report.git     # filter-repo removes the remote on purpose
@@ -54,7 +55,7 @@ printf 'key = "fprg102_demo_%s"\n' cdcdcdcdcdcdcdcdcdcdcdcd &gt; probe.toml
 git add probe.toml &amp;&amp; git commit -m "probe"     # refused
 git reset -q -- probe.toml &amp;&amp; rm probe.toml
 cd ../.. &amp;&amp; uv run lab.py check 3.4</code></pre>
-    <p>If <code>pre-commit install</code> refuses because <code>core.hooksPath</code> is set on your machine, copy the plain hook instead: <code>cp _kit/files/3.4/pre-commit-hook 3.4/air-report/.git/hooks/pre-commit</code> from the workspace folder. It runs the same scan.</p>
+    <p>If <code>pre-commit install</code> refuses because <code>core.hooksPath</code> is set on your machine, use the plain hook instead, from the workspace folder: <code>cp _kit/files/3.4/pre-commit-hook 3.4/air-report/.git/hooks/pre-commit</code>, then <code>git -C 3.4/air-report config core.hooksPath .git/hooks</code> so that this repository alone uses it. It runs the same scan.</p>
   </div>
 
   <div class="step stretch">
@@ -72,6 +73,6 @@ cd ../.. &amp;&amp; uv run lab.py check 3.4</code></pre>
   <details class="instructor">
     <summary>For the trainer</summary>
     <p>The leak: <code>settings.toml</code> in "Add the portal settings" (key id K-0002), removed in "Read the portal key from the environment". The first scan reports two findings in that commit (the portal-key rule and the assigned-secret rule). The check: a clean scan of the history in the clone and in the hub, K-0002 revoked, exactly one active key and it is in <code>.env</code>, <code>.env</code> ignored, <code>ROTATION.md</code> committed with four sections and no key value, a hook that refuses a commit holding a key.</p>
-    <p>Verified when the course was built: the course scanner, the portal stand-in, git-filter-repo through <code>uvx</code>, and pre-commit 4.7.0 through <code>uvx</code> with the local hook (in a repository without <code>core.hooksPath</code>). Not run: gitleaks itself (not installed on the build machine) and a host's push protection. GitHub's guidance on removing sensitive data says to revoke or rotate the secret as the first step. Solution: <code>labs/solutions/S3_4.sh</code>.</p>
+    <p>Verified when the course was built: the course scanner, the portal stand-in, git-filter-repo through <code>uvx</code>, and pre-commit 4.7.0 through <code>uvx</code> with the local hook (the lab unsets <code>core.hooksPath</code> in this one repository; a machine-wide setting still makes pre-commit refuse, hence the plain hook). Not run: gitleaks itself (not installed on the build machine) and a host's push protection. GitHub's guidance on removing sensitive data says to revoke or rotate the secret as the first step. Solution: <code>labs/solutions/S3_4.sh</code>.</p>
   </details>
 </article>

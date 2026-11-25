@@ -152,7 +152,7 @@ ENTRYPOINT ["python", "planner.py", "--data", "/data"]</code></pre>
     <li><code>requirements.txt</code> is exported from the lock, with hashes: <code>uv export --frozen --format requirements.txt</code></li>
     <li>Packages before code: a code change reuses the cached package layer</li>
   </ul>
-  <aside class="notes"><p>The lab's definition adds a user that is not root and an output folder. The python:3.13-alpine image is about 16 MB compressed for amd64 on Docker Hub (read on its tags page when the course was built); pull it on the provided workspace before the session. uv's documentation recommends against keeping both uv.lock and a requirements.txt in step by hand: the export is generated from the lock, never edited.</p></aside>
+  <aside class="notes"><p>The lab's definition adds a user that is not root and an output folder. The python:3.13-alpine image is about 17 MB compressed for amd64 on Docker Hub (read on its tags page in November 2026); pull it on the provided workspace before the session. uv's documentation recommends against keeping both uv.lock and a requirements.txt in step by hand: the export is generated from the lock, never edited.</p></aside>
 </section>
 
 <section class="slide" id="layers" data-lo="LO4">

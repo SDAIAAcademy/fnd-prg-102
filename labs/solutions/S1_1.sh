@@ -13,8 +13,10 @@ du -h logs/2026-10/ST07.log logs/2026-10/ST01.log
 say "the permission strings"
 grep -v '^#' listing.txt
 say "fix the script: its own folder, and quotes round the folder with a space"
-sed -i 's|^cd /mnt/.*|cd "$(dirname "$0")/logs/2026-10"|' run_counts.sh   # academy:example (the faulty line)
-sed -i 's|^head -n 3 ../../field notes/visit-checklist.txt|head -n 3 "../../field notes/visit-checklist.txt"|' run_counts.sh
+# sed writes to a new file and mv replaces the old one: sed -i differs between GNU and macOS
+sed -e 's|^cd /mnt/.*|cd "$(dirname "$0")/logs/2026-10"|' \
+    -e 's|^head -n 3 ../../field notes/visit-checklist.txt|head -n 3 "../../field notes/visit-checklist.txt"|' \
+    run_counts.sh > run_counts.new && mv run_counts.new run_counts.sh   # academy:example (the faulty line)
 cat run_counts.sh
 cd "$WS" && bash 1.1/air-reports/run_counts.sh
 cd "$WS/1.1/air-reports"

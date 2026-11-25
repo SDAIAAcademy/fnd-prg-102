@@ -1,4 +1,4 @@
-# A container definition for the monthly client report. Complete the five numbered lines.
+# A container definition for the monthly client report. Fill the five numbered gaps.
 # Build:  podman build -t air-report .          (or: docker build -t air-report .)
 # Run:    see the lab page: the logs are mounted at /data, the output folder at /out.
 

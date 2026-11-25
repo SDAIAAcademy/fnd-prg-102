@@ -28,12 +28,12 @@ lab pr comment 2 "rules.md line 4: say why: the first day mixes installation tes
 lab pr list
 say "authors address the comments with a new commit, then resolve them"
 cd "$A"
-sed -i 's/^4\. Lines that start with # are left out\.$/4. Lines that start with # are left out: a restart note is not a reading./' rules.md
+sed 's/^4\. Lines that start with # are left out\.$/4. Lines that start with # are left out: a restart note is not a reading./' rules.md > rules.new && mv rules.new rules.md
 git commit -q -am "Say why comment lines are left out"
 git push -q
 cd "$WS" && lab pr resolve 1 1 --as participant-a
 cd "$B"
-sed -i "s/^4\. A station's first day of readings is left out\.$/4. A station's first day of readings is left out: it mixes installation tests with readings./" rules.md
+sed "s/^4\. A station's first day of readings is left out\.$/4. A station's first day of readings is left out: it mixes installation tests with readings./" rules.md > rules.new && mv rules.new rules.md
 git commit -q -am "Say why the first day is left out"
 git push -q
 cd "$WS" && lab pr resolve 2 1 --as participant-b

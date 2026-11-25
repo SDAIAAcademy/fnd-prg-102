@@ -211,7 +211,7 @@ $ uniq -c
     <ul class="bullets">
       <li>Linux and macOS end a line with <b>LF</b>; Windows programs often write <b>CR LF</b></li>
       <li>The CR sticks to the last field: <code>OK</code> and <code>OK\r</code> are two words to <code>sort</code></li>
-      <li><code>cat -A</code> shows it as <code>^M</code>; <code>file</code> names the line endings</li>
+      <li><code>cat -A</code> (<code>cat -e</code> on macOS) shows it as <code>^M</code>; <code>file</code> names the line endings</li>
       <li><code>tr -d '\r'</code> removes it</li>
     </ul>
     <div class="card c-purple"><h4>The same pipeline, two answers</h4><p class="small mb0">Git Bash's <code>grep</code> on Windows drops the CR from its output; <code>grep</code> on Linux keeps it. A pipeline can be right on one machine and wrong on the next: the theme of the whole course.</p></div>
@@ -386,7 +386,7 @@ fi</code></pre>
     <tr><td><code>git diff --staged</code></td><td>staging area with the last commit: what the next commit holds</td></tr>
     <tr><td><code>git status --short</code></td><td>both, one line per file</td></tr>
   </table>
-  <aside class="notes"><p>The prerequisite course had participants commit already; this is the model behind it. Demonstrate: change two files, add one, run both diffs. Ask which diff shows which file before you run it.</p></aside>
+  <aside class="notes"><p>Many participants have committed before; this is the model behind it. Demonstrate: change two files, add one, run both diffs. Ask which diff shows which file before you run it.</p></aside>
 </section>
 
 <section class="slide" id="commit-is-snapshot" data-lo="LO1">

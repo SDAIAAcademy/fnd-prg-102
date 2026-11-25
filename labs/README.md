@@ -40,6 +40,12 @@ do the same steps there. In labs 3.3 and 3.4, `uv run lab.py keys ...` plays the
 portal that issues and revokes keys. Every practice commit the kit makes has a role as its author
 and a fixed date, so commit ids are the same on every machine.
 
+On Windows, Git converts line endings to CR LF on checkout by default. The kit's practice
+repositories set `core.autocrlf=false`, and the report project carries a `.gitattributes` that keeps
+scripts and checksum files in LF, so `bash` and `sha256sum` read a fresh clone the same way on
+every machine. Lab 3.4 unsets `core.hooksPath` in its practice repository so that `pre-commit
+install` works; the lab page gives a plain hook for machines that set it for every repository.
+
 | Lab | What you do | Entry lab or addition |
 |---|---|---|
 | 1.1 | Map a folder, read permission strings, fix a script tied to one computer | addition |
