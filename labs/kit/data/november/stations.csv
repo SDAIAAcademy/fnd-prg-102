@@ -1,0 +1,13 @@
+station,client,sector,installed,model
+ST01,Client A,North,2025-02-01,Model P
+ST02,Client A,North,2025-03-08,Model P
+ST03,Client A,East,2025-04-15,Model Q
+ST04,Client B,East,2025-05-22,Model P
+ST05,Client B,Central,2025-06-02,Model Q
+ST06,Client B,South,2025-07-09,Model P
+ST07,Client C,South,2025-08-16,Model Q
+ST08,Client C,West,2025-09-23,Model P
+ST09,Client C,West,2025-10-03,Model Q
+ST10,Client D,Central,2025-02-10,Model P
+ST11,Client D,North,2025-03-17,Model Q
+ST12,Client D,East,2025-04-24,Model P

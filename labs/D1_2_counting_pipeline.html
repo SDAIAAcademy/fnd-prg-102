@@ -1,37 +1,68 @@
 <article class="lab" data-lab="1.2">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>Answer six questions about one month of sensor logs from twelve stations, each with one pipeline of small commands, and keep the pipelines in a script that writes its answers to a file.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 1.2</code>: twelve October logs and <code>stations.csv</code> in <code>logs/</code>, and <code>counts.sh</code> with the six questions</li>
+    <li>AI policy: <b>off</b> for the first attempt at every pipeline. After that, the hint-only assistant (<code>AGENTS.md</code> in the workspace) for the stretch only</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>Look at the logs <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 1.2
+cd 1.2
+head -n 3 logs/ST01.log
+tail -n 2 logs/ST03.log
+wc -l logs/*.log | tail -n 1
+head -n 3 logs/stations.csv</code></pre>
+    <p>Each reading line has six fields separated by single spaces: the hour, the station, PM10, PM2.5, temperature and a status (<code>OK</code>, <code>WARN</code>, or <code>ERR-</code> and a code). Some lines are not readings.</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Count the reading lines (Q1) <span class="min">5 min</span></h3>
+    <p>Leave out the comment lines (they start with <code>#</code>) and the blank lines. Write the pipeline under the Q1 line of <code>counts.sh</code>, then run <code>bash counts.sh</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Lines per status, and the hidden character (Q2) <span class="min">8 min</span></h3>
+    <p>Cut out the sixth field, keep only the part before the hyphen, then <code>sort | uniq -c</code>. Pipe the result into <code>cat -A</code> to see every character. If a status appears twice, one of the logs ends its lines differently: find which with <code>file logs/*.log</code>, and remove the extra character with <code>tr</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Errors by station and by code (Q3, Q4) <span class="min">8 min</span></h3>
+    <p>Q3: the three stations with the most <code>ERR</code> lines, most first. Q4: each error code with its count (<code>grep -o</code> prints only the part that matched).</p>
+  </div>
+
+  <div class="step">
+    <h3>Repeated lines and the CSV (Q5, Q6) <span class="min">6 min</span></h3>
+    <p>Q5: a logger that restarts sends its last hours again. Count the reading lines whose station and hour already appeared (<code>uniq -d</code> prints each repeated line once). Q6: stations per client from <code>logs/stations.csv</code>; skip the header line with <code>tail -n +2</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Save the answers and check <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">bash counts.sh &gt; counts.txt
+cat counts.txt
+cd .. &amp;&amp; uv run lab.py check 1.2</code></pre>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>Count the alert hours (PM10 above 150, the company's own rule) per station with <code>awk</code>, counting each station and hour once.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>Why must <code>sort</code> come before <code>uniq -c</code>?</li>
+    <li>Your Q2 output is right on your laptop and wrong on a colleague's Linux machine. What is the likely reason?</li>
+    <li>What is the difference between <code>&gt;</code> and <code>&gt;&gt;</code> when you run <code>counts.sh</code> twice?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>Reference values (October): Q1 8,892 reading lines (8,899 lines in all, less 4 calibration comments in ST09, 2 restart notes in ST03 and 1 blank line in ST04); Q2 OK 8,728, WARN 103, ERR 61; Q3 ST05 26, ST09 17, ST12 8; Q4 E11 8, E21 26, E34 11, E40 16; Q5 12 (two restarts of ST03, six hours each); Q6 three stations per client.</p>
+    <p>The carriage-return trap: ST07's lines end in CR LF. Without <code>tr -d '\r'</code>, <code>uniq -c</code> lists <code>OK</code> 7,993 and <code>OK^M</code> 735 (and WARN 94 and 9) wherever <code>grep</code> keeps the CR, as on Linux. Git Bash's <code>grep</code> on Windows drops the CR from its output, so there the counts look right without the fix: run the pipeline with <code>grep -U</code> to show the room the Linux result. <code>awk</code> on Windows also drops it; <code>cut</code> keeps it. The portable pipeline strips the CR. Solution: <code>labs/solutions/S1_2.sh</code>.</p>
   </details>
 </article>

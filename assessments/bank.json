@@ -3,38 +3,150 @@
   "version": 1,
   "questions": [
     {
-      "id": "q-example-1",
+      "id": "d1-branch-count",
       "type": "single",
-      "prompt": "REPLACE: a practice question on LO1, as a short scenario",
+      "prompt": "A repository holds one commit, S, on main. Someone runs: git switch -c draft, commits D1, runs git switch main, and commits M1. How many commits does main reach now?",
       "options": [
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: the right answer",
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: a wrong option that a common misconception makes tempting"
+        "3: S, D1 and M1",
+        "2: S and M1",
+        "1: M1 only",
+        "4: S twice, D1 and M1"
       ],
       "correct": [
         1
       ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "explanation": "Main reaches its own commit M1 and the parent chain back to S; D1 is reachable from draft only.",
       "misconceptions": [
-        "REPLACE: the misconception behind this option",
+        "Counts every commit made in the repository as part of main",
         "",
-        "REPLACE: the misconception behind this option",
-        "REPLACE: the misconception behind this option"
+        "Thinks a commit replaces its parent instead of pointing to it",
+        "Believes a branch copies the commits it starts from"
       ],
       "lo": [
         "LO1"
       ],
       "day": "day1",
-      "session": 1,
+      "session": 4,
       "level": "apply",
       "pool": "practice",
       "weight": 1
     },
     {
-      "id": "q-example-2",
+      "id": "d2-fast-forward",
+      "type": "single",
+      "prompt": "Main has not moved since the branch topic was created; topic now has two commits. On main you run git merge topic. What does the graph show afterwards?",
+      "options": [
+        "A new merge commit with two parents on main",
+        "Copies of the two topic commits, with new ids, on main",
+        "Main moves to the last commit of topic; no new commit",
+        "Topic deleted, its commits now belonging to main"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "When main is an ancestor of topic, Git only moves the main pointer forward: a fast-forward.",
+      "misconceptions": [
+        "Expects a merge commit even when one side has not moved",
+        "Confuses a merge with a rebase that rewrites commits",
+        "",
+        "Thinks commits belong to a branch rather than branches pointing at commits"
+      ],
+      "lo": [
+        "LO1"
+      ],
+      "day": "day2",
+      "session": 1,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d1-commit-am",
       "type": "tf",
-      "prompt": "REPLACE: a statement on LO2 that is true",
+      "prompt": "git commit -am \"message\" also commits a new file that git does not track yet.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "The -a flag stages changes to files git already tracks; a new file needs git add first.",
+      "misconceptions": [
+        "Thinks -a means every file in the folder",
+        ""
+      ],
+      "lo": [
+        "LO1"
+      ],
+      "day": "day1",
+      "session": 4,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d2-fetch-moves",
+      "type": "single",
+      "prompt": "A teammate pushed two commits to the hub. You run git fetch and nothing else. What has changed in your clone?",
+      "options": [
+        "Your main now includes the two new commits",
+        "Your working files changed to the hub's version",
+        "Nothing, because fetch only lists what is new",
+        "origin/main moved; your own main did not"
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "Fetch downloads the commits and moves the remote-tracking names; merging them into main is a separate step.",
+      "misconceptions": [
+        "Takes fetch for pull: fetch never moves your own branches",
+        "Thinks fetching rewrites the working folder",
+        "Believes fetch is read-only reporting; it downloads commits and moves origin/ names",
+        ""
+      ],
+      "lo": [
+        "LO1"
+      ],
+      "day": "day2",
+      "session": 1,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d1-sort-uniq",
+      "type": "single",
+      "prompt": "A ticket log has the agent code in field 3, fields separated by spaces. Which pipeline counts tickets per agent?",
+      "options": [
+        "cut -d' ' -f3 tickets.log | sort | uniq -c",
+        "cut -d' ' -f3 tickets.log | uniq -c | sort",
+        "sort tickets.log | uniq -c | cut -d' ' -f3",
+        "cut -d' ' -f3 tickets.log | wc -l"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "Keep the field, sort so equal codes sit together, then count each run.",
+      "misconceptions": [
+        "",
+        "Forgets that uniq only merges neighbouring equal lines",
+        "Counts whole lines before keeping the field, so every line is unique",
+        "Counts all lines at once instead of per agent"
+      ],
+      "lo": [
+        "LO2"
+      ],
+      "day": "day1",
+      "session": 2,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d1-pipefail",
+      "type": "tf",
+      "prompt": "Without set -o pipefail, the exit code of a pipeline is the exit code of its last command.",
       "options": [
         "True",
         "False"
@@ -42,107 +154,140 @@
       "correct": [
         0
       ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "explanation": "Bash reports the last command's status unless pipefail asks for the last non-zero one.",
       "misconceptions": [
         "",
-        "REPLACE: the misconception behind this option"
+        "Believes any failing stage makes the whole pipeline fail by default"
+      ],
+      "lo": [
+        "LO2"
+      ],
+      "day": "day1",
+      "session": 3,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d1-redirect",
+      "type": "single",
+      "prompt": "A script writes its results to standard output and its warnings to standard error. Which command keeps the results in out.txt and the warnings in err.txt?",
+      "options": [
+        "bash tally.sh > out.txt > err.txt",
+        "bash tally.sh 2> out.txt > err.txt",
+        "bash tally.sh > out.txt 2> err.txt",
+        "bash tally.sh | tee out.txt err.txt"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "> redirects standard output (1) and 2> standard error; each goes to its own file.",
+      "misconceptions": [
+        "Thinks a second > sends the second stream; both redirect standard output",
+        "Swaps the stream numbers: 2 is standard error",
+        "",
+        "Expects a pipe to carry standard error too"
+      ],
+      "lo": [
+        "LO2"
+      ],
+      "day": "day1",
+      "session": 2,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d1-quote-space",
+      "type": "single",
+      "prompt": "A folder is named site photos, with a space. Which command lists its files?",
+      "options": [
+        "ls site photos",
+        "ls site\\photos",
+        "ls 'site' photos",
+        "ls \"site photos\""
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "Quotes keep the name one word, so ls receives a single argument.",
+      "misconceptions": [
+        "Forgets that the shell splits unquoted words on spaces",
+        "Puts the backslash before the wrong character: it must escape the space",
+        "Quotes one word only, so the shell still sees two arguments",
+        ""
       ],
       "lo": [
         "LO2"
       ],
       "day": "day1",
       "session": 1,
-      "level": "understand",
+      "level": "apply",
       "pool": "practice",
       "weight": 1
     },
     {
-      "id": "q-example-3",
+      "id": "d2-review-comment",
       "type": "single",
-      "prompt": "REPLACE: a practice question on LO3, as a short scenario",
+      "prompt": "A pull request changes how the report counts alert hours. Which review comment helps the author most?",
       "options": [
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: the right answer",
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: a wrong option that a common misconception makes tempting"
+        "Line 40: 150 is also in rules.md; read it from one place",
+        "Looks fine to me, approved without further comments",
+        "I would have done this differently, but it is your call",
+        "Please rewrite the whole module in a cleaner, more modern style"
       ],
       "correct": [
-        1
+        0
       ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "explanation": "A useful comment names the line, the problem and a way forward, and stays inside the request.",
       "misconceptions": [
-        "REPLACE: the misconception behind this option",
         "",
-        "REPLACE: the misconception behind this option",
-        "REPLACE: the misconception behind this option"
+        "Approves without reading, so the reviewer adds nothing",
+        "Gives an opinion with no line, no reason and no suggestion",
+        "Asks for a change far beyond the request, with no concrete point"
       ],
       "lo": [
         "LO3"
       ],
-      "day": "day1",
-      "session": 1,
-      "level": "apply",
+      "day": "day2",
+      "session": 2,
+      "level": "evaluate",
       "pool": "practice",
       "weight": 1
     },
     {
-      "id": "q-example-4",
-      "type": "tf",
-      "prompt": "REPLACE: a statement on LO4 that is true",
-      "options": [
-        "True",
-        "False"
-      ],
-      "correct": [
-        0
-      ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
-      "misconceptions": [
-        "",
-        "REPLACE: the misconception behind this option"
-      ],
-      "lo": [
-        "LO4"
-      ],
-      "day": "day1",
-      "session": 1,
-      "level": "understand",
-      "pool": "practice",
-      "weight": 1
-    },
-    {
-      "id": "q-example-5",
+      "id": "d2-protected-refusal",
       "type": "single",
-      "prompt": "REPLACE: a practice question on LO5, as a short scenario",
+      "prompt": "You commit a fix on main and run git push. The host answers that main is protected. What is the normal next step?",
       "options": [
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: the right answer",
-        "REPLACE: a wrong option that a common misconception makes tempting",
-        "REPLACE: a wrong option that a common misconception makes tempting"
+        "Push again with --force to override the check",
+        "Push it on a branch and open a pull request",
+        "Ask the host administrator to lift the protection",
+        "Delete the local commit and wait for a reviewer"
       ],
       "correct": [
         1
       ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "explanation": "Protection means main changes only through a reviewed request; the commit itself is fine on a branch.",
       "misconceptions": [
-        "REPLACE: the misconception behind this option",
+        "Thinks force overrides the host's branch protection",
         "",
-        "REPLACE: the misconception behind this option",
-        "REPLACE: the misconception behind this option"
+        "Treats the protection as an obstacle rather than the team's review rule",
+        "Believes the change itself is refused, when only the route is"
       ],
       "lo": [
-        "LO5"
+        "LO3"
       ],
-      "day": "day1",
-      "session": 1,
+      "day": "day2",
+      "session": 2,
       "level": "apply",
       "pool": "practice",
       "weight": 1
     },
     {
-      "id": "q-example-6",
+      "id": "d2-update-branch",
       "type": "tf",
-      "prompt": "REPLACE: a statement on LO6 that is true",
+      "prompt": "When a pull request no longer merges cleanly, its author usually brings the current main into the branch, resolves the conflict there, and pushes.",
       "options": [
         "True",
         "False"
@@ -150,17 +295,382 @@
       "correct": [
         0
       ],
-      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "explanation": "The author knows the change best; resolving on the branch keeps main clean and lets the reviewer see the resolution.",
       "misconceptions": [
         "",
-        "REPLACE: the misconception behind this option"
+        "Thinks the reviewer or the host resolves conflicts at merge time"
+      ],
+      "lo": [
+        "LO3"
+      ],
+      "day": "day2",
+      "session": 2,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d2-undo-pushed",
+      "type": "single",
+      "prompt": "A commit that set a wrong threshold was pushed yesterday and others have pulled it. How do you undo it?",
+      "options": [
+        "git reset --hard to the commit before it, then force-push",
+        "git commit --amend to change it",
+        "git revert with that commit's id, then push",
+        "git restore on the file, without a commit"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "Revert records a new commit that reverses the old one, so nobody's history is rewritten.",
+      "misconceptions": [
+        "Rewrites history others already have, so their clones disagree",
+        "Amend only changes the last local commit, and still rewrites it",
+        "",
+        "Changes the working file only; history and the hub stay wrong"
+      ],
+      "lo": [
+        "LO3"
+      ],
+      "day": "day2",
+      "session": 3,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d2-lock-adds",
+      "type": "single",
+      "prompt": "A project declares tabulate>=0.9 in pyproject.toml. What does its lock file add?",
+      "options": [
+        "Nothing more, since the declaration already names the package",
+        "A copy of each package's source code",
+        "The versions of the direct packages only",
+        "Exact versions and hashes of all packages, indirect ones too"
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "The declaration says what is acceptable; the lock records exactly what was resolved, down to indirect dependencies and hashes.",
+      "misconceptions": [
+        "Takes a lower bound for a fixed version",
+        "Confuses the lock with a vendored copy of the packages",
+        "Forgets the packages those packages need",
+        ""
+      ],
+      "lo": [
+        "LO4"
+      ],
+      "day": "day2",
+      "session": 4,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d2-locked-fails",
+      "type": "single",
+      "prompt": "uv sync --locked stops with an error that the lockfile needs to be updated. What does that mean, and what do you do?",
+      "options": [
+        "The declaration changed after the lock: run uv lock, commit both",
+        "The package index is unreachable from this network: retry it later",
+        "The lock is corrupt: delete it and run without it",
+        "A package was removed from the index: pin an older one"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "--locked refuses to change the lock; the fix is to update it on purpose and commit it with the declaration.",
+      "misconceptions": [
+        "",
+        "Reads a mismatch between two files as a connection problem",
+        "Throws away the record that makes the rebuild repeatable",
+        "Guesses at a cause the message does not state"
+      ],
+      "lo": [
+        "LO4"
+      ],
+      "day": "day2",
+      "session": 4,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-kernel",
+      "type": "tf",
+      "prompt": "A container on a Linux host uses the host's kernel; it is an isolated process, not a separate machine.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "Containers share the host kernel, which is why a kernel flaw or a mounted folder reaches across.",
+      "misconceptions": [
+        "",
+        "Believes a container is a small virtual machine with its own kernel"
+      ],
+      "lo": [
+        "LO4"
+      ],
+      "day": "day3",
+      "session": 3,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-mounts",
+      "type": "single",
+      "prompt": "A report image reads its input from /data and writes to /out. Which run keeps the input safe from the program?",
+      "options": [
+        "run -v ./data:/data -v ./output:/out report",
+        "run -v ./data:/data:ro -v ./output:/out report",
+        "run -v ./data:/out:ro -v ./output:/data report",
+        "run report, with the data copied into the image"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "A read-only bind mount gives the program the data without letting it change it; the output folder is writable.",
+      "misconceptions": [
+        "Leaves the input writable, so a bug can change the raw data",
+        "",
+        "Swaps the folders: the program would write into the input",
+        "Bakes data into the image, so each month needs a new image"
+      ],
+      "lo": [
+        "LO4"
+      ],
+      "day": "day3",
+      "session": 2,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-first-action",
+      "type": "single",
+      "prompt": "A scan finds a live API key in a commit from last month. What do you do first?",
+      "options": [
+        "Rewrite the history so that no commit holds the key any more",
+        "Delete the file in a new commit",
+        "Revoke or rotate the key at the service that issued it",
+        "Make the repository private"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "Until the key is revoked, anyone with an old copy can use it; cleaning history comes second.",
+      "misconceptions": [
+        "Cleans the repository while the key still works for anyone who copied it",
+        "Removes it from the latest version only; the old commit still holds it",
+        "",
+        "Hides it from new readers, not from those who already cloned it"
+      ],
+      "lo": [
+        "LO5"
+      ],
+      "day": "day3",
+      "session": 4,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-delete-file",
+      "type": "tf",
+      "prompt": "Removing the settings file that held a key, in a new commit, removes the key from the repository.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "Every earlier commit still holds the file; git log -S finds it until the history is rewritten.",
+      "misconceptions": [
+        "Thinks a repository holds only its latest version",
+        ""
+      ],
+      "lo": [
+        "LO5"
+      ],
+      "day": "day3",
+      "session": 3,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-env-files",
+      "type": "single",
+      "prompt": "A project needs a key. Which set-up keeps it out of the repository and still tells a newcomer what to provide?",
+      "options": [
+        "The key in settings.toml, and settings.toml added to .gitignore afterwards",
+        "The key base64-encoded in the code",
+        "The key in the README, in a section marked private",
+        "An ignored .env file, and a committed .env.example naming the variable"
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "The value lives only in an ignored file or the environment; the example file documents the name.",
+      "misconceptions": [
+        "Ignoring a file already committed does not untrack it, and nothing documents the name",
+        "Takes encoding for encryption: anyone can decode it",
+        "Puts the secret in the most-read file of the repository",
+        ""
+      ],
+      "lo": [
+        "LO5"
+      ],
+      "day": "day3",
+      "session": 3,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-after-rewrite",
+      "type": "single",
+      "prompt": "A history was rewritten to remove a key and force-pushed. What must everyone who cloned it before do?",
+      "options": [
+        "Clone again, or reset hard to the rewritten branch",
+        "Nothing, because the next git pull fixes their copy",
+        "Run the secret scanner once",
+        "Commit their work and push it to the hub as usual"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "Rewritten commits have new ids; old clones still hold the old commits and must be replaced.",
+      "misconceptions": [
+        "",
+        "A pull merges the old history back, key included",
+        "Scanning finds the key but does not remove it from their copy",
+        "Pushing an old-history branch brings the removed commits back"
+      ],
+      "lo": [
+        "LO5"
+      ],
+      "day": "day3",
+      "session": 4,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-readme-section",
+      "type": "single",
+      "prompt": "Which Reproduce section lets a peer rebuild a report project on a clean machine?",
+      "options": [
+        "Run the notebook top to bottom",
+        "Tools needed, where to get the data, one rebuild command and the expected checksum",
+        "See the code for details",
+        "Contact the analyst for the data path"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "A peer needs the prerequisites, the data source, one command and a way to tell success from failure.",
+      "misconceptions": [
+        "Assumes the peer has the same packages, data and folder",
+        "",
+        "Leaves every decision to the reader",
+        "Makes reproduction depend on one person being available"
       ],
       "lo": [
         "LO6"
       ],
-      "day": "day1",
+      "day": "day3",
+      "session": 1,
+      "level": "evaluate",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-missing-data",
+      "type": "single",
+      "prompt": "In a peer reproduction, the rebuild fails: no such folder data/. The repository rightly does not hold the data. What is the fix?",
+      "options": [
+        "Commit the data folder into the repository so that every clone has it",
+        "Tell the peer the folder in a chat message",
+        "State where the data comes from and read its folder from a variable",
+        "Hard-code the peer's folder in the script"
+      ],
+      "correct": [
+        2
+      ],
+      "explanation": "The README carries the knowledge; the script takes the location from outside.",
+      "misconceptions": [
+        "Puts data back into the code repository",
+        "Fixes this run only; the next reader hits the same wall",
+        "",
+        "Ties the script to a second computer instead of the first"
+      ],
+      "lo": [
+        "LO6"
+      ],
+      "day": "day3",
+      "session": 1,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-own-clone",
+      "type": "tf",
+      "prompt": "If a fresh clone rebuilds correctly on the author's own laptop, a peer reproduction adds nothing.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "The author's laptop still holds caches, tools and knowledge the README may not state; a peer on a clean workspace finds those gaps.",
+      "misconceptions": [
+        "Equates a clean folder with a clean machine and a fresh reader",
+        ""
+      ],
+      "lo": [
+        "LO6"
+      ],
+      "day": "day3",
       "session": 1,
       "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "d3-expected-output",
+      "type": "single",
+      "prompt": "How does a peer know a rebuild reproduced the expected result rather than just running?",
+      "options": [
+        "The program prints no error",
+        "The output file exists in the output folder after the rebuild has run",
+        "The numbers look plausible",
+        "The rebuild compares the output with a committed checksum"
+      ],
+      "correct": [
+        3
+      ],
+      "explanation": "A committed checksum turns \"it ran\" into \"it produced the same bytes\".",
+      "misconceptions": [
+        "Takes running without error for being right",
+        "Checks presence, not content",
+        "Relies on judgement where an exact check is possible",
+        ""
+      ],
+      "lo": [
+        "LO6"
+      ],
+      "day": "day3",
+      "session": 1,
+      "level": "apply",
       "pool": "practice",
       "weight": 1
     }

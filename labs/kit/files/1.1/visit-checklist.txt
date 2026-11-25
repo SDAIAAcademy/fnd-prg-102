@@ -1,0 +1,5 @@
+Visit checklist for a field technician
+1. Photograph the station label and the inlet before touching anything.
+2. Note the logger's last line and whether it shows a restart.
+3. Clean the inlet; check the fan runs.
+4. Leave the station locked; record the visit in the station's log.

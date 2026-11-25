@@ -1,37 +1,69 @@
 <article class="lab" data-lab="1.1">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>Find your way round the report folder of the air-quality monitoring company without a file browser, read who may do what to each file, and make a script that only worked on the analyst's laptop run from any folder.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>A terminal with Bash: Git Bash on Windows, the terminal on macOS or Linux, or the provided Linux workspace</li>
+    <li>The lab workspace (<code>labs/README.md</code>, "Set up once"); this lab starts with <code>uv run lab.py start 1.1</code></li>
+    <li>AI policy: <b>off</b> for this lab. Use <code>man</code>, <code>--help</code> and the slides</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>Start the lab and see where you are <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 1.1
+cd 1.1/air-reports
+pwd
+ls -a</code></pre>
+    <p><code>pwd</code> prints the absolute path of the folder you are in. Every relative path you type starts from there.</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Map the logs with find, ls -S and du <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">find logs -name '*.log' | head
+find logs/2026-11 -name '*.log' | wc -l
+ls -S logs/2026-10/*.log | head -n 3
+du -h logs/2026-10 logs/2026-11</code></pre>
+    <p>Write the answers to questions 1 and 2 of <code>answers.md</code>. Look at the sizes: why might one station's log be larger than the others when it has the same number of lines?</p>
+  </div>
+
+  <div class="step">
+    <h3>Read the permission strings of listing.txt <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">cat listing.txt</code></pre>
+    <p>The listing comes from a Linux workspace. Read each string as four parts: the type (<code>d</code> or <code>-</code>), then three letters each for the owner, the group and everyone else. Answer questions 3 to 5 of <code>answers.md</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3>Fix run_counts.sh <span class="min">10 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">cat run_counts.sh
+bash run_counts.sh          # read the first error, then the second</code></pre>
+    <p>Two faults. The script changes into a folder that exists on one computer only: make it change into the <code>logs/2026-10</code> folder beside the script, wherever the script is (<code>"$(dirname "$0")"</code> is the script's own folder). The last line names a folder with a space in it: quote the path.</p>
+  </div>
+
+  <div class="step">
+    <h3>Run it from the workspace folder and check <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">cd ../..
+bash 1.1/air-reports/run_counts.sh
+uv run lab.py check 1.1</code></pre>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>On a Linux workspace, make <code>run_counts.sh</code> executable with <code>chmod u+x</code>, run it as <code>./run_counts.sh</code> from its folder, and explain why <code>bash run_counts.sh</code> never needed that.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>You move the whole <code>air-reports</code> folder to another disk. Which lines of the original script break, and which of your fixed script?</li>
+    <li>What does the shell do with <code>field notes/visit-checklist.txt</code> when it is not quoted?</li>
+    <li>Who can read <code>portal.env</code> in the listing, and why does that matter for a key?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>Answers: 12 November logs; the largest October log is ST07 (its lines end in a carriage return and a line feed, one byte more per line: the trap of lab 1.2); <code>notes.txt</code> is writable by everyone (<code>-rw-rw-rw-</code>); <code>make_report.sh</code> has no <code>x</code>, fixed with <code>chmod u+x make_report.sh</code>; <code>portal.env</code> is readable by its owner only (<code>-rw-------</code>). The fixed script prints 8,892 reading lines, then the first three lines of the checklist.</p>
+    <p>Common errors: <code>cd logs/2026-10</code> (relative to where you run it, not to the script); quoting only half the path; single quotes round <code>$(dirname "$0")</code>, which stop the substitution. On Git Bash, <code>ls -l</code> shows approximate permission bits for Windows files, which is why the listing is supplied. Solution: <code>labs/solutions/S1_1.sh</code>.</p>
   </details>
 </article>

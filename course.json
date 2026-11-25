@@ -96,7 +96,7 @@
             "minutes": 35,
             "id": "1.1",
             "title": "Find your way round the project folder",
-            "summary": "Addition to the entry's labs. Map the report folder with ls, find and du, read permission strings, and fix a script that only ran in one folder on one computer",
+            "summary": "Addition: map the report folder, read permission strings, and fix a script that ran on one computer only",
             "href": "D1_1_project_folder.html",
             "steps": [
               {
@@ -120,7 +120,7 @@
                 "minutes": 5
               }
             ],
-            "stretch": "On a Linux workspace, make run_counts.sh executable with chmod u+x, run it as ./run_counts.sh, and explain why bash run_counts.sh never needed that"
+            "stretch": "On a Linux workspace, chmod u+x the script, run it as ./run_counts.sh, and say why bash never needed that"
           }
         },
         {
@@ -139,7 +139,7 @@
             "minutes": 35,
             "id": "1.2",
             "title": "A counting pipeline over synthetic logs",
-            "summary": "Six counts over twelve stations' October logs, one pipeline each, saved as counts.sh and checked against the reference values",
+            "summary": "Six counts over twelve stations' October logs, one pipeline each, kept in counts.sh",
             "href": "D1_2_counting_pipeline.html",
             "steps": [
               {
@@ -167,11 +167,11 @@
                 "minutes": 4
               }
             ],
-            "stretch": "Count the alert hours (PM10 above 150) per station with awk, each station and hour counted once"
+            "stretch": "Alert hours (PM10 above 150) per station with awk, each hour counted once"
           }
         },
         {
-          "title": "Environment variables, exit codes and remote login",
+          "title": "Variables, exit codes and SSH",
           "summary": "A script that takes its input from outside, says when it failed, and a key pair to log in elsewhere",
           "outcomes": [
             "Pass a folder as an argument with an environment variable as the fallback",
@@ -186,7 +186,7 @@
             "minutes": 35,
             "id": "1.3",
             "title": "The counting script on a second folder, and a practice key",
-            "summary": "Addition to the entry's labs. Make the counting script run unchanged on November's logs, fail clearly, and create a practice SSH key pair and host entry for the lab workspace",
+            "summary": "Addition: the counting script runs unchanged on November and fails clearly; then a practice SSH key and host entry",
             "href": "D1_3_second_folder_key.html",
             "steps": [
               {
@@ -210,7 +210,7 @@
                 "minutes": 9
               }
             ],
-            "stretch": "Log in to the provided Linux workspace with the key (ssh -F ssh_config lab-workspace) and run counts.sh there on its copy of the logs"
+            "stretch": "Log in to the provided Linux workspace with the key and run counts.sh there"
           }
         },
         {
@@ -229,7 +229,7 @@
             "minutes": 35,
             "id": "1.4",
             "title": "Draw the graph, then check it",
-            "summary": "Addition to the entry's labs. Predict the commit graph of three short command sequences on paper, run them in a practice repository, and compare with git log --graph",
+            "summary": "Addition: predict the graphs of three command sequences on paper, run them, compare with git log --graph",
             "href": "D1_4_draw_the_graph.html",
             "steps": [
               {
@@ -253,7 +253,7 @@
                 "minutes": 6
               }
             ],
-            "stretch": "Predict what git commit --amend does to the last circle of your drawing, then try it and compare the commit ids before and after"
+            "stretch": "Predict what git commit --amend does to your drawing, then try it and compare the ids"
           }
         }
       ],
@@ -282,7 +282,7 @@
             "minutes": 35,
             "id": "2.1",
             "title": "Merge two branches and resolve a conflict alone",
-            "summary": "Addition to the entry's labs. Merge the analyst's and the technician's branches into main, resolve the conflict on the threshold line so both changes survive, and push to the hub",
+            "summary": "Addition: merge two branches into main, keep both changes on the conflicting line, push to the hub",
             "href": "D2_1_merge_alone.html",
             "steps": [
               {
@@ -306,7 +306,7 @@
                 "minutes": 8
               }
             ],
-            "stretch": "In a copy, put the second branch on top of main with git rebase instead, and compare the two graphs"
+            "stretch": "In a copy, rebase the second branch onto main instead and compare the graphs"
           }
         },
         {
@@ -325,7 +325,7 @@
             "minutes": 35,
             "id": "2.2",
             "title": "Branch, review and resolve a conflict in teams of three",
-            "summary": "Two authors and a reviewer on a hub whose main is protected: two pull requests on the report rules, comments addressed, one conflict resolved on the branch, both merged",
+            "summary": "Two authors and a reviewer, a protected main: two pull requests reviewed, one conflict resolved on its branch, both merged",
             "href": "D2_2_team_review.html",
             "steps": [
               {
@@ -369,7 +369,7 @@
             "minutes": 35,
             "id": "2.3",
             "title": "Undo five mistakes",
-            "summary": "Addition to the entry's labs. A repository with five mistakes in it: a stray staged file and line, a local debug commit, a wrong message with a forgotten file, a pushed wrong threshold, a deleted branch",
+            "summary": "Addition: five mistakes in one repository, each with its own undo, one of them already pushed",
             "href": "D2_3_undo_five.html",
             "steps": [
               {
@@ -412,7 +412,7 @@
             "minutes": 35,
             "id": "2.4",
             "title": "Rescue a project that fails on a second machine",
-            "summary": "Clone the analyst's report project as a second machine, read why it fails, then declare, pin and lock its dependencies and rebuild it to the expected output",
+            "summary": "Clone the report project as a second machine, read why it fails, then declare, lock and rebuild it to the expected output",
             "href": "D2_4_second_machine.html",
             "steps": [
               {
@@ -436,7 +436,7 @@
                 "minutes": 5
               }
             ],
-            "stretch": "Do the same with pip-tools (requirements.in, pip-compile --generate-hashes) and compare the two lock files"
+            "stretch": "Lock the same project with pip-tools (pip-compile --generate-hashes) and compare"
           }
         }
       ],
@@ -465,7 +465,7 @@
             "minutes": 35,
             "id": "3.1",
             "title": "One command, and data kept out of the code",
-            "summary": "Addition to the entry's labs. Stop tracking the data and output the report project carries, write rebuild.sh with an expected checksum and a Reproduce section, and follow it in a clean clone",
+            "summary": "Addition: data and output out of the repository, one rebuild command with a checksum, a README tested in a clean clone",
             "href": "D3_1_one_command.html",
             "steps": [
               {
@@ -489,7 +489,7 @@
                 "minutes": 9
               }
             ],
-            "stretch": "Make rebuild.sh print the versions it ran with (uv, Python, the locked packages) so a reproduction log can quote them"
+            "stretch": "Make rebuild.sh print the versions it ran with, for the reproduction log"
           }
         },
         {
@@ -508,7 +508,7 @@
             "minutes": 35,
             "id": "3.2",
             "title": "Containerise the project with a mounted data folder, on a laptop or a provided Linux workspace",
-            "summary": "Complete a five-line container definition that installs from the lock, build it with a rootless engine, and run the report with the logs mounted read-only",
+            "summary": "Complete a container definition that installs from the lock, build it rootless, run it on read-only logs",
             "href": "D3_2_container.html",
             "steps": [
               {
@@ -532,11 +532,11 @@
                 "minutes": 10
               }
             ],
-            "stretch": "Read the image's layers (podman image history), change report.py, and see which layers rebuild"
+            "stretch": "Change report.py, rebuild, and see which layers are rebuilt"
           }
         },
         {
-          "title": "What a container does not isolate, and keys in the environment",
+          "title": "What a container shares",
           "summary": "A container shares the kernel, the mounts and every variable you pass it; a key belongs in the environment, never in the code",
           "outcomes": [
             "Name what a container shares with its host",
@@ -552,7 +552,7 @@
             "minutes": 35,
             "id": "3.3",
             "title": "The key out of the code",
-            "summary": "Addition to the entry's labs. Move the report-portal key from the code into an environment variable, with .env.example committed, .env ignored and the key masked in the output",
+            "summary": "Addition: move the portal key from the code to the environment, with .env.example committed and the key masked",
             "href": "D3_3_key_out_of_code.html",
             "steps": [
               {
@@ -576,11 +576,11 @@
                 "minutes": 7
               }
             ],
-            "stretch": "Run the container with --env-file .env and list what else the container can see: its variables and its mounts"
+            "stretch": "Run the container with --env-file .env and list what it can see"
           }
         },
         {
-          "title": "Scanning before each commit, and after a leak",
+          "title": "Scanning, and after a leak",
           "summary": "Scan before every commit; after a leak, rotate first, then clean the history and report",
           "outcomes": [
             "Run a secret scan over files, staged changes and the whole history",
@@ -595,7 +595,7 @@
             "minutes": 35,
             "id": "3.4",
             "title": "Remediate a seeded leaked key with a scanner and a commit hook",
-            "summary": "A key leaked in an old commit: find it with a scan of the history, revoke and replace it, write the rotation note, clean the history, and install a hook that blocks the next one",
+            "summary": "A key leaked in an old commit: scan, rotate, write the note, clean the history, and add a hook that blocks the next one",
             "href": "D3_4_leaked_key.html",
             "steps": [
               {
@@ -619,7 +619,7 @@
                 "minutes": 7
               }
             ],
-            "stretch": "Run gitleaks with the repository's .gitleaks.toml, or the class host's push protection, and compare what it finds with the course scanner"
+            "stretch": "Run gitleaks with .gitleaks.toml, or the host's push protection, and compare"
           }
         }
       ],

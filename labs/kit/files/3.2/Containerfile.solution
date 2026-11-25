@@ -1,0 +1,17 @@
+# A container definition for the monthly client report.
+# Build:  podman build -t air-report .          (or: docker build -t air-report .)
+# Run:    podman run --rm -v "$PWD/../data:/data:ro" -v "$PWD/output:/out" air-report
+
+FROM docker.io/library/python:3.13-alpine
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+
+COPY report.py .
+
+RUN adduser -D -u 1000 runner
+USER runner
+
+ENTRYPOINT ["python", "report.py", "--data", "/data", "--out", "/out"]

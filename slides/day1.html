@@ -1,158 +1,496 @@
 <section class="slide title" id="title" data-auto="title">
-  <aside class="notes">REPLACE: welcome; introduce yourself; one question to the room that calibrates the pace; the rhythm of the day</aside>
+  <aside class="notes"><p>Welcome the room and introduce yourself. Ask one calibrating question: "Who has typed a command into a terminal this month?" and "Who has committed to a shared repository?" The answers set the pace of sessions 1 and 4.</p><p>The rhythm: four sessions of an hour, each about 25 minutes of slides and demonstration, then a 35-minute lab. Breaks are yours: press B.</p></aside>
 </section>
 
 <section class="slide" id="agenda" data-auto="agenda"></section>
+
+<section class="slide" id="the-case" data-lo="LO6">
+  <div class="kicker">The case for three days</div>
+  <h2>The monthly client report runs on one laptop only</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>An <b>air-quality monitoring company</b> runs twelve dust and particle stations, <b>ST01 to ST12</b>, at four clients' sites</li>
+      <li>Each station writes <b>one line an hour</b> to a log</li>
+      <li>The analyst turns a month of logs into each client's report, by a Python project on their laptop</li>
+      <li>Nobody else can rebuild it: no history, no declared packages, a key in the code</li>
+    </ul>
+    <div class="card c-teal"><h4>By the capstone day</h4><p class="small mb0">A peer rebuilds your own small project on a clean workspace, using only your README. Every lab practises one step of that.</p></div>
+  </div>
+  <div class="callout note mt"><b>Synthetic.</b> Company, clients and logs are invented; people appear as roles only.</div>
+  <aside class="notes"><p>Tell the story in one minute. The company is fictional and has no name on purpose: it is one of many contractors that run sensors at industrial and building sites. The alert threshold the report uses (PM10 above 150 for an hour) is the company's own rule, not a national standard.</p><p>Say what the capstone is now, so every lab has a reason: a peer will try to rebuild your repository from its README alone.</p></aside>
+</section>
+
+<section class="slide" id="setup-check">
+  <div class="kicker">Setup check</div>
+  <h2>Three tools and one command prove the laptop is ready</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal"><code class="language-bash">git --version
+bash --version | head -n 1
+uv --version
+git config user.name
+uv run labs/kit/setup.py --to ../air-labs
+cd ../air-labs &amp;&amp; uv run lab.py list</code></pre>
+    <ul class="bullets">
+      <li><b>Git</b> with a name and an email set (yours, or a neutral one such as <code>Participant A</code>)</li>
+      <li><b>Bash</b>: Git Bash on Windows, the terminal on macOS or Linux</li>
+      <li><b>uv</b>, from the pre-work</li>
+      <li>The last command lists the twelve labs</li>
+    </ul>
+  </div>
+  <div class="callout tip mt"><b>No admin rights on your laptop?</b> Every lab except 3.2 runs without them; lab 3.2 also runs on the provided Linux workspace.</div>
+  <aside class="notes"><p>Run this before session 1 starts, while people arrive. The workspace goes beside the course folder by default; on Windows keep its path short. A participant whose laptop blocks installs works on the provided Linux workspace for the whole course.</p><p>If <code>git config user.name</code> prints nothing: <code>git config --global user.name "Participant A"</code> and the same for the email with an address ending in <code>example.invalid</code> when they prefer not to use their own.</p></aside>
+</section>
 
 <!-- Session 1 -->
 
 <section class="slide section" id="s1" data-auto="section" data-session="1"></section>
 
-<section class="slide" id="s1-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="shell-reads-a-line" data-lo="LO2">
+  <div class="kicker">What the shell does</div>
+  <h2>The shell reads a line, splits it into words and runs the first one</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Read</b><code>ls -l logs</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Split</b>on spaces: <code>ls</code>, <code>-l</code>, <code>logs</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Expand</b><code>*</code>, <code>$VAR</code>, <code>~</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>4 · Run</b>the program <code>ls</code> with two words</div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <div class="callout warn mt"><b>What goes wrong.</b> A space splits words: <code>cat field notes.txt</code> asks for two files. Quotes keep one word: <code>cat "field notes.txt"</code>.</div>
+  <aside class="notes"><p>Type <code>echo one two   three</code> and <code>echo "one two   three"</code> and let the room see the spaces collapse in the first. That single demonstration explains most quoting errors of the day.</p></aside>
 </section>
 
-<section class="slide" id="s1-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="where-you-are" data-lo="LO2">
+  <div class="kicker">Paths</div>
+  <h2>A relative path starts where you are; an absolute one starts at the root</h2>
+  <table class="t">
+    <tr><th>You are in</th><th>You type</th><th>It means</th></tr>
+    <tr><td><code>/srv/air</code></td><td><code>logs/ST01.log</code></td><td><code>/srv/air/logs/ST01.log</code></td></tr>
+    <tr><td><code>/srv/air/logs</code></td><td><code>../stations.csv</code></td><td><code>/srv/air/stations.csv</code></td></tr>
+    <tr><td>anywhere</td><td><code>/srv/air/logs</code></td><td>the same folder, always</td></tr>
+    <tr class="hl"><td>anywhere</td><td><code>~/notes.md</code></td><td>your home folder, then <code>notes.md</code></td></tr>
+  </table>
+  <p class="small mt">Commands to know: <code>pwd</code> (where am I), <code>ls -a</code> (what is here), <code>cd</code> (go), <code>.</code> (here), <code>..</code> (one up).</p>
+  <aside class="notes"><p>Ask: "If I move the whole folder to another disk, which of these lines still work?" The relative ones inside the folder do; an absolute path written into a script breaks. That is the fault in lab 1.1.</p><p>Windows note: Git Bash shows <code>C:</code> as <code>/c/</code>. Paths in scripts use forward slashes everywhere.</p></aside>
+</section>
+
+<section class="slide" id="find-and-du" data-lo="LO2">
+  <div class="kicker">Looking round without a file browser</div>
+  <h2>find lists what matches, ls -S orders by size, du adds sizes up</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">find visits -name '*.csv'            # every CSV under visits/, at any depth
+find visits -name '*.csv' | wc -l    # how many
+ls -S visits/*.csv | head -n 3       # the three largest
+du -h visits                          # the size of the folder, human-readable</code></pre>
+  <div class="callout tip mt"><b>Quote the pattern.</b> <code>'*.csv'</code> in quotes reaches <code>find</code> as a pattern; without quotes the shell may expand it first, in the current folder.</div>
+  <aside class="notes"><p>Demonstrate on any folder of your own, not on the lab's logs: the lab asks for the November count and the largest October log. Ask why two files with the same number of lines could differ in size (line endings, longer numbers). Leave the answer to the lab.</p></aside>
+</section>
+
+<section class="slide" id="permission-string" data-lo="LO2">
+  <div class="kicker">Permissions</div>
+  <h2>Ten characters say who may read, write or run a file</h2>
+  <div class="cols cols-2">
+    <div>
+      <pre class="code" data-file="ls -l on Linux"><code>-rw-r-----  1 analyst field  612 visits.csv
+drwxr-xr-x  2 analyst field 4096 archive</code></pre>
+      <table class="t small mt">
+        <tr><th>Part</th><th>In <code>-rw-r-----</code></th></tr>
+        <tr><td>Type</td><td><code>-</code> a file (<code>d</code> a folder)</td></tr>
+        <tr><td>Owner</td><td><code>rw-</code> read, write</td></tr>
+        <tr><td>Group</td><td><code>r--</code> read</td></tr>
+        <tr><td>Everyone else</td><td><code>---</code> nothing</td></tr>
+      </table>
+    </div>
+    <ul class="bullets">
+      <li><b>r</b> read, <b>w</b> change, <b>x</b> run a file or enter a folder</li>
+      <li><code>chmod u+x run.sh</code> lets the owner run it as <code>./run.sh</code></li>
+      <li><code>chmod go-r secret.env</code> takes reading away from group and others</li>
+      <li>A key file is readable by its owner only</li>
+    </ul>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>The example is a pattern, not output from the lab. On Git Bash for Windows, <code>ls -l</code> shows approximate bits because Windows files do not have these permissions; that is why lab 1.1 supplies a listing taken in the shape Linux prints. On the provided Linux workspace the real thing works.</p></aside>
+</section>
+
+<section class="slide" id="script-tied-to-a-folder" data-lo="LO2 LO6">
+  <div class="kicker">A script that works here only</div>
+  <h2>A script that names your folder works on your computer only</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Tied to one computer</h4><pre class="code s" data-example><code class="language-bash">cd /mnt/share/visits
+wc -l *.csv</code></pre><p class="small mb0">Runs only where that folder exists.</p></div>
+    <div class="card c-teal"><h4>Tied to itself</h4><pre class="code s"><code class="language-bash">cd "$(dirname "$0")/visits"
+wc -l *.csv</code></pre><p class="small mb0"><code>$0</code> is the script's own path; <code>dirname</code> keeps its folder.</p></div>
+  </div>
+  <div class="callout warn mt"><b>Single quotes stop the substitution.</b> <code>'$(dirname "$0")'</code> is printed as it is; double quotes let <code>$( )</code> run and still keep spaces in one word.</div>
+  <aside class="notes"><p>This is the pattern the lab asks for, on a different folder. Run both versions from another folder to show the first failing with "No such file or directory".</p></aside>
+</section>
+
+<section class="slide" id="check-paths" data-lo="LO2">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which line still works after the folder moves?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2">
+    <p class="lead">A script <code>tally.sh</code> sits in <code>reports/</code> beside a folder <code>visits/</code>. The whole <code>reports/</code> folder is copied to a colleague's laptop. Which first line lets the script find <code>visits/</code> there, from whatever folder it is started?</p>
+    <div class="opts">
+      <div class="opt" data-why="Relative to where the script is started, not to where it lives: it fails when run from any other folder">cd visits</div>
+      <div class="opt" data-ok>cd "$(dirname "$0")/visits"</div>
+      <div class="opt" data-example data-why="An absolute path names the folder on the first laptop; it does not exist on the colleague's">cd /mnt/share/reports/visits</div>
+      <div class="opt" data-why="Single quotes print the text as it is, so the command substitution never runs">cd '$(dirname "$0")/visits'</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>$0</code> is the script's own path wherever it is copied, so <code>dirname</code> gives its folder on any computer.</div>
+  </div>
+  <aside class="notes"><p>Answer: B. If many pick A, run it from the home folder and show the error. If they pick D, echo it to show the literal text.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-1-1" data-auto="lab" data-lab="1.1">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Walk the room at minute 10: most will be stuck on the permission strings or on quoting. Common errors: <code>cd logs/2026-10</code> without the script's folder; quoting only part of the path. The lab check runs the script from the workspace folder, which is the real test.</p><p>Debrief in two minutes: why was ST07's log the largest? Leave the full answer to lab 1.2.</p></aside>
 </section>
 
 <!-- Session 2 -->
 
 <section class="slide section" id="s2" data-auto="section" data-session="2"></section>
 
-<section class="slide" id="s2-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="three-streams" data-lo="LO2">
+  <div class="kicker">Streams</div>
+  <h2>Every program has one input and two outputs</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>stdin (0)</h4><p class="small mb0">What the program reads: the keyboard, a file after <code>&lt;</code>, or the previous program after <code>|</code>.</p></div>
+    <div class="card c-cyan"><h4>stdout (1)</h4><p class="small mb0">The result. <code>&gt;</code> writes it to a file, <code>&gt;&gt;</code> adds to the end, <code>|</code> hands it on.</p></div>
+    <div class="card c-coral"><h4>stderr (2)</h4><p class="small mb0">Errors and progress. <code>2&gt;</code> sends them to a file; they do not go down a pipe.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <pre class="code mt" data-file="terminal"><code class="language-bash">wc -l visits/*.csv &gt; lines.txt 2&gt; errors.txt</code></pre>
+  <aside class="notes"><p>Show that an error from a misspelt file name still appears on screen when only stdout is redirected. Ask: "Where should a script print its error messages?" (stderr, so they never end up inside the result file). Lab 1.3 needs this.</p></aside>
 </section>
 
-<section class="slide" id="s2-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="small-tools" data-lo="LO2">
+  <div class="kicker">The filters</div>
+  <h2>Six small programs cover most counting questions</h2>
+  <table class="t">
+    <tr><th>Command</th><th>Does one thing</th></tr>
+    <tr><td><code>grep 'ERR'</code> · <code>grep -v '^#'</code></td><td>keeps the lines that match · that do not match</td></tr>
+    <tr><td><code>cut -d' ' -f2</code></td><td>keeps field 2 of each line, fields split by a space</td></tr>
+    <tr><td><code>sort</code> · <code>sort -rn</code></td><td>orders lines · by number, largest first</td></tr>
+    <tr><td><code>uniq -c</code> · <code>uniq -d</code></td><td>counts runs of equal neighbours · prints each repeated line once</td></tr>
+    <tr><td><code>wc -l</code> · <code>grep -c .</code></td><td>counts lines · counts lines that are not empty</td></tr>
+    <tr><td><code>head -n 3</code> · <code>tail -n +2</code></td><td>the first three lines · everything from line 2 (skip a header)</td></tr>
+  </table>
+  <aside class="notes"><p>Each tool reads lines and writes lines, which is why they join. <code>awk</code> appears once, in the stretch: say it is a small language, worth learning later.</p></aside>
+</section>
+
+<section class="slide" id="pipeline-built-up" data-lo="LO2">
+  <div class="kicker">Build it one stage at a time</div>
+  <h2>Add one stage, look at the output, then add the next</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">cat visits.log | head -n 3                           # 1 · look first
+grep -v '^#' visits.log | head -n 3                  # 2 · drop comments
+grep -v '^#' visits.log | cut -d' ' -f3 | head -n 3  # 3 · keep the technician code
+grep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c | sort -rn | head -n 3</code></pre>
+  <div class="callout tip mt"><b>Read a pipeline left to right</b> as a sentence: "lines that are not comments, their third field, sorted, counted, largest count first, top three".</div>
+  <aside class="notes"><p>Demonstrate live on a short log of field visits you type in front of the room (five lines with a comment line and technician codes T1 to T3); do not use the station logs, whose counts are the lab. The habit to teach: <code>head</code> after every new stage.</p></aside>
+</section>
+
+<section class="slide" id="sort-before-uniq" data-lo="LO2">
+  <div class="kicker">The rule people forget</div>
+  <h2>uniq only sees neighbours, so sort first</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Without sort</h4><pre class="code s"><code>T1
+T2
+T1
+$ uniq -c
+  1 T1
+  1 T2
+  1 T1</code></pre></div>
+    <div class="card c-teal"><h4>With sort</h4><pre class="code s"><code>$ sort | uniq -c
+  2 T1
+  1 T2</code></pre></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>Ask the room to predict the left output before you reveal it. This one mistake gives plausible but wrong counts, which is worse than an error.</p></aside>
+</section>
+
+<section class="slide" id="hidden-characters" data-lo="LO2 LO6">
+  <div class="kicker">What you cannot see</div>
+  <h2>A file written on Windows ends each line with an extra character</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Linux and macOS end a line with <b>LF</b>; Windows programs often write <b>CR LF</b></li>
+      <li>The CR sticks to the last field: <code>OK</code> and <code>OK\r</code> are two words to <code>sort</code></li>
+      <li><code>cat -A</code> shows it as <code>^M</code>; <code>file</code> names the line endings</li>
+      <li><code>tr -d '\r'</code> removes it</li>
+    </ul>
+    <div class="card c-purple"><h4>The same pipeline, two answers</h4><p class="small mb0">Git Bash's <code>grep</code> on Windows drops the CR from its output; <code>grep</code> on Linux keeps it. A pipeline can be right on one machine and wrong on the next: the theme of the whole course.</p></div>
+  </div>
+  <aside class="notes"><p>This difference was measured when the course was built: on Git for Windows, <code>grep</code> and <code>awk</code> drop the CR; <code>cut</code> keeps it; <code>grep -U</code> keeps it too. Do not say which station's log has CR LF: lab 1.2 finds it.</p></aside>
+</section>
+
+<section class="slide" id="script-it" data-lo="LO2">
+  <div class="kicker">Keep the pipelines</div>
+  <h2>A pipeline you will run again belongs in a script</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash">#!/usr/bin/env bash
+# Counts over the field visits. Run: bash visit_counts.sh &gt; visit_counts.txt
+
+echo "== V1 visit lines (no comments)"
+grep -v '^#' visits.log | grep -c .
+
+echo "== V2 visits per technician"
+grep -v '^#' visits.log | cut -d' ' -f3 | sort | uniq -c</code></pre>
+  <div class="callout note mt"><b>The echo lines are labels.</b> They make the output readable by a person and by a check.</div>
+  <aside class="notes"><p>Same visits example. The lab's <code>counts.sh</code> has this shape with six questions on the station logs; the lab check reads the labels.</p></aside>
+</section>
+
+<section class="slide" id="check-uniq" data-lo="LO2">
+  <div class="kicker">Checkpoint</div>
+  <h2>Why does the count list one technician twice?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2">
+    <p class="lead">On a colleague's Linux machine, <code>cut -d' ' -f4 visits.log | sort | uniq -c</code> prints <code>12 T2</code> and, further down, <code>3 T2</code>. Field 4 is the last field. What is the most likely cause?</p>
+    <div class="opts">
+      <div class="opt" data-why="sort puts equal lines together, so two identical words cannot end up in separate runs">sort did not group the lines</div>
+      <div class="opt" data-why="uniq -c counts runs of equal lines; it does not split one word into two">uniq -c counts each run twice</div>
+      <div class="opt" data-why="A wrong field would give different words, not the same technician code twice">cut took the wrong field</div>
+      <div class="opt" data-ok>Some lines end in CR LF, so one T2 carries an invisible CR</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The last field of a CR LF line ends in the CR, so <code>T2</code> and <code>T2\r</code> sort as different words; <code>cat -A</code> shows it and <code>tr -d '\r'</code> fixes it.</div>
+  </div>
+  <aside class="notes"><p>Answer: D. Ask how to prove it in one command: pipe into <code>cat -A</code>.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-1-2" data-auto="lab" data-lab="1.2">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>AI off for every first attempt. Watch for: <code>uniq -c</code> without <code>sort</code>; counting comment lines; Q5 counted as lines in all instead of repeated ones. For Q2, on Windows, Git Bash hides the CR trap: have one participant run with <code>grep -U</code> and show the two OK rows, or show it on the Linux workspace.</p><p>Debrief at the start of session 3, not before: the trainer's values are on the lab page.</p></aside>
 </section>
 
 <!-- Session 3 -->
 
 <section class="slide section" id="s3" data-auto="section" data-session="3"></section>
 
-<section class="slide" id="s3-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="debrief-1-2" data-lo="LO2">
+  <div class="kicker">Lab 1.2 debrief</div>
+  <h2>Seven lines in October were not readings, and one log hid a character</h2>
+  <div class="cols cols-3">
+    <div class="stat center"><div class="big">8,892</div><div class="lbl">reading lines out of 8,899 in October</div></div>
+    <div class="stat center"><div class="big">735</div><div class="lbl">OK lines of ST07 that end in CR LF</div></div>
+    <div class="stat center"><div class="big">12</div><div class="lbl">lines sent twice after two logger restarts</div></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <p class="small mt">Status counts once the CR is removed: OK 8,728 · WARN 103 · ERR 61. Most errors: ST05 (26), ST09 (17), ST12 (8).</p>
+  <aside class="notes"><p>Numbers from the lab's solution run (labs/solutions/S1_2.sh). The 735 is visible only where grep keeps the CR: on Linux, or with grep -U on Git Bash. Ask who got 8,899 for Q1 and why (comments and a blank line).</p></aside>
 </section>
 
-<section class="slide" id="s3-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="arguments" data-lo="LO2">
+  <div class="kicker">Input from outside</div>
+  <h2>A script takes its folder as an argument, with a variable as the fallback</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash">DIR="${1:-${VISITS_DIR:-}}"     # the first argument, else $VISITS_DIR, else empty
+grep -v '^#' "$DIR"/visits.log | grep -c .</code></pre>
+  <table class="t small mt">
+    <tr><th>You run</th><th><code>DIR</code> is</th></tr>
+    <tr><td><code>bash visit_counts.sh march</code></td><td><code>march</code></td></tr>
+    <tr><td><code>VISITS_DIR=april bash visit_counts.sh</code></td><td><code>april</code></td></tr>
+    <tr><td><code>bash visit_counts.sh</code> (no variable set)</td><td>empty: stop and say so</td></tr>
+  </table>
+  <aside class="notes"><p><code>VAR=value command</code> sets the variable for that one command only. <code>export VAR=value</code> sets it for every later command in this shell. Show <code>env | grep VISITS</code> before and after.</p></aside>
+</section>
+
+<section class="slide" id="exit-codes" data-lo="LO2">
+  <div class="kicker">Did it work?</div>
+  <h2>Every command ends with a number: 0 means it worked</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal"><code class="language-bash">grep -q T9 visits.log; echo $?  # 1: no match
+ls nowhere; echo $?     # 2: an error
+false | true; echo $?   # 0: last counts
+set -o pipefail
+false | true; echo $?   # 1: any failure</code></pre>
+    <ul class="bullets">
+      <li><code>$?</code> holds the code of the last command</li>
+      <li><b>set -e</b> stops the script at the first failing command</li>
+      <li><b>set -u</b> stops on a variable that was never set</li>
+      <li><b>set -o pipefail</b> makes a pipeline fail when any stage fails</li>
+    </ul>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <div class="callout tip mt"><b>Pick your own code for "bad input".</b> Many tools use 2; say it in the script's usage line.</div>
+  <aside class="notes"><p>Run the left column live. The third line surprises people: without pipefail, a pipeline reports only its last command. A script that another program or a pipeline calls must say "I failed" through its exit code, not only in words.</p></aside>
+</section>
+
+<section class="slide" id="fail-clearly" data-lo="LO2 LO6">
+  <div class="kicker">A clear failure</div>
+  <h2>Stop early, say what is missing on stderr, and return a non-zero code</h2>
+  <pre class="code" data-file="visit_counts.sh"><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+DIR="${1:-${VISITS_DIR:-}}"
+if [ -z "$DIR" ] || [ ! -f "$DIR/visits.log" ]; then
+  echo "usage: bash visit_counts.sh &lt;folder&gt; (or set VISITS_DIR)" &gt;&amp;2
+  exit 2
+fi</code></pre>
+  <div class="callout note mt"><b>Why it matters for reproduction.</b> A peer following your README sees "set VISITS_DIR" instead of an empty result that looks like zero visits.</div>
+  <aside class="notes"><p>Ask what the script printed before this guard when the folder was wrong: zero, which reads like a real answer. Lab 1.3 applies this to counts.sh with AIR_LOGS.</p></aside>
+</section>
+
+<section class="slide" id="ssh-key-pair" data-lo="LO2">
+  <div class="kicker">Remote login</div>
+  <h2>An SSH key pair: the public half opens the door, the private half never leaves you</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Make</b><code>ssh-keygen -t ed25519</code> writes <code>key</code> and <code>key.pub</code></div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Give</b>the <code>.pub</code> file to the server or the Git host</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Prove</b>the server checks a signature made with the private key</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>4 · Check</b>compare fingerprints: <code>ssh-keygen -lf key.pub</code></div>
+  </div>
+  <div class="callout warn mt"><b>The private key is a secret.</b> Protect it with a passphrase, readable by you only, never in a repository.</div>
+  <aside class="notes"><p>Ed25519 is the default type of current OpenSSH ssh-keygen (OpenBSD manual page). The fingerprint is how you check, by reading it aloud or comparing it on the host's page, that the key on the server is yours.</p><p>Sources: ssh-keygen(1) and ssh_config(5), OpenBSD manual pages.</p></aside>
+</section>
+
+<section class="slide" id="ssh-config" data-lo="LO2">
+  <div class="kicker">A host entry</div>
+  <h2>One entry in a config file saves typing and picks the right key</h2>
+  <pre class="code" data-file="ssh_config"><code>Host field-server
+    HostName 198.51.100.7
+    User technician
+    IdentityFile keys/field_key
+    IdentitiesOnly yes</code></pre>
+  <p class="small mt"><code>ssh -F ssh_config field-server</code> now logs in as <code>technician</code> with that key only. <code>192.0.2.0/24</code> and <code>198.51.100.0/24</code> are address ranges reserved for examples.</p>
+  <aside class="notes"><p>IdentitiesOnly stops ssh from offering every key it can find, which some servers count as failed attempts. The lab writes the same kind of entry for the lab workspace; logging in needs the provided workspace and the trainer adding the public key.</p></aside>
+</section>
+
+<section class="slide" id="check-exit-code" data-lo="LO2">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does the caller see?</h2>
+  <div class="quiz" data-type="single" data-lo="LO2">
+    <p class="lead">A script without <code>set -o pipefail</code> ends with <code>grep -h ERR "$DIR"/*.log | wc -l</code>. <code>DIR</code> names a folder that does not exist. What exit code does the script return, and what does it print?</p>
+    <div class="opts">
+      <div class="opt" data-ok>0, after printing 0 and an error from grep on stderr</div>
+      <div class="opt" data-why="A pipeline's code is its last command's unless pipefail is set, and wc succeeded">2, the code of the failed grep</div>
+      <div class="opt" data-why="grep's complaint goes to stderr; wc still counts the empty stdout and prints 0">1, and it prints nothing at all</div>
+      <div class="opt" data-why="Without set -e or pipefail nothing stops the pipeline; wc runs on an empty input">The script stops before wc runs</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Without pipefail a pipeline returns its last command's code: <code>wc</code> counted zero lines and succeeded, so the failure is hidden.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. Run it to confirm. Then add set -o pipefail and run it again: the code becomes 2.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-1-3" data-auto="lab" data-lab="1.3">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Anyone who did not finish 1.2 starts here anyway: the starting counts.sh already holds working pipelines. Watch for <code>DIR=$1</code> under <code>set -u</code> (fails with no argument), and <code>"$DIR/*.log"</code> (the quotes stop the star). The practice key stays in the lab folder; never let anyone overwrite their own <code>~/.ssh</code> keys.</p></aside>
 </section>
 
 <!-- Session 4 -->
 
 <section class="slide section" id="s4" data-auto="section" data-session="4"></section>
 
-<section class="slide" id="s4-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="three-places" data-lo="LO1">
+  <div class="kicker">Where a change lives</div>
+  <h2>A change moves through three places: the folder, the staging area, the history</h2>
+  <div class="flow">
+    <div class="step c-coral"><b>Working folder</b>files as you edit them</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>Staging area</b><code>git add</code> picks what the next commit holds</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>History</b><code>git commit</code> records a snapshot</div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <table class="t small mt">
+    <tr><th>Command</th><th>Compares</th></tr>
+    <tr><td><code>git diff</code></td><td>working folder with the staging area: what is not staged</td></tr>
+    <tr><td><code>git diff --staged</code></td><td>staging area with the last commit: what the next commit holds</td></tr>
+    <tr><td><code>git status --short</code></td><td>both, one line per file</td></tr>
+  </table>
+  <aside class="notes"><p>The prerequisite course had participants commit already; this is the model behind it. Demonstrate: change two files, add one, run both diffs. Ask which diff shows which file before you run it.</p></aside>
 </section>
 
-<section class="slide" id="s4-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="commit-is-snapshot" data-lo="LO1">
+  <div class="kicker">What a commit is</div>
+  <h2>A commit is a snapshot with a parent, an author, a message and an id</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>The <b>snapshot</b>: every tracked file as it was</li>
+      <li>The <b>parent</b>: the commit it follows (two for a merge)</li>
+      <li>The <b>id</b> is a hash of all of it: change anything, get a new id</li>
+      <li>So history is a chain you can check, and rewriting it changes every id after the change</li>
+    </ul>
+    <pre class="code" data-file="terminal"><code class="language-bash">git log --format='%h %p %s'
+# id      parent   message</code></pre>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>The id depends on the author and the time too, which is why two participants who type the same commands get different ids. The lab kit fixes authors and dates so its practice repositories have the same ids for everyone. Keep this in mind for Day 3: cleaning a key out of history changes ids.</p></aside>
+</section>
+
+<section class="slide" id="branch-is-pointer" data-lo="LO1">
+  <div class="kicker">What a branch is</div>
+  <h2>A branch is a name that points at one commit, and HEAD says which name you are on</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="a graph"><code>o---o---o   &lt;- main &lt;- HEAD
+         \
+          o   &lt;- draft</code></pre>
+    <ul class="bullets">
+      <li>Pro Git calls a branch "a lightweight movable pointer" to a commit</li>
+      <li>A new commit moves the branch HEAD points at, and only that one</li>
+      <li>Creating a branch writes one small reference: it is cheap</li>
+      <li><code>git switch draft</code> moves HEAD; the next commit moves <code>draft</code></li>
+    </ul>
+  </div>
+  <aside class="notes"><p>Draw it on the board as you speak. Arrows in the graph point from a commit to its parent, which is the opposite of time. Sources: Pro Git, "Branches in a Nutshell".</p></aside>
+</section>
+
+<section class="slide" id="draw-a-sequence" data-lo="LO1">
+  <div class="kicker">Worked example</div>
+  <h2>Draw first, run second, compare third</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="sequence"><code class="language-bash">git commit -m "A"        # on main
+git branch notes
+git commit -m "B"        # still on main
+git switch notes
+git commit -m "C"</code></pre>
+    <pre class="code frag" data-file="the graph"><code>        B   &lt;- main
+       /
+o--A--+
+       \
+        C   &lt;- notes &lt;- HEAD</code></pre>
+  </div>
+  <p class="small mt frag">main reaches 3 commits (the first, A, B); notes reaches 3 (the first, A, C); 4 commits in all.</p>
+  <aside class="notes"><p>Ask the room to draw it on paper before you press. This is a different sequence from the lab's three; the supervised check asks for five more like it, drawn by hand.</p></aside>
+</section>
+
+<section class="slide" id="read-log-graph" data-lo="LO1">
+  <div class="kicker">Reading Git's drawing</div>
+  <h2>git log --graph draws the same graph on its side</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">git log --oneline --graph --all
+* 3c1d0e2 (HEAD -&gt; notes) C
+| * 9b7a4f1 (main) B
+|/
+* 5e2a8c3 A
+* 1f0b6d9 First commit</code></pre>
+  <ul class="bullets mt">
+    <li>Newest at the top; each <code>*</code> is a commit; the lines are parent links</li>
+    <li><code>--all</code> shows every branch, not only the one you are on</li>
+  </ul>
+  <aside class="notes"><p>The ids here are illustrative, not from a run. Ask: "Which commit is the last both branches share?" (A).</p></aside>
+</section>
+
+<section class="slide" id="check-graph" data-lo="LO1">
+  <div class="kicker">Checkpoint</div>
+  <h2>How many commits does main reach?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1">
+    <p class="lead">A new repository gets one commit on <code>main</code>. Then: <code>git branch fix</code>, two commits on <code>main</code>, <code>git switch fix</code>, one commit. How many commits does <code>main</code> reach, and how many does the repository hold?</p>
+    <div class="opts">
+      <div class="opt" data-why="Counts the commit made on fix as part of main, as if branches shared everything">main 4, the repository 4</div>
+      <div class="opt" data-why="Forgets the first commit, which every branch created later still reaches">main 2, the repository 3</div>
+      <div class="opt" data-ok>main 3, the repository 4</div>
+      <div class="opt" data-why="Treats the branch as a copy of the commits, so the shared first commit is counted twice">main 3, the repository 5</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The two branches share the first commit; main adds two, fix adds one, so main reaches three of the four.</div>
+  </div>
+  <aside class="notes"><p>Answer: C. Draw it on the board after the reveal.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-1-4" data-auto="lab" data-lab="1.4">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Paper first. Collect two drawings of sequence 3 and show them without names: one right, one with a merge that never happened. Common errors: arrows from parent to child; forgetting the first commit; believing <code>commit -am</code> adds new files.</p></aside>
 </section>
 
 <section class="slide" id="wrap-up">
   <div class="kicker">Day 1 · wrap-up</div>
   <h2>Three things to keep</h2>
   <div class="cols cols-3">
-    <div class="card c-teal"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-coral"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-purple"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
+    <div class="card c-teal"><h4>Paths travel badly</h4><p class="small mb0">A script finds its files from its own folder and takes data folders as arguments.</p></div>
+    <div class="card c-coral"><h4>Look at every stage</h4><p class="small mb0">Build pipelines one stage at a time; a hidden character or a repeat changes the count.</p></div>
+    <div class="card c-purple"><h4>History is a graph</h4><p class="small mb0">Commits point to parents; branches and HEAD are names that point to commits.</p></div>
   </div>
+  <aside class="notes"><p>Ask each person to say which of the three they would have got wrong yesterday.</p></aside>
 </section>
 
 <section class="slide dark" id="next" data-label="Next">
   <div class="kicker">Next</div>
-  <h2>Day 2: REPLACE: the theme of this unit, in a few words</h2>
-  <p class="lead">REPLACE: what participants prepare before then; unfinished labs can be finished at home</p>
-  <aside class="notes">REPLACE: accounts, installs or reading participants need before the next unit</aside>
+  <h2>Day 2: Working together on one history</h2>
+  <p class="lead">Tonight, 30 minutes: the commit-graph practice in <code>labs/practice/commit_graphs.md</code>, drawn on paper. Bring a laptop with the workspace; unfinished labs can be finished at home with <code>uv run lab.py check</code>.</p>
+  <aside class="notes"><p>The practice set counts towards the guided self-study hours. Day 2 starts with a review checkpoint on today's graph.</p></aside>
 </section>

@@ -1,37 +1,58 @@
 <article class="lab" data-lab="1.4">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>Draw, before you run it, the commit graph that each of three short command sequences produces; then run them in a practice repository and compare your drawing with what Git recorded.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 1.4</code>: <code>practice/</code>, a repository with one commit, <code>sequences.md</code> and <code>graphs.md</code></li>
+    <li>Paper and a pen: the supervised check asks for graphs drawn by hand</li>
+    <li>AI policy: <b>off</b>. The prediction is the exercise</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>Predict, then run sequence 1 <span class="min">6 min</span></h3>
+    <p>Draw the graph you expect after sequence 1: one circle per commit, an arrow from each commit to its parent, a label for each branch and for <code>HEAD</code>. Answer question 1 of <code>graphs.md</code>. Then run the sequence inside <code>practice/</code>.</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Compare and correct your drawing <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git log --oneline --graph --all
+git log --format='%h %p %s'      # each commit with its parent</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Sequence 2: stage one change of two <span class="min">9 min</span></h3>
+    <p>Before you run <code>git commit</code>, read <code>git status --short</code>, <code>git diff</code> and <code>git diff --staged</code>, and say which file each one shows. Answer question 2 first.</p>
+  </div>
+
+  <div class="step">
+    <h3>Sequence 3: a branch that moves while main moves too <span class="min">10 min</span></h3>
+    <p>Answer questions 3 and 4 and draw the graph, then run the sequence and compare with <code>git log --oneline --graph --all</code>. Which commits do the two branches share?</p>
+  </div>
+
+  <div class="step">
+    <h3>Write the answers and check <span class="min">6 min</span></h3>
+    <p>Keep your first drawing even when it was wrong; put the right numbers on the answer lines.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">cd ../.. &amp;&amp; uv run lab.py check 1.4</code></pre>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>Predict what <code>git commit --amend</code> does to the last circle of your drawing, then try it on <code>main</code> and compare the commit id before and after.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>What does <code>git commit -am</code> leave out that <code>git add -A</code> would have staged?</li>
+    <li>Where does <code>HEAD</code> point after <code>git switch review-notes</code>, and what moves when you commit?</li>
+    <li>Why does a branch cost almost nothing to create?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>Answers: 3 commits reachable from <code>main</code> after sequence 1, 5 after sequence 2; 7 commits in all after sequence 3 (each branch reaches 6 and they share 5); <code>HEAD</code> points at <code>main</code>. In sequence 2, <code>git diff</code> shows <code>settings.txt</code> (changed, not staged) and <code>git diff --staged</code> shows <code>stations.txt</code>.</p>
+    <p>Common errors: forgetting the first commit; drawing arrows from parent to child; drawing a merge at the end of sequence 3 (nothing merged yet); thinking <code>commit -am</code> adds new files (it stages changes to tracked files only). Commit ids differ between participants (their own name and the time), which is a point to make: the id depends on everything in the commit. Solution: <code>labs/solutions/S1_4.sh</code>.</p>
   </details>
 </article>
