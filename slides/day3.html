@@ -256,6 +256,7 @@ ENTRYPOINT ["python", "planner.py", "--data", "/data"]</code></pre>
         raise SystemExit(2)
     return key
 
+key = booking_key()
 print(f"booking with the key ending ...{key[-4:]}")</code></pre>
   <aside class="notes"><p>A booking-service key for the field-visit planner, not the portal key of the lab. Ask why the default is an empty string and not a placeholder key: a placeholder that looks real gets committed and copied.</p></aside>
 </section>
