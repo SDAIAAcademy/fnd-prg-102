@@ -13,3 +13,6 @@
 *.docx binary
 *.pptx binary
 *.parquet binary
+
+# The synthetic logs keep their bytes: one station writes CR LF on purpose (lab 1.2)
+labs/kit/data/** -text
