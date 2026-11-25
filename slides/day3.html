@@ -1,158 +1,425 @@
 <section class="slide title" id="title" data-auto="title">
-  <aside class="notes">REPLACE: welcome; introduce yourself; one question to the room that calibrates the pace; the rhythm of the day</aside>
+  <aside class="notes"><p>Day 3 finishes the journey: by the end, the report project rebuilds anywhere with one command, runs in a container, and carries no key in its history. The capstone kickoff closes the day.</p></aside>
 </section>
 
 <section class="slide" id="agenda" data-auto="agenda"></section>
+
+<section class="slide" id="review-day2" data-lo="LO1 LO3">
+  <div class="kicker">Review of Day 2</div>
+  <h2>Which command leaves your own main where it was?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1">
+    <p class="lead">A teammate pushed to the hub. You want to see their commits before anything in your clone changes. Which command?</p>
+    <div class="opts">
+      <div class="opt" data-why="pull is fetch followed by merge: it moves your main and changes your files">git pull</div>
+      <div class="opt" data-why="merge needs the commits in your clone first; on its own it cannot see the hub">git merge origin/main</div>
+      <div class="opt" data-why="push sends your commits the other way and changes nothing you can read">git push</div>
+      <div class="opt" data-ok>git fetch</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>fetch</code> downloads the commits and moves <code>origin/main</code> only; your <code>main</code> and your files stay until you merge.</div>
+  </div>
+  <aside class="notes"><p>Answer: D. Then one minute on lab 2.4 (next slide).</p></aside>
+</section>
+
+<section class="slide" id="debrief-2-4" data-lo="LO4">
+  <div class="kicker">Lab 2.4 debrief</div>
+  <h2>The second machine failed four times before the lock fixed it</h2>
+  <table class="t">
+    <tr><th>Attempt</th><th>Last line of the error</th></tr>
+    <tr><td>Nothing installed</td><td><code>ModuleNotFoundError: No module named 'dateutil'</code></td></tr>
+    <tr><td>With requirements.txt</td><td>the same: the file listed tabulate only</td></tr>
+    <tr><td>With both packages</td><td><code>FileNotFoundError</code> on the analyst's absolute path</td></tr>
+    <tr><td>With the path fixed</td><td><code>FileNotFoundError</code> on <code>output/report.csv</code></td></tr>
+    <tr class="hl"><td>From the lock, fresh</td><td>12 stations written; checksum as expected</td></tr>
+  </table>
+  <aside class="notes"><p>All five rows were run when the course was built (labs/solutions/S2_4.sh, and a check of the original script with its path fixed). The lock resolved python-dateutil 4.0.0, which itself needs tzdata, and tabulate 0.10.0: an indirect package nobody declared is exactly what a lock records.</p></aside>
+</section>
 
 <!-- Session 1 -->
 
 <section class="slide section" id="s1" data-auto="section" data-session="1"></section>
 
-<section class="slide" id="s1-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
+<section class="slide" id="what-belongs" data-lo="LO4 LO6">
+  <div class="kicker">What a repository holds</div>
+  <h2>Code and the recipe go in; data, outputs and environments stay out</h2>
   <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+    <div class="card c-teal"><h4>In the repository</h4><p class="small mb0">Source, <code>pyproject.toml</code> and the lock, the container definition, the rebuild command, the README, small expected checksums, a <code>.env.example</code>.</p></div>
+    <div class="card c-coral"><h4>Out of it</h4><p class="small mb0">Raw data (it has its own home and its own rules), outputs (rebuilt), <code>.venv/</code> (rebuilt), <code>.env</code> (secret), caches.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <div class="callout warn mt"><b>.gitignore does not untrack.</b> A file already committed stays tracked until <code>git rm --cached</code> removes it from the index.</div>
+  <aside class="notes"><p>Data out of the repository is also a data-protection point: personal or classified data has rules on where it may be stored, and a repository is copied to every laptop that clones it. The course's data is synthetic, but the habit is the point.</p></aside>
 </section>
 
-<section class="slide" id="s1-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="data-path-outside" data-lo="LO4 LO6">
+  <div class="kicker">Where the data comes from</div>
+  <h2>The code asks where the data is; the README says where to get it</h2>
+  <pre class="code" data-file="planner.py"><code class="language-python">ap.add_argument("--data", default=os.environ.get("VISITS_DIR"))
+...
+if not args.data:
+    print("error: give --data &lt;folder&gt; or set VISITS_DIR", file=sys.stderr)
+    return 2</code></pre>
+  <ul class="bullets mt">
+    <li>No default path that exists on one computer only</li>
+    <li>A clear stop beats a silent empty result</li>
+  </ul>
+  <aside class="notes"><p>The same pattern as counts.sh on Day 1, now in Python. In the report project the variable is AIR_LOGS.</p></aside>
+</section>
+
+<section class="slide" id="one-command" data-lo="LO4 LO6">
+  <div class="kicker">One command</div>
+  <h2>One documented command rebuilds, runs and checks</h2>
+  <pre class="code" data-file="rebuild.sh (a field-visit planner)"><code class="language-bash">#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${VISITS_DIR:?set VISITS_DIR to the folder of visit logs}"
+uv sync --locked --quiet
+uv run --quiet python planner.py --data "$VISITS_DIR" --out output
+sha256sum -c expected/march.sha256</code></pre>
+  <div class="callout tip mt"><b>The last line is the test.</b> <code>sha256sum -c</code> prints <code>OK</code> or <code>FAILED</code> and sets the exit code.</div>
+  <aside class="notes"><p>Each line is something from the last two days: the script's own folder, a required variable, the lock, the run, the check. A make target or a task runner does the same job; one shell script is the smallest version.</p><p>Watch out: an apostrophe inside <code>${VAR:?message}</code> breaks the quoting in Bash. It happened in this course's first draft.</p></aside>
+</section>
+
+<section class="slide" id="checksum" data-lo="LO6">
+  <div class="kicker">Did it reproduce?</div>
+  <h2>A checksum turns "it ran" into "it gave the same bytes"</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Running without an error proves little: an empty input also runs</li>
+      <li>A checksum of the expected output, committed, is a precise answer</li>
+      <li>When it fails, compare the first rows to see where the difference starts</li>
+      <li>Outputs that hold a date or a random number need those fixed first</li>
+    </ul>
+    <div class="stat center"><div class="big">64</div><div class="lbl">hexadecimal characters in a SHA-256 checksum: one changed byte changes them all</div></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>The report project writes the same bytes on every run because its rows are sorted, numbers are formatted to one decimal, and line endings are fixed. Ask what would break that (a timestamp in the output, an unsorted dictionary from an old Python).</p></aside>
+</section>
+
+<section class="slide" id="readme-reproduce" data-lo="LO6">
+  <div class="kicker">The README</div>
+  <h2>A Reproduce section answers four questions and assumes nothing</h2>
+  <div class="cols cols-2">
+    <div class="card c-teal"><h4>The four answers</h4><ul class="bullets small mb0"><li>Which tools, and which versions at least</li><li>Where the data comes from</li><li>The one command</li><li>What success looks like</li></ul></div>
+    <div class="card c-coral"><h4>What a peer cannot know</h4><ul class="bullets small mb0"><li>A folder on your laptop</li><li>A package you installed once</li><li>A variable in your shell profile</li><li>A step you always do without thinking</li></ul></div>
+  </div>
+  <aside class="notes"><p>The capstone rubric gives 20 of 100 to the README and 30 to the peer's clean rebuild. The only honest test of a README is someone else following it on a clean machine: that is the capstone day.</p></aside>
+</section>
+
+<section class="slide" id="check-data-path" data-lo="LO4 LO6">
+  <div class="kicker">Checkpoint</div>
+  <h2>Where does the data path belong?</h2>
+  <div class="quiz" data-type="single" data-lo="LO6">
+    <p class="lead">A planner project reads its visit logs from a folder. A peer will rebuild it on a clean workspace. Where should the folder's location come from?</p>
+    <div class="opts">
+      <div class="opt" data-why="A default that exists on one disk works for its author only and fails silently elsewhere">A default path in the code, the author's own folder</div>
+      <div class="opt" data-ok>An argument or a variable, with the README saying where to get the data</div>
+      <div class="opt" data-why="Data in the repository is copied to every clone and mixes results with code">The repository itself, in a data/ folder</div>
+      <div class="opt" data-why="A message reaches one person once; the next reader is stuck again">A chat message to the peer before the rebuild</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The code takes the location from outside, and the README records where the data comes from for every reader.</div>
+  </div>
+  <aside class="notes"><p>Answer: B.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-3-1" data-auto="lab" data-lab="3.1">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>The clean clone is the point of the lab: insist on it. Watch for <code>.gitignore</code> without <code>git rm --cached</code>, and for a README that still names a folder on the laptop. Anyone who did not finish 2.4 is fine: this lab starts from a locked project.</p></aside>
 </section>
 
 <!-- Session 2 -->
 
 <section class="slide section" id="s2" data-auto="section" data-session="2"></section>
 
-<section class="slide" id="s2-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="image-container" data-lo="LO4">
+  <div class="kicker">Two words</div>
+  <h2>An image is a packed file system; a container is one run of it</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Image</h4><p class="small mb0">Built once from a definition: a base system, your packages, your code, in layers. Read-only.</p></div>
+    <div class="card c-cyan"><h4>Container</h4><p class="small mb0">A process started from an image, with a thin writable layer that disappears with <code>--rm</code>.</p></div>
+    <div class="card c-purple"><h4>Volume or bind mount</h4><p class="small mb0">A folder from outside, mounted in: where data comes in and results go out.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <div class="callout note mt"><b>It is still a process.</b> Docker's own explanation: "every container on a machine shares that machine's kernel".</div>
+  <aside class="notes"><p>Sources: Docker, What is a container; Docker, Bind mounts. Keep the kernel point for session 3: it is what a container does not isolate.</p></aside>
 </section>
 
-<section class="slide" id="s2-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="containerfile" data-lo="LO4">
+  <div class="kicker">A short definition</div>
+  <h2>Six instructions describe the whole image</h2>
+  <pre class="code" data-file="Containerfile (a field-visit planner)"><code class="language-dockerfile">FROM docker.io/library/python:3.13-alpine
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+COPY planner.py .
+ENTRYPOINT ["python", "planner.py", "--data", "/data"]</code></pre>
+  <ul class="bullets mt">
+    <li><code>requirements.txt</code> is exported from the lock, with hashes: <code>uv export --frozen --format requirements.txt</code></li>
+    <li>Packages before code: a code change reuses the cached package layer</li>
+  </ul>
+  <aside class="notes"><p>The lab's definition adds a user that is not root and an output folder. The python:3.13-alpine image is about 16 MB compressed for amd64 on Docker Hub (read on its tags page when the course was built); pull it on the provided workspace before the session. uv's documentation recommends against keeping both uv.lock and a requirements.txt in step by hand: the export is generated from the lock, never edited.</p></aside>
+</section>
+
+<section class="slide" id="layers" data-lo="LO4">
+  <div class="kicker">Layers and the cache</div>
+  <h2>Each instruction is a layer, rebuilt only when it or one above it changes</h2>
+  <div class="flow v">
+    <div class="step c-navy"><b>FROM</b>the base image, pulled once</div>
+    <div class="arrow">↓</div>
+    <div class="step c-teal"><b>COPY requirements.txt, RUN pip install</b>changes when the lock changes</div>
+    <div class="arrow">↓</div>
+    <div class="step c-cyan"><b>COPY planner.py</b>changes with every code edit</div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>Ask what happens if the definition copied the whole folder before installing: every code change would reinstall every package. The stretch of lab 3.2 shows it.</p></aside>
+</section>
+
+<section class="slide" id="mounts" data-lo="LO4">
+  <div class="kicker">Data in, results out</div>
+  <h2>Mount the input read-only and the output writable</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">podman run --rm \
+  -v "$PWD/visits:/data:ro" \
+  -v "$PWD/output:/out" \
+  visit-planner</code></pre>
+  <ul class="bullets mt">
+    <li>The image never holds the data, so one image serves every month</li>
+    <li><code>:ro</code> means a bug cannot change the raw logs (Docker: "prevent the container from writing to the mount")</li>
+    <li>Results appear on your disk because <code>/out</code> is your folder</li>
+  </ul>
+  <aside class="notes"><p>On Git Bash for Windows, path conversion rewrites <code>/data</code>; put <code>MSYS_NO_PATHCONV=1</code> before the command. Source: Docker, Bind mounts.</p></aside>
+</section>
+
+<section class="slide" id="rootless" data-lo="LO4">
+  <div class="kicker">No administrator rights</div>
+  <h2>A rootless engine runs containers as you, inside a range of user ids lent to you</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li><b>Podman</b> is rootless by design; it needs a range of user ids for you in <code>/etc/subuid</code> and <code>/etc/subgid</code></li>
+      <li><b>Docker rootless mode</b> runs the daemon and containers as a non-root user</li>
+      <li>"root" inside the container is your own user outside, not the machine's root</li>
+      <li><code>podman run --userns=keep-id</code> maps your user id to the same id inside</li>
+    </ul>
+    <div class="card c-purple"><h4>On the provided workspace</h4><p class="small mb0">The trainer has set up the user id ranges and pulled the base image. On a laptop without administrator rights, this is the place to do lab 3.2.</p></div>
+  </div>
+  <aside class="notes"><p>Sources: Podman rootless tutorial ("requires the user running it to have a range of UIDs listed" in subuid and subgid); podman-run, --userns=keep-id; Docker, Rootless mode. Setting up the ranges needs an administrator once, which is why the course provides the workspace.</p></aside>
+</section>
+
+<section class="slide" id="check-mount" data-lo="LO4">
+  <div class="kicker">Checkpoint</div>
+  <h2>Why does the report appear on your disk?</h2>
+  <div class="quiz" data-type="single" data-lo="LO4">
+    <p class="lead">You run the planner image with <code>-v "$PWD/output:/out"</code> and <code>--rm</code>. The container is gone afterwards, yet <code>output/plan.csv</code> is on your disk. Why?</p>
+    <div class="opts">
+      <div class="opt" data-why="--rm deletes the container's own writable layer; it copies nothing out">--rm copies the container's files out before deleting it</div>
+      <div class="opt" data-why="An image is read-only and built before the run; a run never writes into it">The file was written into the image</div>
+      <div class="opt" data-ok>/out inside the container is your own output/ folder, mounted</div>
+      <div class="opt" data-why="Engines do not sync files back by themselves; only mounts share a folder">The engine syncs every container folder back to the host</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> A bind mount puts a host folder at a path inside the container, so writes there land on the host and outlive the container.</div>
+  </div>
+  <aside class="notes"><p>Answer: C.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-3-2" data-auto="lab" data-lab="3.2">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Participants without an engine on their laptop work on the provided workspace. This lab's build and run were not executed when the course was built (no engine was running on the build machine): rehearse it on the workspace before the first cohort. Common problems: path conversion on Git Bash (MSYS_NO_PATHCONV=1); the output folder not writable with Docker rootless (user ids differ, the subject of session 3); an image pulled from a mistyped name.</p></aside>
 </section>
 
 <!-- Session 3 -->
 
 <section class="slide section" id="s3" data-auto="section" data-session="3"></section>
 
-<section class="slide" id="s3-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
-  </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+<section class="slide" id="not-isolated" data-lo="LO4 LO5">
+  <div class="kicker">What a container shares</div>
+  <h2>A container isolates a process, not everything around it</h2>
+  <table class="t">
+    <tr><th>Shared with the host</th><th>What it means</th></tr>
+    <tr><td>The kernel</td><td>A kernel flaw reaches every container; it is not a virtual machine</td></tr>
+    <tr><td>Every mounted folder</td><td>The container can read, and without <code>:ro</code> change, what you mount</td></tr>
+    <tr><td>Every variable you pass</td><td><code>--env-file .env</code> hands the key to whatever runs in the image</td></tr>
+    <tr><td>The network, by default</td><td>The program can reach what your machine can reach</td></tr>
+    <tr><td>The image's contents</td><td>Anyone with the image can read a key that was copied into it</td></tr>
+  </table>
+  <aside class="notes"><p>The rule that follows: pass in only what the program needs, mount read-only where you can, and never build a key into an image. Source: Docker, What is a container.</p></aside>
 </section>
 
-<section class="slide" id="s3-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="key-in-code" data-lo="LO5">
+  <div class="kicker">The key in the code</div>
+  <h2>A key in the code travels with every copy of the code</h2>
+  <div class="cols cols-2">
+    <div class="card c-coral"><h4>Where it goes</h4><ul class="bullets small mb0"><li>Every clone and every fork</li><li>Every backup and every image built from it</li><li>A screenshot of the editor in a chat</li><li>An assistant you pasted the file into</li></ul></div>
+    <div class="card c-teal"><h4>Where it belongs</h4><ul class="bullets small mb0"><li>The environment of the process that needs it</li><li>A <code>.env</code> file that git ignores, on one machine</li><li>The host's or the workplace's secret store</li></ul></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>The same goes for an SSH private key from Day 1. The responsible-use rule of the course: nothing secret, personal or classified in a repository, ever.</p></aside>
+</section>
+
+<section class="slide" id="read-from-env" data-lo="LO5">
+  <div class="kicker">Reading it from the environment</div>
+  <h2>Read the key from a variable, stop clearly without it, and never print it whole</h2>
+  <pre class="code" data-file="planner.py"><code class="language-python">def booking_key() -&gt; str:
+    key = os.environ.get("VISITS_BOOKING_KEY", "")
+    if not key:
+        print("error: set VISITS_BOOKING_KEY (see .env.example)", file=sys.stderr)
+        raise SystemExit(2)
+    return key
+
+print(f"booking with the key ending ...{key[-4:]}")</code></pre>
+  <aside class="notes"><p>A booking-service key for the field-visit planner, not the portal key of the lab. Ask why the default is an empty string and not a placeholder key: a placeholder that looks real gets committed and copied.</p></aside>
+</section>
+
+<section class="slide" id="env-example" data-lo="LO5">
+  <div class="kicker">Two files</div>
+  <h2>.env holds the value and stays home; .env.example holds the name and is committed</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file=".env.example (committed)"><code>VISITS_BOOKING_KEY=</code></pre>
+    <pre class="code" data-file=".gitignore (committed)"><code>.env
+.env.*
+!.env.example</code></pre>
+  </div>
+  <pre class="code mt" data-file="terminal"><code class="language-bash">git check-ignore -v .env                   # proves the rule matches
+uv run --env-file .env python planner.py   # loads .env for this run only</code></pre>
+  <aside class="notes"><p>The course's repository template ignores .env and .env.* and keeps .env.example: the same three lines. <code>uv run --env-file</code> reads the file for one command; nothing is exported to your shell.</p></aside>
+</section>
+
+<section class="slide" id="check-env-file" data-lo="LO5">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does --env-file still expose?</h2>
+  <div class="quiz" data-type="single" data-lo="LO5">
+    <p class="lead">You run a planner image with <code>--env-file .env</code>; the key is no longer in the code or the image. Who can still read the key?</p>
+    <div class="opts">
+      <div class="opt" data-ok>Any program running in that container, and anyone who can inspect it</div>
+      <div class="opt" data-why="Variables are set for the container's processes; they are not hidden from them">Nobody: variables passed at run time are encrypted</div>
+      <div class="opt" data-why="The image was built without the key; passing it at run time adds nothing to the image">Anyone who pulls the image from the registry</div>
+      <div class="opt" data-why="A read-only data mount limits the data folder, not the variables">Nobody, because /data is mounted read-only</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> The variable is part of the running container's environment: its processes read it, and so can anyone allowed to inspect that container.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. The point: the environment is the right place, and it still needs only trusted code and only the key that program needs.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-3-3" data-auto="lab" data-lab="3.3">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Remind the room: the practice key opens nothing but the course's stand-in, and still never goes into an assistant. Watch for a default that is the old key, and for <code>git add -A</code> before checking the ignore rule. The last step shows the key still in history: do not let anyone fix that yet, it is lab 3.4.</p></aside>
 </section>
 
 <!-- Session 4 -->
 
 <section class="slide section" id="s4" data-auto="section" data-session="4"></section>
 
-<section class="slide" id="s4-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="three-scans" data-lo="LO5">
+  <div class="kicker">Scanning</div>
+  <h2>Scan three places: the files, the next commit, and the whole history</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>Files</h4><p class="small mb0">What is in the folder now. Clean files can still have a dirty history.</p></div>
+    <div class="card c-amber"><h4>The next commit</h4><p class="small mb0">A hook runs the scan on staged changes and refuses the commit.</p></div>
+    <div class="card c-coral"><h4>The history</h4><p class="small mb0">Every commit on every branch: what anyone who clones can read.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <p class="small mt">Tools: gitleaks (<code>gitleaks git</code> scans a repository's history), run from pre-commit; hosts add their own: GitHub push protection "blocks pushes that contain secrets", GitLab has secret push protection.</p>
+  <aside class="notes"><p>The course's lab uses a small scanner of its own (tools/scan_secrets.py) because it runs on every laptop without a download; gitleaks is the tool to use at work. The gitleaks README says the project is feature complete and its author's attention has moved to a successor: check the state of the tool before adopting it. Sources: gitleaks; GitHub, Push protection; GitLab, Secret detection.</p></aside>
 </section>
 
-<section class="slide" id="s4-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
+<section class="slide" id="custom-rule" data-lo="LO5">
+  <div class="kicker">Rules</div>
+  <h2>Default rules know public key formats; your own keys need your own rule</h2>
+  <pre class="code" data-file=".gitleaks.toml"><code class="language-toml">[extend]
+useDefault = true
+
+[[rules]]
+id = "booking-service-key"
+description = "Key of the visit booking service"
+regex = '''vbk_[a-z]+_[0-9a-f]{24}'''
+keywords = ["vbk_"]</code></pre>
+  <aside class="notes"><p>The shape follows the gitleaks README: extend the default rules, then add one rule per key format your organisation issues. The keyword is a cheap filter before the regular expression runs. The lab's repository ships the same kind of rule for the portal keys.</p></aside>
+</section>
+
+<section class="slide" id="hook" data-lo="LO5">
+  <div class="kicker">Before each commit</div>
+  <h2>A pre-commit hook stops the key before it enters history</h2>
+  <pre class="code" data-file=".pre-commit-config.yaml"><code class="language-yaml">repos:
+  - repo: local
+    hooks:
+      - id: secret-scan
+        name: secret scan
+        entry: uv run --no-project python tools/scan_secrets.py --staged
+        language: system
+        pass_filenames: false</code></pre>
+  <ul class="bullets mt">
+    <li><code>uvx pre-commit install</code> once per clone; every <code>git commit</code> then runs the scan</li>
+    <li>A hook lives in your clone only: the host's push protection is the second net</li>
+  </ul>
+  <aside class="notes"><p>pre-commit's page: after <code>pre-commit install</code>, "pre-commit will run automatically on git commit". It refuses to install when <code>core.hooksPath</code> is set (some company laptops set it); the lab gives a plain hook as the fallback. Verified when the course was built with pre-commit 4.7.0.</p></aside>
+</section>
+
+<section class="slide" id="leak-order" data-lo="LO5">
+  <div class="kicker">After a leak</div>
+  <h2>Rotate first, then clean the history, then report</h2>
   <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+    <div class="step c-coral"><b>1 · Rotate</b>revoke the key where it was issued; issue a new one</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>2 · Clean</b>rewrite every commit that holds it; force-push</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Tell</b>the key's owner and the data protection officer; check the access log</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>4 · Prevent</b>the hook, the rule, push protection</div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <div class="callout warn mt"><b>Why rotation comes first.</b> GitHub's guidance: "as a first step you need to revoke and/or rotate that secret". Cleaning cannot reach the copies already made.</div>
+  <aside class="notes"><p>Source: GitHub, Removing sensitive data from a repository. The duty to rotate and report is part of the course's responsible-use statement; the rotation note of the lab records it.</p></aside>
+</section>
+
+<section class="slide" id="filter-repo" data-lo="LO5">
+  <div class="kicker">Cleaning the history</div>
+  <h2>git filter-repo replaces the value in every commit, and every id after it changes</h2>
+  <pre class="code" data-file="terminal (a field-visit planner)"><code class="language-bash">printf '%s==&gt;REMOVED\n' "$OLD_KEY" &gt; ../replacements.txt    # outside the repository
+uvx git-filter-repo --replace-text ../replacements.txt --force
+git remote add origin &lt;the hub&gt;          # filter-repo removes it on purpose
+git push --force origin main</code></pre>
+  <ul class="bullets mt">
+    <li>"Rewriting history will change the hashes of the commits" (GitHub): every teammate clones again</li>
+    <li>The scan of the whole history must come back clean, on your clone and on the hub</li>
+  </ul>
+  <aside class="notes"><p>The replacements file holds the old key, so it lives outside the repository and is deleted afterwards. <code>--replace-text</code> takes literal text by default, with <code>==&gt;</code> and a replacement (filter-repo's manual). Hosts may keep cached views or pull request references of old commits: their documentation says how to ask for those to be removed.</p></aside>
+</section>
+
+<section class="slide" id="check-leak" data-lo="LO5">
+  <div class="kicker">Checkpoint</div>
+  <h2>What do you do first?</h2>
+  <div class="quiz" data-type="single" data-lo="LO5">
+    <p class="lead">A scan of the planner's history finds a booking-service key in a commit from three weeks ago. The repository has been public since. What is the first action?</p>
+    <div class="opts">
+      <div class="opt" data-why="Cleaning removes it from the hub, not from the clones and caches made in three weeks">Rewrite the history with git filter-repo</div>
+      <div class="opt" data-why="Removing the file in a new commit leaves every old commit holding the key">Delete the file in a new commit</div>
+      <div class="opt" data-why="Hiding the repository stops new readers, not those who already copied it">Make the repository private</div>
+      <div class="opt" data-ok>Revoke the key at the booking service and issue a new one</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Only revoking makes every copy of the old key useless; cleaning and reporting follow.</div>
+  </div>
+  <aside class="notes"><p>Answer: D.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-3-4" data-auto="lab" data-lab="3.4">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Insist on the order: rotate before cleaning. The new key is shown once: it goes into .env, never into the rotation note. On machines where <code>core.hooksPath</code> is set, <code>pre-commit install</code> refuses: use the plain hook the lab page gives. gitleaks itself was not run when the course was built.</p></aside>
+</section>
+
+<section class="slide" id="capstone-kickoff" data-lo="LO6">
+  <div class="kicker">Capstone kickoff</div>
+  <h2>Tomorrow a peer rebuilds your project from its README alone</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Your own small project, on synthetic or public data</li>
+      <li>A README with a Reproduce section, a lock file, a container definition, a clean scan of the history</li>
+      <li>Your peer follows only the README, on a clean workspace, and logs every step</li>
+      <li>Then you fix every step they could not follow; they reproduce it again</li>
+    </ul>
+    <div class="card c-teal"><h4>Tonight, 60 minutes</h4><p class="small mb0">Run your own rebuild in a fresh clone, then read your README as a stranger would. The brief and the checklist: <code>labs/capstone/</code>.</p></div>
+  </div>
+  <aside class="notes"><p>Ten minutes, counted in the capstone hours. Pair participants now so each knows whose repository they reproduce. Remind them that the capstone is AI-full, defended in the oral: they may use an assistant, and must explain every step themselves.</p></aside>
 </section>
 
 <section class="slide" id="wrap-up">
   <div class="kicker">Day 3 · wrap-up</div>
   <h2>Three things to keep</h2>
   <div class="cols cols-3">
-    <div class="card c-teal"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-coral"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-purple"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
+    <div class="card c-teal"><h4>One command</h4><p class="small mb0">A reader rebuilds and checks the result with one documented command; data and outputs live elsewhere.</p></div>
+    <div class="card c-coral"><h4>A container is a process</h4><p class="small mb0">It shares the kernel, the mounts and the variables you give it.</p></div>
+    <div class="card c-purple"><h4>Rotate, clean, tell</h4><p class="small mb0">A leaked key is revoked first; then history, then the people who need to know.</p></div>
   </div>
 </section>
 
 <section class="slide dark" id="next" data-label="Next">
   <div class="kicker">Next</div>
-  <h2>Capstone: Capstone project presentations</h2>
-  <p class="lead">REPLACE: what participants prepare before then; unfinished labs can be finished at home</p>
-  <aside class="notes">REPLACE: accounts, installs or reading participants need before the next unit</aside>
+  <h2>The capstone day: peer reproduction</h2>
+  <p class="lead">Bring your repository link and its README. The supervised check on shell commands and commit graphs opens the day, AI off.</p>
+  <aside class="notes"><p>Capstone preparation 2 of 2 tonight. Confirm the clean workspaces for the peers (the provided Linux workspace, or a fresh user account on a laptop).</p></aside>
 </section>

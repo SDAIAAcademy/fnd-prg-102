@@ -1,37 +1,73 @@
 <article class="lab" data-lab="3.1">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>The locked report project still carries its data and its last output in the repository, and its README says too little. Take data and output out, write one documented command that rebuilds and checks the result, and test the README by following it in a clean clone.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 3.1</code>: <code>air-report/</code> (the project as lab 2.4 left it, plus a committed <code>data/</code> and <code>output/</code>) and <code>data/</code> beside it, where the logs belong</li>
+    <li>The expected October checksum: <code>labs/kit/projects/v3/expected/october.sha256</code> in the course, or from the trainer</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>List what the repository carries <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 3.1
+cd 3.1/air-report
+git ls-files | sed 's|/.*|/|' | sort | uniq -c</code></pre>
+    <p>Which of these are code, which are data, which are results? Which could the next month's run change?</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Stop tracking data and output <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git rm -r --cached data output      # out of git; the files stay on disk
+rm -rf data output                  # the logs live in ../data now
+printf 'output/\ndata/\n__pycache__/\n.venv/\n.env\n' &gt; .gitignore
+git status --short</code></pre>
+    <p><code>.gitignore</code> stops new files being added; it does nothing for files already tracked, which is why <code>git rm --cached</code> comes first.</p>
+  </div>
+
+  <div class="step">
+    <h3>Write rebuild.sh <span class="min">9 min</span></h3>
+    <p>One command that a newcomer runs: it stops with a clear message when <code>AIR_LOGS</code> is not set, rebuilds the environment from the lock, runs the report into <code>output/</code>, and compares the result with a committed checksum.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">mkdir -p expected
+cp &lt;the course&gt;/labs/kit/projects/v3/expected/october.sha256 expected/
+# then write rebuild.sh: set -euo pipefail; uv sync --locked;
+# uv run python report.py --data "$AIR_LOGS" --out output; sha256sum -c expected/october.sha256</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Write the README's Reproduce section <span class="min">6 min</span></h3>
+    <p>Under <code>## Reproduce</code>: the tools needed, where the data comes from, the one command, and what success looks like. Nothing that only you know.</p>
+  </div>
+
+  <div class="step">
+    <h3>Follow the README in a clean clone; check <span class="min">9 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git add -A
+git commit -m "Keep data and outputs out of the repository; rebuild with one command"
+git clone . ../clean &amp;&amp; cd ../clean
+AIR_LOGS=../data bash rebuild.sh     # ends with: output/report.csv: OK
+bash rebuild.sh                      # must stop with a message, not guess
+cd .. &amp;&amp; rm -rf clean
+cd .. &amp;&amp; uv run lab.py check 3.1</code></pre>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>Make <code>rebuild.sh</code> print the versions it ran with (<code>uv --version</code>, the Python version, <code>uv tree</code>) so a reproduction log can quote them.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>Why does adding <code>data/</code> to <code>.gitignore</code> not remove the logs already committed?</li>
+    <li>What does a committed checksum prove that "it ran without errors" does not?</li>
+    <li>Your clean clone works on your laptop. What could still fail on a peer's?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>The reference files are in <code>labs/kit/projects/v3/</code>: <code>rebuild.sh</code>, <code>expected/october.sha256</code> and the README's Reproduce section. The check clones the repository, runs <code>bash rebuild.sh</code> with <code>AIR_LOGS</code> set, compares the checksum, and runs it again without <code>AIR_LOGS</code> expecting a failure.</p>
+    <p>Common errors: <code>.gitignore</code> without <code>git rm --cached</code>; an apostrophe inside <code>${AIR_LOGS:?...}</code>, which breaks the quoting (it did in the course's own first draft); a README that names a folder on the author's laptop. Answer to question 3: anything the laptop holds that the README does not state, such as uv itself, Git Bash, the network, or a cached package. Solution: <code>labs/solutions/S3_1.sh</code>.</p>
   </details>
 </article>
