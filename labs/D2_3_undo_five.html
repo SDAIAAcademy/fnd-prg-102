@@ -1,37 +1,72 @@
 <article class="lab" data-lab="2.3">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>A repository with five mistakes in it, one of them already pushed. Undo each with the command made for it, and leave a history that nobody who pulled yesterday has to repair.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 2.3</code>: <code>report-repo/</code> and its hub</li>
+    <li>The five mistakes: a scratch file staged by accident and a stray line in <code>client_report.md</code>; a local commit "Add debug output" that should not exist; the commit under it says "Add sectr line" and forgot <code>sectors.md</code>; a pushed commit "Change the threshold to 100" that was wrong; the branch <code>draft/winter-notes</code>, deleted by mistake</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>Read the state <span class="min">4 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 2.3
+cd 2.3/report-repo
+git status --short
+git log --oneline --graph --all
+git log --oneline origin/main       # what the hub already has</code></pre>
+    <p>Mark on paper which commits are only on your laptop and which are on the hub. That decides which undo is safe.</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Unstage a file and discard a stray change <span class="min">6 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git restore --staged scratch.txt    # out of the next commit; the file stays
+rm scratch.txt
+git restore client_report.md        # back to the last commit's version</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Drop a local commit, then fix the last one <span class="min">9 min</span></h3>
+    <p>"Add debug output" was never pushed: move <code>main</code> back one commit and drop it. Then the last commit is "Add sectr line": stage the forgotten file and amend the commit with the right message.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">git reset --hard HEAD~1
+git add sectors.md
+git commit --amend -m "Add sector line"</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Undo the pushed commit with revert <span class="min">8 min</span></h3>
+    <p>Others have pulled "Change the threshold to 100": do not rewrite it. Record a new commit that reverses it, and push.</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">git log --oneline --grep 'threshold'
+git revert &lt;its id&gt;
+git push origin main</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Bring back the deleted branch and check <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git reflog | grep -i winter
+git branch draft/winter-notes &lt;the id the reflog shows&gt;
+git log --oneline --graph --all
+cd ../.. &amp;&amp; uv run lab.py check 2.3</code></pre>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>For each of the five, write whether the same undo would be safe after a push, and why.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>What is the difference between <code>git restore --staged</code> and <code>git restore</code>?</li>
+    <li>Why is <code>reset --hard</code> fine for the debug commit and wrong for the threshold commit?</li>
+    <li>How long does the reflog keep a commit that no branch points at?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>The kit's ids: the template <code>598b216</code>, the wrong threshold <code>ffa6b66</code>, the winter notes <code>87a1d75</code>. After the lab, <code>main</code> reads: the template, the stations list, the wrong threshold, "Add sector line" (with <code>sectors.md</code>), and <code>Revert "Change the threshold to 100"</code>; <code>draft/winter-notes</code> points at <code>87a1d75</code> again. The revert applies without a conflict because the sector line sits away from the threshold line.</p>
+    <p>Common errors: <code>reset --hard</code> before restoring the stray line (it discards it anyway, fine) or before saving work you meant to keep (not fine: warn first); amending before dropping the debug commit (the amend then rewrites the debug commit); <code>reset</code> on the pushed commit followed by a refused push. Reflog entries expire after a period set in git's configuration (<code>gc.reflogExpire</code>; see <code>git help gc</code>): the reflog is a safety net, not a backup. Solution: <code>labs/solutions/S2_3.sh</code>.</p>
   </details>
 </article>

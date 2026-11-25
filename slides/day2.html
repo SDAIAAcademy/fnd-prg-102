@@ -1,158 +1,406 @@
 <section class="slide title" id="title" data-auto="title">
-  <aside class="notes">REPLACE: welcome; introduce yourself; one question to the room that calibrates the pace; the rhythm of the day</aside>
+  <aside class="notes"><p>Day 2 moves from one person's history to a team's. Ask who did the commit-graph practice last night and which sequence surprised them; most say sequence 6 (a reset).</p></aside>
 </section>
 
 <section class="slide" id="agenda" data-auto="agenda"></section>
+
+<section class="slide" id="review-day1" data-lo="LO1">
+  <div class="kicker">Review of Day 1</div>
+  <h2>Where does HEAD point, and what does the next commit move?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1">
+    <p class="lead">On <code>main</code>, someone runs <code>git branch notes</code> and then commits once. Which name moved?</p>
+    <div class="opts">
+      <div class="opt" data-why="Creating a branch adds a name; it does not switch to it, so HEAD stays on main">notes, because it is the newest branch</div>
+      <div class="opt" data-why="A commit moves exactly one branch, the one HEAD points at; it never moves both">Both main and notes</div>
+      <div class="opt" data-ok>main, because HEAD still points at it</div>
+      <div class="opt" data-why="Commits always move a branch when HEAD is on one; nothing stays behind">Neither: the commit has no branch</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>git branch</code> creates a name without switching; the commit moves the branch HEAD points at, which is still <code>main</code>.</div>
+  </div>
+  <aside class="notes"><p>Answer: C. Two minutes. If the room splits, draw it: main and notes on the same commit, then main moves.</p></aside>
+</section>
 
 <!-- Session 1 -->
 
 <section class="slide section" id="s1" data-auto="section" data-session="1"></section>
 
-<section class="slide" id="s1-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
+<section class="slide" id="two-kinds-of-merge" data-lo="LO1 LO3">
+  <div class="kicker">Two kinds of merge</div>
+  <h2>If main has not moved, Git just slides it forward; if it has, Git makes a merge commit</h2>
   <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+    <div class="card c-teal"><h4>Fast-forward</h4><pre class="code s"><code>before:  o--o  main
+              \
+               a--b  topic
+after:   o--o--a--b  main, topic</code></pre><p class="small mb0">No new commit; main points where topic does.</p></div>
+    <div class="card c-purple"><h4>Merge commit</h4><pre class="code s"><code>before:  o--o--m  main
+              \
+               a--b  topic
+after:   o--o--m---M  main
+              \   /
+               a-b   topic</code></pre><p class="small mb0">M has two parents: m and b.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <aside class="notes"><p>Ask the room which kind each merge of lab 2.1 will be before they run it: they can tell from the graph alone. <code>--no-ff</code> forces a merge commit even when a fast-forward is possible; hosts often do that for pull requests so the request stays visible in history.</p></aside>
 </section>
 
-<section class="slide" id="s1-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="remotes" data-lo="LO1">
+  <div class="kicker">Remotes</div>
+  <h2>origin/main is your clone's memory of the hub, updated only when you talk to it</h2>
+  <table class="t">
+    <tr><th>Command</th><th>Your <code>main</code></th><th><code>origin/main</code></th><th>Working files</th></tr>
+    <tr><td><code>git fetch</code></td><td>stays</td><td>moves to the hub's</td><td>stay</td></tr>
+    <tr><td><code>git merge origin/main</code></td><td>moves</td><td>stays</td><td>change</td></tr>
+    <tr class="hl"><td><code>git pull</code></td><td>moves</td><td>moves</td><td>change</td></tr>
+    <tr><td><code>git push</code></td><td>stays</td><td>moves to yours</td><td>stay</td></tr>
+  </table>
+  <p class="small mt"><code>git pull</code> is <code>fetch</code> followed by <code>merge</code> (or rebase, if configured). Fetch first when you want to look before anything changes.</p>
+  <aside class="notes"><p>The hub in the labs is a bare repository on your own disk; a class host such as Forgejo, Gitea, GitLab or GitHub is the same thing on a server, with pages and permissions around it.</p></aside>
+</section>
+
+<section class="slide" id="conflict-why" data-lo="LO3">
+  <div class="kicker">When Git stops</div>
+  <h2>A conflict means both sides changed the same lines, and only a person knows the answer</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Git merges changes to different lines by itself</li>
+      <li>When both sides changed the <b>same or touching lines</b>, it writes both and stops</li>
+      <li>The merge waits, half done, until you resolve, <code>git add</code> and <code>git commit</code></li>
+      <li><code>git merge --abort</code> puts everything back as it was</li>
+    </ul>
+    <div class="card c-coral"><h4>Not an error</h4><p class="small mb0">A conflict is a question: "both of you changed this, which text is right?" The answer is often a third text that keeps both intentions.</p></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>Say that "touching" matters: changes on two adjacent lines also conflict, because Git cannot tell whether they depend on each other.</p></aside>
+</section>
+
+<section class="slide" id="read-markers" data-lo="LO3">
+  <div class="kicker">Reading the markers</div>
+  <h2>Between the markers, the top is your branch, the bottom is the one coming in</h2>
+  <pre class="code" data-file="visit_plan.md (during a merge)"><code>Visits: every two weeks
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Inlet cleaned at every visit, photo before and after
+=======
+Inlet cleaned at every visit; fan checked
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; field-checks</code></pre>
+  <div class="cols cols-2 mt">
+    <div class="card c-teal"><h4>A resolution that keeps both</h4><p class="small mb0"><code>Inlet cleaned at every visit; fan checked; photo before and after</code></p></div>
+    <div class="card c-coral"><h4>A resolution that loses one</h4><p class="small mb0">Taking one side whole (<code>--ours</code> or <code>--theirs</code>) when both changes were wanted.</p></div>
+  </div>
+  <aside class="notes"><p>The example is a field-visit plan, not the report template of the lab. After editing: <code>grep -n '^&lt;&lt;&lt;&lt;&lt;&lt;&lt;' file</code> prints nothing, then <code>git add</code> and <code>git commit</code>.</p></aside>
+</section>
+
+<section class="slide" id="conflict-steps" data-lo="LO3">
+  <div class="kicker">Step by step</div>
+  <h2>Five steps resolve any conflict</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · See</b><code>git status</code> lists the files</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Read</b>both sides and why each changed</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Write</b>the text that keeps both intentions</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>4 · Test</b>no markers left; it still runs</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>5 · Record</b><code>git add</code>, <code>git commit</code></div>
+  </div>
+  <aside class="notes"><p>Step 2 is where people skip: read the commit messages of both sides (<code>git log --merge</code>) to learn why each changed the line.</p></aside>
+</section>
+
+<section class="slide" id="check-fast-forward" data-lo="LO1 LO3">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does this merge leave behind?</h2>
+  <div class="quiz" data-type="single" data-lo="LO1">
+    <p class="lead">A branch <code>fix</code> has three commits. Nobody committed to <code>main</code> since <code>fix</code> started. On <code>main</code> you run <code>git merge fix</code>. What is in the history now?</p>
+    <div class="opts">
+      <div class="opt" data-ok>The same three commits; main now points at the last one</div>
+      <div class="opt" data-why="Expects a merge commit even when one side did not move; that needs --no-ff">Three commits and a new merge commit with two parents</div>
+      <div class="opt" data-why="Confuses a merge with a squash, which writes one new commit">One new commit holding the three changes together</div>
+      <div class="opt" data-why="Thinks merging copies commits, so they would appear twice">Six commits: the three, and a copy of each on main</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>main</code> is an ancestor of <code>fix</code>, so Git fast-forwards: it moves the pointer and makes no commit.</div>
+  </div>
+  <aside class="notes"><p>Answer: A. Ask what <code>git merge --no-ff fix</code> would have added (a merge commit).</p></aside>
 </section>
 
 <section class="slide lab" id="lab-2-1" data-auto="lab" data-lab="2.1">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Ask everyone to predict the kind of each merge before running it. Watch for people taking one side whole. The check needs "own rule" and "hourly mean" on the same threshold line. If someone finishes early, the stretch (rebase) sets up session 2's question of how teams keep history readable.</p></aside>
 </section>
 
 <!-- Session 2 -->
 
 <section class="slide section" id="s2" data-auto="section" data-session="2"></section>
 
-<section class="slide" id="s2-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+<section class="slide" id="protected-main" data-lo="LO3">
+  <div class="kicker">A team's main</div>
+  <h2>On a team, main changes only through a reviewed pull request</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>1 · Branch</b>one change, one branch</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>2 · Push</b>the branch to the host</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>3 · Request</b>open a pull request with a clear title</div>
+    <div class="arrow">→</div>
+    <div class="step c-amber"><b>4 · Review</b>comments, answers, approval</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>5 · Merge</b>into a protected main</div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <div class="callout note mt"><b>Protected branch.</b> The host refuses direct pushes and merges without the required approvals (Gitea and Forgejo call it branch protection; GitLab and GitHub have the same).</div>
+  <aside class="notes"><p>Gitea's documentation: protected branches "prevent unwanted changes by enforcing push and merge policies". Set it on the class host before the session: protect main, one approval required. In the kit, the hub's server-side hook refuses pushes to main, and <code>lab.py pr merge</code> is the only way in. Sources: Gitea, Protected branches; Forgejo user guide.</p></aside>
 </section>
 
-<section class="slide" id="s2-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="small-requests" data-lo="LO3">
+  <div class="kicker">Size</div>
+  <h2>A small request gets a real review; a large one gets a rubber stamp</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li><b>One purpose</b> per request: "Add the rule on comment lines", not "various fixes"</li>
+      <li>A title that says what changes; a description that says why and how to check it</li>
+      <li>Commits that each make sense on their own</li>
+      <li>Open it early as a draft when you want direction, not approval</li>
+    </ul>
+    <div class="card c-purple"><h4>For the reviewer</h4><p class="small mb0">If you cannot say in one sentence what a request changes, ask the author to split it before you review line by line.</p></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>Ask the room for the largest change they ever had to review. The lesson is practical: reviewers stop reading long diffs, and that is how mistakes reach main.</p></aside>
+</section>
+
+<section class="slide" id="good-comment" data-lo="LO3">
+  <div class="kicker">Review etiquette</div>
+  <h2>A useful comment names a line, a reason and a way forward</h2>
+  <table class="t">
+    <tr><th>Comment</th><th>Why it helps or not</th></tr>
+    <tr><td>"Looks good"</td><td>Says nothing the author can act on</td></tr>
+    <tr><td>"This is wrong"</td><td>No line, no reason, no suggestion</td></tr>
+    <tr class="hl"><td>"visit_plan.md line 6: the photo rule repeats line 2; keep one, so they cannot disagree"</td><td>Line, reason and a fix the author can accept or answer</td></tr>
+    <tr><td>"Question: is the fan check every visit or monthly?"</td><td>Marked as a question, not a demand</td></tr>
+  </table>
+  <aside class="notes"><p>Comment on the change, not the person. Mark what blocks the merge and what is a suggestion. The author answers every comment, with a commit or a reason, before resolving it.</p></aside>
+</section>
+
+<section class="slide" id="answer-with-commit" data-lo="LO3">
+  <div class="kicker">Answering a review</div>
+  <h2>Answer a comment with a commit on the branch, then mark it resolved</h2>
+  <pre class="code" data-file="terminal (the author)"><code class="language-bash">git switch field-checks
+# edit visit_plan.md as the comment asked
+git commit -am "Keep one photo rule, as the review asked"
+git push                     # the request shows the new commit</code></pre>
+  <div class="callout warn mt"><b>An approval belongs to a commit.</b> When the branch changes after an approval, the reviewer reads the new commits and approves again; hosts can be set to dismiss stale approvals.</div>
+  <aside class="notes"><p>In the kit, <code>lab.py pr resolve</code> refuses until the branch has moved since the comment, and <code>pr merge</code> refuses an approval given on an older commit. The class host does the same when "dismiss stale approvals" is set.</p></aside>
+</section>
+
+<section class="slide" id="update-the-branch" data-lo="LO3">
+  <div class="kicker">When the request no longer merges</div>
+  <h2>The author brings main into the branch and resolves the conflict there</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="terminal (the author)"><code class="language-bash">git fetch origin
+git merge origin/main
+# resolve, then:
+git add visit_plan.md
+git commit
+git push</code></pre>
+    <ul class="bullets">
+      <li>The author knows the change best, so the author resolves</li>
+      <li>main never holds a half-resolved state</li>
+      <li>The reviewer sees the resolution as a commit and reviews it</li>
+      <li>Some teams rebase the branch instead; never rebase a branch others share</li>
+    </ul>
+  </div>
+  <aside class="notes"><p>In lab 2.2 the second request conflicts after the first is merged. Make sure the second author does this, not the reviewer.</p></aside>
+</section>
+
+<section class="slide" id="check-review" data-lo="LO3">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which comment should the author act on first?</h2>
+  <div class="quiz" data-type="single" data-lo="LO3">
+    <p class="lead">A request changes how the field team's visit plan is checked. Four comments arrive. Which is the most useful review comment?</p>
+    <div class="opts">
+      <div class="opt" data-why="Approval without reading adds nothing a reviewer is for">"LGTM, merging"</div>
+      <div class="opt" data-why="A judgement with no line and no reason gives the author nothing to change">"I don't like this approach"</div>
+      <div class="opt" data-why="A request far beyond the change makes the request bigger and the review weaker">"While you are here, please rewrite the whole planner"</div>
+      <div class="opt" data-ok>"Line 12: the visit interval is set here and in the README; read it from one place"</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> It names the line, gives the reason (two copies can disagree) and suggests a fix within the request.</div>
+  </div>
+  <aside class="notes"><p>Answer: D.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-2-2" data-auto="lab" data-lab="2.2">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>Form teams of three before you start the timer. With a class host, each person works on their own laptop in the trainer's team repository; without one, one laptop per team with the kit's three clones and turns at the keyboard. AI off for the first attempt.</p><p>What to watch: comments without a line or a reason; authors resolving comments without a commit (the kit refuses); the second author taking one side of the conflict; the reviewer merging without reading the resolution.</p></aside>
 </section>
 
 <!-- Session 3 -->
 
 <section class="slide section" id="s3" data-auto="section" data-session="3"></section>
 
-<section class="slide" id="s3-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
-  <div class="cols cols-2">
-    <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
-    </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
-  </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+<section class="slide" id="debrief-2-2" data-lo="LO3">
+  <div class="kicker">Lab 2.2 debrief</div>
+  <h2>The second request had to change after the first was merged</h2>
+  <pre class="code" data-file="git log --oneline --graph (the hub, from the solution run)"><code>*   9cd2132 Merge pull request #2: Add the rule on a station's first day
+|\
+| *   95f7f91 Merge remote-tracking branch 'origin/main' into rules/first-day
+| |\
+| |/
+|/|
+* |   e90c3f8 Merge pull request #1: Add the rule on comment lines</code></pre>
+  <p class="small mt">The merge of main into the branch (95f7f91) holds the resolution the reviewer approved.</p>
+  <aside class="notes"><p>From labs/solutions/S2_2.sh. Your teams' ids differ (their own names and times). Ask one team to show their resolution and one comment they thought was useful.</p></aside>
 </section>
 
-<section class="slide" id="s3-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="which-undo" data-lo="LO1 LO3">
+  <div class="kicker">Undoing</div>
+  <h2>Pick the undo by where the mistake is</h2>
+  <table class="t">
+    <tr><th>The mistake is</th><th>Undo with</th><th>Changes history?</th></tr>
+    <tr><td>in a file, not staged</td><td><code>git restore file</code></td><td>no</td></tr>
+    <tr><td>staged by mistake</td><td><code>git restore --staged file</code></td><td>no</td></tr>
+    <tr><td>in the last commit, not pushed</td><td><code>git commit --amend</code></td><td>yes, one commit</td></tr>
+    <tr><td>in commits not pushed</td><td><code>git reset</code> to an earlier commit</td><td>yes</td></tr>
+    <tr class="hl"><td>in a commit already pushed</td><td><code>git revert</code> its id</td><td>no: adds a commit</td></tr>
+  </table>
+  <aside class="notes"><p>The column on the right is the safety rule: rewrite only what nobody else has. git-revert's documentation: it records "new commits to reverse the effect of some earlier commits". Sources: git-restore, git-reset, git-revert documentation.</p></aside>
+</section>
+
+<section class="slide" id="reset-modes" data-lo="LO1">
+  <div class="kicker">reset, three ways</div>
+  <h2>reset moves the branch; the flag decides what happens to your files</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>--soft</h4><p class="small mb0">The branch moves back; the undone changes stay staged.</p></div>
+    <div class="card c-amber"><h4>--mixed (default)</h4><p class="small mb0">The branch moves back; the changes stay in your files, unstaged.</p></div>
+    <div class="card c-coral"><h4>--hard</h4><p class="small mb0">The branch moves back; your files are made to match. Uncommitted work is lost.</p></div>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <div class="callout warn mt"><b>Before --hard,</b> run <code>git status</code>. A file you never committed cannot come back from the reflog.</div>
+  <aside class="notes"><p>git-reset's documentation: it sets "the current branch head (HEAD) to point at" the commit you give. Demonstrate with HEAD~1 on a scratch repository.</p></aside>
+</section>
+
+<section class="slide" id="reflog" data-lo="LO1">
+  <div class="kicker">The safety net</div>
+  <h2>The reflog remembers where your branches and HEAD have been</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">git branch -D field-checks          # deleted by mistake
+git reflog | head -n 5
+# 4c2e9a1 HEAD@{2}: commit: Check the fan at every visit
+git branch field-checks 4c2e9a1     # back</code></pre>
+  <ul class="bullets mt">
+    <li>Local only: each clone has its own reflog, and the hub's is not yours</li>
+    <li>Entries expire after a while (<code>gc.reflogExpire</code>): a net, not a backup</li>
+  </ul>
+  <aside class="notes"><p>git-reflog's documentation: reflogs "record when the tips of branches and other references were updated in the local repository". The id shown is illustrative.</p></aside>
+</section>
+
+<section class="slide" id="check-undo" data-lo="LO1 LO3">
+  <div class="kicker">Checkpoint</div>
+  <h2>Which undo keeps everyone's clone working?</h2>
+  <div class="quiz" data-type="single" data-lo="LO3">
+    <p class="lead">Yesterday you pushed a commit that set the visit interval to 90 days instead of 14. Three teammates have pulled since. How do you undo it?</p>
+    <div class="opts">
+      <div class="opt" data-why="Rewrites a commit others already have; their next pull disagrees with the hub">git reset --hard to the commit before it, then push --force</div>
+      <div class="opt" data-ok>git revert the commit, then push</div>
+      <div class="opt" data-why="Amend rewrites the last local commit only, and still changes its id">git commit --amend, then push</div>
+      <div class="opt" data-why="restore changes your working file; history and the hub still hold the mistake">git restore the file, then tell the team</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> Revert adds a commit that reverses the change, so the shared history only grows and nobody's clone is broken.</div>
+  </div>
+  <aside class="notes"><p>Answer: B.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-2-3" data-auto="lab" data-lab="2.3">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>The order matters: restore first, then drop the debug commit, then amend. Ask each participant to mark which commits are pushed before touching anything. Common error: amending first, which rewrites the debug commit instead of the sector one.</p></aside>
 </section>
 
 <!-- Session 4 -->
 
 <section class="slide section" id="s4" data-auto="section" data-session="4"></section>
 
-<section class="slide" id="s4-idea">
-  <div class="kicker">REPLACE: the question this slide answers</div>
-  <h2>REPLACE: one idea, stated as a sentence</h2>
+<section class="slide" id="it-runs-here" data-lo="LO4">
+  <div class="kicker">Why it ran here</div>
+  <h2>"It runs on my laptop" means the laptop holds something the repository does not</h2>
   <div class="cols cols-2">
     <ul class="bullets">
-      <li>REPLACE: at most six bullets, each a complete thought</li>
-      <li>REPLACE: bold the key phrase; numbers come from the lab run, not from memory</li>
+      <li>A package installed once, long ago, and never written down</li>
+      <li>A version that happened to be current that month</li>
+      <li>A folder that exists on one disk</li>
+      <li>An output folder created by hand</li>
+      <li>A Python version, a setting, a variable in a profile</li>
     </ul>
-    <div class="card c-teal"><h4>In the case study</h4><p class="small mb0">REPLACE: tie the idea to the case study and its data</p></div>
+    <div class="card c-coral"><h4>The test</h4><p class="small mb0">A clean clone in a fresh environment. <code>uv run --isolated</code> gives an empty environment on your own laptop; a colleague's machine or a container gives the real thing.</p></div>
   </div>
-  <div class="callout warn mt"><b>What goes wrong.</b> REPLACE: the failure participants will hit, and how to recognise it</div>
-  <aside class="notes">REPLACE: what to say, the demo to run, the question to ask the room, the common failure and its fix</aside>
+  <aside class="notes"><p>Ask the room for their own "worked on my machine" story. Lab 2.4 has four of these faults planted; do not list which.</p></aside>
 </section>
 
-<section class="slide" id="s4-steps">
-  <div class="kicker">Step by step</div>
-  <h2>REPLACE: a process, shown one step per key press</h2>
-  <div class="flow">
-    <div class="step c-teal"><b>1 · REPLACE: name</b>REPLACE: what happens first</div>
-    <div class="arrow frag" data-frag="b">→</div><div class="step c-cyan frag" data-frag="b"><b>2 · REPLACE: name</b>REPLACE: the next piece</div>
-    <div class="arrow frag" data-frag="c">→</div><div class="step c-coral frag" data-frag="c"><b>3 · REPLACE: name</b>REPLACE: the result</div>
+<section class="slide" id="declare-then-lock" data-lo="LO4">
+  <div class="kicker">Two files, two jobs</div>
+  <h2>The declaration says what is acceptable; the lock says exactly what was installed</h2>
+  <div class="cols cols-2">
+    <pre class="code" data-file="pyproject.toml"><code class="language-toml">[project]
+name = "visit-planner"
+requires-python = "&gt;=3.11"
+dependencies = [
+    "tabulate&gt;=0.9",
+]</code></pre>
+    <ul class="bullets">
+      <li><b>pyproject.toml</b>: the packages and the range of versions you accept</li>
+      <li><b>uv.lock</b>: every package, indirect ones included, at one exact version, with hashes</li>
+      <li>uv's documentation calls the lock universal and says it "should be checked into version control"</li>
+    </ul>
   </div>
-  <div class="callout tip mt frag"><b>Takeaway.</b> REPLACE: the one sentence to remember</div>
-  <aside class="notes">Press once per step and say what each step adds before the next one appears. REPLACE: the example to walk through</aside>
+  <aside class="notes"><p>Sources: uv, Structure and files. Poetry (poetry.lock) and pip-tools (requirements.txt from pip-compile) are the same idea with other files: the course names them as interchangeable examples.</p></aside>
+</section>
+
+<section class="slide" id="environment" data-lo="LO4">
+  <div class="kicker">Environments</div>
+  <h2>A virtual environment keeps one project's packages away from every other project</h2>
+  <div class="flow">
+    <div class="step c-teal"><b>System Python</b>shared by everything; never install into it</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>.venv/ per project</b>its own packages, rebuilt from the lock</div>
+    <div class="arrow">→</div>
+    <div class="step c-purple"><b>Ignored by git</b>the folder is rebuilt, never committed</div>
+  </div>
+  <p class="small mt"><code>uv sync</code> makes <code>.venv/</code> match the lock; <code>uv run</code> runs a command inside it.</p>
+  <aside class="notes"><p>The environment is disposable: deleting <code>.venv</code> and running <code>uv sync --locked</code> again must give the same result. That is what lab 2.4 tests.</p></aside>
+</section>
+
+<section class="slide" id="uv-commands" data-lo="LO4">
+  <div class="kicker">The commands</div>
+  <h2>Five commands take a project from undeclared to locked</h2>
+  <pre class="code" data-file="terminal"><code class="language-bash">uv init --bare --name visit-planner --python 3.11   # a pyproject.toml, nothing else
+uv add tabulate                                    # declare it, resolve, write uv.lock
+uv python pin 3.13                                 # .python-version
+uv sync --locked                                   # build .venv exactly from the lock
+uv run python planner.py                           # run inside it</code></pre>
+  <div class="callout tip mt"><b>--locked refuses to change the lock.</b> uv's documentation: "If the lockfile is not up-to-date, uv will raise an error instead of updating the lockfile."</div>
+  <aside class="notes"><p>Source: uv, Locking and syncing. When <code>--locked</code> refuses, someone changed pyproject.toml without locking: run <code>uv lock</code>, read the diff, commit both.</p></aside>
+</section>
+
+<section class="slide" id="check-lock" data-lo="LO4">
+  <div class="kicker">Checkpoint</div>
+  <h2>What does the lock add?</h2>
+  <div class="quiz" data-type="single" data-lo="LO4">
+    <p class="lead">A planner project declares <code>tabulate&gt;=0.9</code>. A colleague installs it a year later from the declaration only and gets different output. What would a committed lock file have given them?</p>
+    <div class="opts">
+      <div class="opt" data-ok>The exact versions and hashes the author installed, indirect packages included</div>
+      <div class="opt" data-why="The declaration already names the package; naming it again changes nothing">A second list of the same package names</div>
+      <div class="opt" data-why="A lock pins versions; it does not copy source code into the repository">A copy of the packages' code inside the repository</div>
+      <div class="opt" data-why="Locks pin what was resolved; they do not move to the newest release">The newest versions at the time of installing</div>
+    </div>
+    <div class="callout tip why"><b>Why.</b> <code>&gt;=0.9</code> allows any later release; the lock records the one resolved, so a rebuild installs that again.</div>
+  </div>
+  <aside class="notes"><p>Answer: A.</p></aside>
 </section>
 
 <section class="slide lab" id="lab-2-4" data-auto="lab" data-lab="2.4">
-  <aside class="notes">REPLACE: what to watch for while participants work, the typical problems, and the fallback for anyone who did not finish an earlier lab</aside>
+  <aside class="notes"><p>The first download needs the network; on a slow room network, start the lab with <code>uv sync</code> once on the projector so the cache warms. Watch for: committing <code>.venv</code>; leaving the analyst's path as a silent default; forgetting <code>uv.lock</code> in the commit. The trainer's checksum is on the lab page, for the trainer only.</p></aside>
 </section>
 
 <section class="slide" id="wrap-up">
   <div class="kicker">Day 2 · wrap-up</div>
   <h2>Three things to keep</h2>
   <div class="cols cols-3">
-    <div class="card c-teal"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-coral"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
-    <div class="card c-purple"><h4>Remember</h4><p class="small mb0">REPLACE: one idea participants keep</p></div>
+    <div class="card c-teal"><h4>Small and reviewed</h4><p class="small mb0">One purpose per request; comments name a line and a reason; answers are commits.</p></div>
+    <div class="card c-coral"><h4>Rewrite only what is yours</h4><p class="small mb0">Amend and reset before a push; revert after it.</p></div>
+    <div class="card c-purple"><h4>Declare, lock, rebuild</h4><p class="small mb0">If a fresh environment from the lock does not reproduce the result, the repository is missing something.</p></div>
   </div>
 </section>
 
 <section class="slide dark" id="next" data-label="Next">
   <div class="kicker">Next</div>
-  <h2>Day 3: REPLACE: the theme of this unit, in a few words</h2>
-  <p class="lead">REPLACE: what participants prepare before then; unfinished labs can be finished at home</p>
-  <aside class="notes">REPLACE: accounts, installs or reading participants need before the next unit</aside>
+  <h2>Day 3: Rebuild anywhere, leak nothing</h2>
+  <p class="lead">Tonight, 60 minutes: choose your capstone project (<code>labs/capstone/BRIEF.md</code>), put it under Git and lock its environment. Lab 3.2 needs a container engine without administrator rights, or the provided Linux workspace: check yours.</p>
+  <aside class="notes"><p>Capstone preparation 1 of 2 (guided self-study). Tell participants with no container engine that the provided workspace has one; give its address.</p></aside>
 </section>

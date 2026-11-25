@@ -1,37 +1,75 @@
 <article class="lab" data-lab="2.4">
   <div class="box goal">
     <h3>Goal</h3>
-    <p>REPLACE: by the end, participants can …</p>
+    <p>The analyst's report project runs on their laptop. Clone it as a second machine, read each reason it fails, then declare and lock its dependencies, take the data folder from outside the code, and rebuild it in a fresh environment until it writes the expected October report.</p>
   </div>
 
   <h2>What you need</h2>
   <ul>
-    <li>REPLACE: the files, the tool and the account the lab uses</li>
+    <li>The lab workspace; this lab starts with <code>uv run lab.py start 2.4</code>: <code>first-machine/air-report</code> (the analyst's repository) and <code>data/</code> (the October logs, outside the repository)</li>
+    <li>uv, and a network connection for the first download of two small packages</li>
+    <li>AI policy: <b>off</b> for the first attempt</li>
   </ul>
 
   <div class="step">
-    <h3>REPLACE: the first step <span class="min">15 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
-    <div class="prompt" data-tool="Version control and hosting">REPLACE: the prompt participants copy, with the parts they change in <span class="ph">colour</span></div>
+    <h3>Clone to a second machine, run it, read each failure <span class="min">7 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv run lab.py start 2.4
+cd 2.4
+git clone first-machine/air-report second-machine
+cd second-machine
+cat README.md requirements.txt
+uv run --isolated --no-project python report.py                 # nothing installed
+uv run --isolated --no-project --with-requirements requirements.txt python report.py</code></pre>
+    <p><code>--isolated</code> runs in a fresh, empty environment: the closest thing to another machine on your own laptop. Write down the last line of each error.</p>
   </div>
 
   <div class="step">
-    <h3>REPLACE: the second step <span class="min">10 min</span></h3>
-    <p>REPLACE: what to do and why, in two sentences</p>
+    <h3>Name the causes <span class="min">5 min</span></h3>
+    <p>Read <code>report.py</code>. List every reason it ran on the analyst's laptop and not here: a package it imports that nothing declares, a path that exists on one computer, versions nobody wrote down, a folder it writes to without creating it.</p>
+  </div>
+
+  <div class="step">
+    <h3>Declare, pin Python, lock <span class="min">8 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">uv init --bare --name air-report --python 3.11     # writes pyproject.toml
+uv add tabulate python-dateutil                    # declares both and writes uv.lock
+uv python pin 3.13                                 # writes .python-version
+git rm requirements.txt
+cat pyproject.toml</code></pre>
+  </div>
+
+  <div class="step">
+    <h3>Take the data folder from outside; rebuild fresh and compare <span class="min">10 min</span></h3>
+    <p>Change <code>report.py</code>: read the folder from a <code>--data</code> argument (default: the <code>AIR_LOGS</code> variable), stop with a clear message when neither is given, and create the output folder before writing. Then rebuild from the lock in a fresh environment:</p>
+    <pre class="code" data-file="terminal"><code class="language-bash">rm -rf .venv output
+uv sync --locked
+uv run python report.py --data ../data
+sha256sum output/report.csv</code></pre>
+    <p>The trainer gives the expected checksum. If yours differs, compare the first rows with the trainer's.</p>
+  </div>
+
+  <div class="step">
+    <h3>Commit the declaration and the lock; check <span class="min">5 min</span></h3>
+    <pre class="code" data-file="terminal"><code class="language-bash">git add pyproject.toml uv.lock .python-version report.py
+git commit -m "Declare and lock the dependencies; take the data folder as an argument"
+cd ../.. &amp;&amp; uv run lab.py check 2.4</code></pre>
+    <p>The check clones your repository a third time, runs <code>uv sync --locked</code> and the report, and compares the result.</p>
   </div>
 
   <div class="step stretch">
     <h3>✱ Stretch</h3>
-    <p>REPLACE: an extension for those who finish early</p>
+    <p>Lock the same project with pip-tools: write <code>requirements.in</code> with the two packages, run <code>uvx --from pip-tools pip-compile --generate-hashes requirements.in</code>, and compare its pins with <code>uv.lock</code>.</p>
   </div>
 
   <h2>Check yourself</h2>
   <ol class="checks">
-    <li>REPLACE: a question that shows the lab worked</li>
+    <li>What does <code>uv.lock</code> record that <code>pyproject.toml</code> does not?</li>
+    <li>Why does <code>uv sync --locked</code> refuse to run when the lock is out of date, instead of updating it?</li>
+    <li>Why is the data folder not in the repository, and how does a newcomer find out where it is?</li>
   </ol>
 
   <details class="instructor">
     <summary>For the trainer</summary>
-    <p>REPLACE: the answer key, the traps and the common errors</p>
+    <p>Failures in order, from the solution run: <code>ModuleNotFoundError: No module named 'dateutil'</code> with nothing installed and again with <code>requirements.txt</code> (it lists <code>tabulate</code> only); with both packages, <code>FileNotFoundError</code> on the analyst's absolute path; with the path fixed, <code>FileNotFoundError</code> on <code>output/report.csv</code>, since git does not carry the ignored, empty output folder (all four run when the course was built). pip-tools (stretch) resolved the same three pins. The lock resolved python-dateutil 4.0.0 (which needs tzdata) and tabulate 0.10.0 when the course was built. Expected October checksum: <code>e04d69272f78be46dfea1b5fed1eaa9c58532162371ebd6b0fb1671f2925af06</code>; first row <code>ST01,Client A,744,58.9,256,14,0</code>.</p>
+    <p>The reference <code>report.py</code> is <code>labs/kit/projects/v2/report.py</code>. Common errors: <code>uv init</code> without <code>--bare</code> (it adds a sample file); forgetting to commit <code>uv.lock</code>; reading <code>AIR_LOGS</code> but keeping the old path as a silent default. Solution: <code>labs/solutions/S2_4.sh</code>.</p>
   </details>
 </article>
