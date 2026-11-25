@@ -73,7 +73,8 @@ threshold line; the resolution keeps the sector line and both changes the brief 
 
 1. For the first, `main` had not moved since the branch started, so `main` could simply move
    forward. For the second, both had new commits, so Git needed a commit with two parents.
-2. Every change made on `main` in that file, including the sector line.
+2. `main`'s side of the conflict: the threshold wording that the first merge brought into
+   `main`. The sector line comes from the branch being merged, so it would stay.
 3. Two parents.
 
 Who does what: alone here; in a team the person who resolves the conflict is not the person who

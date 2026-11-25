@@ -24,6 +24,9 @@ fails, write down the command and the last line of its error and bring it to the
 - **uv** on every system: follow the installation page of uv's documentation. It installs
   without administrator rights.
 
+The labs were tested in Git Bash on Windows. On macOS a few commands differ (`sha256sum` is
+`shasum -a 256`, `sed -i` needs `''`): if one fails, use the provided Linux workspace.
+
 Then, in the terminal:
 
 ```bash
@@ -57,8 +60,6 @@ From the course folder (cloned or unzipped):
 uv run labs/kit/setup.py             # writes the lab workspace ../air-labs
 cd ../air-labs
 uv run lab.py list                   # twelve labs
-uv run lab.py start 1.1              # the first lab's starting folder
-ls 1.1
 ```
 
 On Windows, keep the path short (for example a folder directly under your home folder):
@@ -72,7 +73,7 @@ Work in the lab workspace folder (`air-labs`). Type each command; read what it p
 pwd                  # where am I?
 ls                   # what is here?
 ls -l                # with sizes, dates and permissions
-cd 1.1               # go into a folder
+cd _kit              # go into a folder
 cd ..                # back up one level
 mkdir scratch        # make a folder
 cd scratch
