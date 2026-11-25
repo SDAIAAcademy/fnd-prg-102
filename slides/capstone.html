@@ -1,91 +1,152 @@
 <section class="slide title" id="title" data-auto="title">
-  <aside class="notes">Today is theirs: keep your own talking to the opening and the closing. Confirm the running order and the demo setup (screen sharing, accounts, a recorded backup) first.</aside>
+  <aside class="notes">Today is theirs: keep your own talking to the opening and the closing. Before the room fills: the clean workspaces are ready (the provided Linux workspace, or a fresh user account with only uv, Git and a container engine), the check papers are printed, and the pairs from yesterday's kickoff are on the running order.</aside>
 </section>
 
 <section class="slide" id="agenda" data-label="Agenda">
   <div class="kicker">Capstone</div>
-  <h2>How the presentations run</h2>
+  <h2>A peer rebuilds your project from its README alone</h2>
   <div class="agenda">
-    <div class="item now"><div><b>Expectations and final prep</b><small>the rubric, a last rehearsal, then the first presentations</small></div></div>
-    <div class="item"><div><b>Presentations</b><small>each one timed, with questions after it</small></div></div>
-    <div class="item"><div><b>Review and closing</b><small>peer feedback, the trainer's review, what next</small></div></div>
+    <div class="item now"><div><b>Supervised check, AI off</b><small>shell commands and five commit graphs</small></div></div>
+    <div class="item"><div><b>Rubric, pairs and a self-test</b><small>your own rebuild in a fresh clone, one last time</small></div></div>
+    <div class="item"><div><b>Peer reproduction</b><small>on a clean workspace, following only the README, logging every step</small></div></div>
+    <div class="item"><div><b>Log, handback and fix clinic</b><small>the log as a pull request; you start fixing what failed</small></div></div>
+    <div class="item"><div><b>Trainer review, then the follow-up</b><small>a second reproduction and a seven-minute oral</small></div></div>
   </div>
+  <aside class="notes">The day's minutes: check briefing 5 and the check 45 (assessment hours); rubric and pairing 15, self-test 35, changeover 10, reproduction 150, writing the log 20, handback 20, fix clinic 70, trainer review 30 (capstone hours). Breaks are not slides: press B when the room needs one.</aside>
+</section>
+
+<section class="slide dark" id="check" data-label="Supervised check">
+  <div class="kicker">Assessment · AI off</div>
+  <h1>Supervised check · 45 minutes</h1>
+  <div class="timer" data-minutes="45"></div>
+  <p class="lead">Paper only: no laptop, no assistant. Shell commands, then five commit graphs to draw.</p>
+  <aside class="notes">Five minutes of briefing first: what is allowed (a pen), how the graphs are drawn (one circle per commit, an arrow to its parent, branch labels in boxes, HEAD marked). The paper and its key are in the trainer pack, never in the repository. Pass mark on the check: 60%; LO1's evidence is four of the five graphs correct.</aside>
 </section>
 
 <section class="slide" id="rubric" data-label="The rubric">
-  <div class="kicker">How presentations are scored</div>
-  <h2>The rubric</h2>
+  <div class="kicker">How the peer reproduction is scored</div>
+  <h2>The rubric, out of 100</h2>
   <div class="bars">
-    <div class="row"><span>REPLACE: rubric criterion 1 and its weight (the weights add up to 100)</span><div class="bar c-teal" style="--w:100%"></div><span class="val">25%</span></div>
-    <div class="row"><span>REPLACE: rubric criterion 2 and its weight (the weights add up to 100)</span><div class="bar c-cyan" style="--w:100%"></div><span class="val">25%</span></div>
-    <div class="row"><span>REPLACE: rubric criterion 3 and its weight (the weights add up to 100)</span><div class="bar c-coral" style="--w:80%"></div><span class="val">20%</span></div>
-    <div class="row"><span>REPLACE: rubric criterion 4 and its weight (the weights add up to 100)</span><div class="bar c-purple" style="--w:80%"></div><span class="val">20%</span></div>
-    <div class="row"><span>REPLACE: rubric criterion 5 and its weight (the weights add up to 100)</span><div class="bar c-amber" style="--w:40%"></div><span class="val">10%</span></div>
+    <div class="row"><span><b>README</b>: tools, data source, one command</span><div class="bar c-teal" style="--w:67%"></div><span class="val">20%</span></div>
+    <div class="row"><span><b>Clean rebuild</b> on the peer's workspace</span><div class="bar c-cyan" style="--w:100%"></div><span class="val">30%</span></div>
+    <div class="row"><span><b>Container</b>: locked, rootless, mounted data</span><div class="bar c-coral" style="--w:50%"></div><span class="val">15%</span></div>
+    <div class="row"><span><b>Hygiene</b>: no secret or data in history</span><div class="bar c-purple" style="--w:50%"></div><span class="val">15%</span></div>
+    <div class="row"><span><b>History</b>: reviewed pull requests</span><div class="bar c-amber" style="--w:33%"></div><span class="val">10%</span></div>
+    <div class="row"><span><b>Follow-up</b>: second reproduction passes</span><div class="bar c-teal" style="--w:33%"></div><span class="val">10%</span></div>
   </div>
-  <div class="callout tip mt"><b>Show results from at least two measured runs.</b> A claim without a number is a plan, not a result.</div>
-  <aside class="notes">Walk through each criterion with one example of what full marks look like.</aside>
+  <aside class="notes">Walk through each criterion with what full marks look like: a README a stranger follows without asking; the checksum line printing OK on the peer's workspace; a container that runs as a user that is not root; a scan of every commit that comes back empty; the log merged through a reviewed pull request. The rubric is 40% of the course; the oral (10%) and the labs (30%) are graded apart, so nothing here counts twice.</aside>
 </section>
 
-<section class="slide" id="format" data-label="Format">
-  <div class="kicker">Format</div>
-  <h2>REPLACE: how many minutes each presentation and its questions take</h2>
-  <div class="cols cols-3">
-    <div class="card c-teal"><h4>1 · The problem</h4><p class="small mb0">Who, what, why now. One slide.</p></div>
-    <div class="card c-cyan"><h4>2 · What you built</h4><p class="small mb0">Design, decisions, trade-offs. Then the live demo.</p></div>
-    <div class="card c-coral"><h4>3 · What you measured</h4><p class="small mb0">Baseline, improvement, failures found, what comes next.</p></div>
+<section class="slide" id="pairs" data-label="Pairs">
+  <div class="kicker">Pairs</div>
+  <h2>You reproduce one peer's project; a different peer reproduces yours</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>Pairs run in a ring: A reproduces B, B reproduces C, and so on, so no two people check each other</li>
+      <li>The reproducer works on a clean workspace, never on the author's laptop</li>
+      <li>The author does not help during the reproduction: the README speaks for them</li>
+    </ul>
+    <div class="card c-teal"><h4>Self-test first, 35 minutes</h4><p class="small mb0">Clone your own repository into an empty folder, follow your README word for word, and fix what you find. After this, no more commits until the handback.</p></div>
   </div>
-  <div class="callout note mt"><b>Peer feedback.</b> After each talk, everyone writes one strength, one question and one suggestion.</div>
+  <aside class="notes">The ring stops two people trading favours. The freeze matters: the reproduction must be of a fixed commit, so ask each author to post the commit id they want reproduced.</aside>
 </section>
 
 <section class="slide order" id="running-order" data-label="Running order">
   <div class="kicker">Running order</div>
-  <h2>Who presents when</h2>
+  <h2>Who reproduces whom</h2>
   <table class="t small">
-    <tr><th>#</th><th>Presenter</th><th>Project</th></tr>
-    <tr><td>1</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>2</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>3</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>4</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>5</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>6</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>7</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
-    <tr><td>8</td><td><input placeholder="name"></td><td><input placeholder="Project"></td></tr>
+    <tr><th>#</th><th>Author</th><th>Reproduced by</th></tr>
+    <tr><td>1</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>2</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>3</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>4</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>5</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>6</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>7</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
+    <tr><td>8</td><td><input placeholder="author"></td><td><input placeholder="peer"></td></tr>
   </table>
-  <aside class="notes">Type the names in at the start; the fields can be edited live and are not saved, so keep the list in your notes too.</aside>
+  <aside class="notes">Type the pairs in at the start; the fields can be edited live and are not saved, so keep the list in your notes too. The same order serves the orals after the follow-up.</aside>
 </section>
 
-<section class="slide dark" id="final-prep" data-label="Before the first presentation">
-  <div class="kicker">Before the first presentation</div>
-  <h1>Final prep · 20 minutes</h1>
-  <div class="timer" data-minutes="20"></div>
-  <p class="lead">Rehearse once, record a backup, try the demo on this screen.</p>
-  <aside class="notes">Press T to start the timer. Breaks are not slides: press B when the room needs one.</aside>
+<section class="slide" id="reproduce-flow" data-label="The reproduction">
+  <div class="kicker">The peer reproduction · 150 minutes</div>
+  <h2>Follow the README exactly, and write down every step as it happened</h2>
+  <div class="flow">
+    <div class="step c-navy"><b>Clone</b>the commit the author posted, on a clean workspace</div>
+    <div class="arrow">→</div>
+    <div class="step c-teal"><b>Rebuild</b>the one command; does the checksum match?</div>
+    <div class="arrow">→</div>
+    <div class="step c-cyan"><b>Container</b>build and run, data mounted read-only</div>
+    <div class="arrow">→</div>
+    <div class="step c-coral"><b>Scan</b>the whole history, and look for committed data</div>
+  </div>
+  <div class="callout warn mt"><b>Do not repair it for them.</b> When a step fails, record the exact command and the last line of the error, then try the smallest guess and record that too.</div>
+  <aside class="notes">The log template is labs/capstone/REPRODUCTION_LOG.md: one row per step, with the command, what the README said, what happened and the last line of any error. A step the reproducer had to guess counts as failed, even if the guess worked: the README did not say it.</aside>
+</section>
+
+<section class="slide dark" id="reproduce-timer" data-label="Reproduction">
+  <div class="kicker">Peer reproduction</div>
+  <h1>Reproduce · 150 minutes</h1>
+  <div class="timer" data-minutes="150"></div>
+  <p class="lead">Only the README. Log every step. Ask the trainer, never the author.</p>
+  <aside class="notes">Walk the room. When a reproducer is stuck for more than ten minutes on one step, tell them to log it as failed and move to the next part (the container, the scan), so the rest of the rubric can still be scored.</aside>
+</section>
+
+<section class="slide" id="handback" data-label="Handback">
+  <div class="kicker">Log and handback · 40 minutes</div>
+  <h2>The log arrives as a pull request, and the author merges it after review</h2>
+  <div class="cols cols-2">
+    <ul class="bullets">
+      <li>The reproducer adds <code>reproduction/peer-1.md</code> on a branch and opens a pull request</li>
+      <li>The author reviews it: questions in comments, no edits to the peer's findings</li>
+      <li>Merged by pull request, the log is part of the history the rubric reads</li>
+    </ul>
+    <div class="card c-coral"><h4>Fix clinic, 70 minutes</h4><p class="small mb0">Each author starts on the failed steps, one small commit per fix, each through a pull request. The trainer takes questions at the front.</p></div>
+  </div>
+  <aside class="notes">Twenty minutes to write the log, twenty for the handback and review. In the fix clinic, nudge authors towards the smallest fix that makes the README true, not a rewrite. The follow-up task (60 minutes, guided self-study) finishes the fixes; the same peer then records a second reproduction as peer-2.md.</aside>
+</section>
+
+<section class="slide" id="format" data-label="The oral">
+  <div class="kicker">After the follow-up · the oral</div>
+  <h2>Seven minutes: three on one failed step and its fix, four of questions</h2>
+  <div class="cols cols-3">
+    <div class="card c-teal"><h4>1 · What failed</h4><p class="small mb0">The step from the peer's log, and the last line of the error.</p></div>
+    <div class="card c-cyan"><h4>2 · Why</h4><p class="small mb0">What the README assumed that the clean workspace did not have.</p></div>
+    <div class="card c-coral"><h4>3 · The fix</h4><p class="small mb0">The commit that fixed it, and the line of the second log that proves it.</p></div>
+  </div>
+  <div class="callout note mt"><b>Your own words.</b> The capstone is AI-full: you may have used an assistant, and you explain every step yourself.</div>
+  <aside class="notes">The oral is 10% of the course and is graded on its own marking guide (trainer pack). Questions probe the participant's own fix: what would have happened on a different workspace, which command in the history shows it, what they would check next time.</aside>
 </section>
 
 <section class="slide dark presenting" id="now-presenting" data-label="Now presenting">
   <div class="kicker center">Now presenting</div>
-  <div class="center"><input placeholder="Presenter · project"></div>
-  <aside class="notes">Type the presenter's name and press T to start the timer. Reuse this slide for every presenter.</aside>
+  <div class="center"><input placeholder="Participant · project"></div>
+  <div class="timers mt">
+    <div><h3>Talk</h3><div class="timer" data-minutes="3"></div></div>
+    <div><h3>Questions</h3><div class="timer" data-minutes="4"></div></div>
+  </div>
+  <aside class="notes">Type the participant's name and press T to start the talk timer; start the second timer for the questions. Reuse this slide for every participant; allow three minutes between orals for the changeover.</aside>
 </section>
 
 <section class="slide" id="review" data-label="Trainer review">
   <div class="kicker">Trainer review</div>
-  <h2>What the presentations showed</h2>
+  <h2>What the reproductions showed</h2>
   <div class="cols cols-3">
-    <div class="card c-teal"><h4>Strongest patterns</h4><p class="small mb0">What several projects got right.</p></div>
-    <div class="card c-coral"><h4>Common gaps</h4><p class="small mb0">What most projects would fix next.</p></div>
-    <div class="card c-purple"><h4>One surprise</h4><p class="small mb0">Something nobody expected.</p></div>
+    <div class="card c-teal"><h4>What rebuilt first time</h4><p class="small mb0">The habits behind the projects that reproduced at once.</p></div>
+    <div class="card c-coral"><h4>The common failures</h4><p class="small mb0">The steps most READMEs left out.</p></div>
+    <div class="card c-purple"><h4>One surprise</h4><p class="small mb0">Something nobody expected to fail.</p></div>
   </div>
-  <aside class="notes">Fill these in from your scoring notes during the last break. Name projects for strengths; keep gaps anonymous.</aside>
+  <aside class="notes">Fill these in from the logs during the fix clinic. Name projects for strengths; keep failures anonymous. Typical failures in courses like this one: a tool not listed among the prerequisites, a data path on the author's laptop, a lock not committed, a container that cannot write to its output folder.</aside>
 </section>
 
 <section class="slide" id="what-next" data-label="After the course">
   <div class="kicker">After the course</div>
   <h2>Keep going</h2>
   <ul class="bullets">
-    <li><b>Your project stays yours:</b> keep it reproducible and add the next improvement you named today</li>
-    <li><b>Next Academy course:</b> REPLACE: the course that follows this one</li>
+    <li><b>Your project stays yours:</b> finish the follow-up, then keep every new project rebuildable from its README</li>
+    <li><b>Next Academy courses:</b> FND-PRG-104 Software Testing, Code Review and Documentation; FND-PRG-105 Computer Systems and Cloud Essentials for AI Work; and DEV-SWE-201 Software Engineering with Coding Agents, which all build on this one</li>
   </ul>
+  <aside class="notes">All three name this course among their prerequisites in the Academy catalog.</aside>
 </section>
 
 <section class="slide dark" id="thanks" data-label="Thank you">
