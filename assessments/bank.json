@@ -1,0 +1,168 @@
+{
+  "format": "academy-bank",
+  "version": 1,
+  "questions": [
+    {
+      "id": "q-example-1",
+      "type": "single",
+      "prompt": "REPLACE: a practice question on LO1, as a short scenario",
+      "options": [
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: the right answer",
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: a wrong option that a common misconception makes tempting"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "REPLACE: the misconception behind this option",
+        "",
+        "REPLACE: the misconception behind this option",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO1"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "q-example-2",
+      "type": "tf",
+      "prompt": "REPLACE: a statement on LO2 that is true",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO2"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "q-example-3",
+      "type": "single",
+      "prompt": "REPLACE: a practice question on LO3, as a short scenario",
+      "options": [
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: the right answer",
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: a wrong option that a common misconception makes tempting"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "REPLACE: the misconception behind this option",
+        "",
+        "REPLACE: the misconception behind this option",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO3"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "q-example-4",
+      "type": "tf",
+      "prompt": "REPLACE: a statement on LO4 that is true",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO4"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "q-example-5",
+      "type": "single",
+      "prompt": "REPLACE: a practice question on LO5, as a short scenario",
+      "options": [
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: the right answer",
+        "REPLACE: a wrong option that a common misconception makes tempting",
+        "REPLACE: a wrong option that a common misconception makes tempting"
+      ],
+      "correct": [
+        1
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "REPLACE: the misconception behind this option",
+        "",
+        "REPLACE: the misconception behind this option",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO5"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "apply",
+      "pool": "practice",
+      "weight": 1
+    },
+    {
+      "id": "q-example-6",
+      "type": "tf",
+      "prompt": "REPLACE: a statement on LO6 that is true",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        0
+      ],
+      "explanation": "REPLACE: why the right answer is right, in one sentence",
+      "misconceptions": [
+        "",
+        "REPLACE: the misconception behind this option"
+      ],
+      "lo": [
+        "LO6"
+      ],
+      "day": "day1",
+      "session": 1,
+      "level": "understand",
+      "pool": "practice",
+      "weight": 1
+    }
+  ]
+}

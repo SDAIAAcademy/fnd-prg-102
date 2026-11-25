@@ -1,0 +1,338 @@
+{
+  "$schema": "https://sdaiaacademy.github.io/engine/schemas/course.schema.json",
+  "engine": "1",
+  "id": "fnd-prg-102",
+  "code": "FND-PRG-102",
+  "version": "2027.1.0",
+  "lang": "en",
+  "title": {
+    "en": "Command Line, Git and Reproducible Environments",
+    "ar": "سطر الأوامر وGit والبيئات القابلة لإعادة الإنتاج"
+  },
+  "tagline": "REPLACE: one line under the title: what participants can do after the course",
+  "description": "Participants set up work that another person can rebuild from a clean machine. They script the shell, use Git with branches, pull requests and review on a shared repository, resolve a merge conflict, lock dependencies, run a project in a container without administrator rights, and keep secrets out of history.",
+  "track": "foundations",
+  "level": 100,
+  "audience": "Beginners. Graduates and career changers heading for analysis, data science, data engineering or AI engineering courses, and computing graduates whose degree did not require testing, version control or reproducible environments.",
+  "prerequisites": [
+    "Writes and runs a short program in Python or another language"
+  ],
+  "site": {
+    "url": "https://sdaiaacademy.github.io/fnd-prg-102/",
+    "repo": "SDAIAAcademy/fnd-prg-102"
+  },
+  "outcomes": [
+    {
+      "id": "LO1",
+      "text": "Explain how Git records history as commits, branches and remotes, and what each everyday command changes, given diagrams of a repository and sequences of commands",
+      "level": "Awareness",
+      "evidence": "commit graphs drawn correctly for four of five sequences in a supervised check"
+    },
+    {
+      "id": "LO2",
+      "text": "Use the shell to inspect and transform files, combining commands with pipes and a short script, given a folder of synthetic log and comma-separated files",
+      "level": "Applied",
+      "evidence": "a script that produces the requested counts and runs unchanged on a second folder"
+    },
+    {
+      "id": "LO3",
+      "text": "Apply a branch, pull request and review workflow, including resolving a merge conflict, given a team repository with a protected main branch",
+      "level": "Applied",
+      "evidence": "a merged pull request with review comments addressed and a resolved conflict in the history"
+    },
+    {
+      "id": "LO4",
+      "text": "Configure an isolated environment with locked dependencies and run the project in a container without administrator rights, given an analysis project that fails on a second machine",
+      "level": "Applied",
+      "evidence": "a lock file, a container definition and a clean rebuild that reproduces the expected output"
+    },
+    {
+      "id": "LO5",
+      "text": "Prepare a repository that keeps secrets out of history, and carry out the response when one leaks, given a project needing an API key, with a seeded leaked key in an old commit",
+      "level": "Applied",
+      "evidence": "configuration read from the environment, a passing secret scan and a rotation note"
+    },
+    {
+      "id": "LO6",
+      "text": "Deliver a repository that a peer reproduces on a clean machine using only its README, given the participant's own small project",
+      "level": "Performance",
+      "evidence": "the peer's reproduction log and fixes for every step the peer could not follow"
+    }
+  ],
+  "case_study": {
+    "name": "REPLACE: the name of the fictional organisation every lab works on",
+    "summary": "REPLACE: two sentences on the case study and its synthetic data"
+  },
+  "format": "intensive",
+  "format_note": "Intensive: 3 teaching days and a capstone day, with guided pre-work and a tracked follow-up task",
+  "hours": {
+    "instruction": 5,
+    "lab": 7,
+    "guided_self_study": 5,
+    "assessment": 1,
+    "capstone": 6
+  },
+  "unit": "day",
+  "days": [
+    {
+      "id": "day1",
+      "kind": "day",
+      "title": "REPLACE: the theme of this unit, in a few words",
+      "deck": "slides/day1.html",
+      "sessions": [
+        {
+          "title": "REPLACE: the title of Session 1",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "1.1",
+            "title": "REPLACE: what participants build in lab 1.1",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D1_1.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 2",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "1.2",
+            "title": "REPLACE: what participants build in lab 1.2",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D1_2.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 3",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "1.3",
+            "title": "REPLACE: what participants build in lab 1.3",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D1_3.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 4",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "1.4",
+            "title": "REPLACE: what participants build in lab 1.4",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D1_4.html"
+          }
+        }
+      ]
+    },
+    {
+      "id": "day2",
+      "kind": "day",
+      "title": "REPLACE: the theme of this unit, in a few words",
+      "deck": "slides/day2.html",
+      "sessions": [
+        {
+          "title": "REPLACE: the title of Session 1",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "2.1",
+            "title": "REPLACE: what participants build in lab 2.1",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D2_1.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 2",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "2.2",
+            "title": "REPLACE: what participants build in lab 2.2",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D2_2.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 3",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "2.3",
+            "title": "REPLACE: what participants build in lab 2.3",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D2_3.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 4",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "2.4",
+            "title": "REPLACE: what participants build in lab 2.4",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D2_4.html"
+          }
+        }
+      ]
+    },
+    {
+      "id": "day3",
+      "kind": "day",
+      "title": "REPLACE: the theme of this unit, in a few words",
+      "deck": "slides/day3.html",
+      "sessions": [
+        {
+          "title": "REPLACE: the title of Session 1",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "3.1",
+            "title": "REPLACE: what participants build in lab 3.1",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D3_1.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 2",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "3.2",
+            "title": "REPLACE: what participants build in lab 3.2",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D3_2.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 3",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "3.3",
+            "title": "REPLACE: what participants build in lab 3.3",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D3_3.html"
+          }
+        },
+        {
+          "title": "REPLACE: the title of Session 4",
+          "outcomes": [
+            "REPLACE: what a participant can do after this session; list in lo the course outcomes it serves"
+          ],
+          "lo": [],
+          "lab": {
+            "id": "3.4",
+            "title": "REPLACE: what participants build in lab 3.4",
+            "summary": "REPLACE: one line on what participants build and take away; then list the steps of the lab in course.json, their minutes adding up to 25",
+            "minutes": 25,
+            "href": "D3_4.html"
+          }
+        }
+      ]
+    },
+    {
+      "id": "capstone",
+      "kind": "capstone",
+      "title": "Capstone project presentations",
+      "deck": "slides/capstone.html",
+      "subtitle": "REPLACE: the catalog gives no length for the presentations; set capstone.talk_minutes and capstone.qa_minutes in course.json, write them on the format slide, add a timer for each to the now-presenting slide, and remove this line"
+    }
+  ],
+  "capstone": {
+    "summary": "A peer reproduces the participant's repository from the README on a clean workspace; the follow-up task fixes each failed step and records a second, successful reproduction",
+    "submission": "REPLACE: what participants submit and how: a public repository link, or a shared folder for a course without code",
+    "rubric": [
+      {
+        "criterion": "REPLACE: rubric criterion 1 and its weight (the weights add up to 100)",
+        "weight": 25
+      },
+      {
+        "criterion": "REPLACE: rubric criterion 2 and its weight (the weights add up to 100)",
+        "weight": 25
+      },
+      {
+        "criterion": "REPLACE: rubric criterion 3 and its weight (the weights add up to 100)",
+        "weight": 20
+      },
+      {
+        "criterion": "REPLACE: rubric criterion 4 and its weight (the weights add up to 100)",
+        "weight": 20
+      },
+      {
+        "criterion": "REPLACE: rubric criterion 5 and its weight (the weights add up to 100)",
+        "weight": 10
+      }
+    ]
+  },
+  "labs": {
+    "kind": "pages",
+    "base": "labs/"
+  },
+  "tools": [
+    {
+      "slot": "Version control and hosting",
+      "examples": [
+        "Git with Forgejo or Gitea",
+        "Git with GitLab or GitHub"
+      ]
+    },
+    {
+      "slot": "Environment and lock-file manager",
+      "examples": [
+        "uv",
+        "Poetry",
+        "pip-tools"
+      ]
+    },
+    {
+      "slot": "Container engine that runs without administrator rights",
+      "examples": [
+        "Podman in rootless mode",
+        "Docker in rootless mode"
+      ]
+    },
+    {
+      "slot": "Secret scanning and hooks",
+      "examples": [
+        "gitleaks with pre-commit",
+        "the host's built-in secret scanning"
+      ]
+    }
+  ]
+}
